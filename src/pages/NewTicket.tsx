@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { fetchDepartments, createTicket, TicketPriority } from '@/lib/api';
+import { fetchDepartments, createTicket, addAttachment, TicketPriority } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Loader2, Send } from 'lucide-react';
+import { ArrowRight, Loader2, Send, Paperclip, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const priorities: { value: TicketPriority; label: string }[] = [
@@ -30,6 +31,8 @@ export default function NewTicket() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TicketPriority>('medium');
   const [departmentId, setDepartmentId] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: departments = [] } = useQuery({
     queryKey: ['departments'],
@@ -37,13 +40,30 @@ export default function NewTicket() {
   });
 
   const mutation = useMutation({
-    mutationFn: () => createTicket({
-      title: title.trim(),
-      description: description.trim(),
-      priority,
-      department_id: departmentId,
-      requester_id: user!.id,
-    }),
+    mutationFn: async () => {
+      const ticket = await createTicket({
+        title: title.trim(),
+        description: description.trim(),
+        priority,
+        department_id: departmentId,
+        requester_id: user!.id,
+      });
+      // Upload files
+      for (const file of files) {
+        const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
+        if (uploadError) continue;
+        const { data: { publicUrl } } = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+        await addAttachment({
+          ticket_id: ticket.id,
+          uploaded_by: user!.id,
+          file_name: file.name,
+          file_url: publicUrl,
+          file_size: file.size,
+        });
+      }
+      return ticket;
+    },
     onSuccess: () => {
       toast({ title: 'تم إنشاء التذكرة بنجاح' });
       navigate('/');
@@ -116,6 +136,31 @@ export default function NewTicket() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  {/* File attachments */}
+                  <div className="space-y-2">
+                    <Label>المرفقات</Label>
+                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={e => {
+                      if (e.target.files) setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                      e.target.value = '';
+                    }} />
+                    <Button type="button" variant="outline" className="gap-2 text-sm" onClick={() => fileInputRef.current?.click()}>
+                      <Paperclip className="h-4 w-4" />
+                      إضافة ملفات
+                    </Button>
+                    {files.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {files.map((f, i) => (
+                          <span key={i} className="flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-md">
+                            {f.name}
+                            <button type="button" onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))}>
+                              <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <Button type="submit" className="w-full gradient-accent text-accent-foreground gap-2" disabled={mutation.isPending}>

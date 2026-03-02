@@ -5,6 +5,10 @@ import {
   Headphones,
   Plus,
   LogOut,
+  Building2,
+  Users,
+  Timer,
+  BarChart3,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +32,13 @@ import { roleLabels, AppRole } from '@/lib/api';
 const mainItems = [
   { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
   { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
+];
+
+const adminItems = [
+  { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
+  { title: 'المستخدمين', url: '/admin/users', icon: Users },
+  { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
+  { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
 ];
 
 export function AppSidebar() {
@@ -70,8 +81,27 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
 
+        {role === 'admin' && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/50">الإدارة</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
+                        <item.icon className="h-4 w-4 ml-2" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
       <SidebarFooter className="p-3">
         {!collapsed && profile && (
           <div className="rounded-lg bg-sidebar-accent/30 p-3">

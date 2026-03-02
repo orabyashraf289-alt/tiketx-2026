@@ -138,6 +138,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_policies: {
+        Row: {
+          created_at: string
+          id: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          resolution_time_hours: number
+          response_time_hours: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          resolution_time_hours?: number
+          response_time_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          resolution_time_hours?: number
+          response_time_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ticket_attachments: {
         Row: {
           created_at: string
@@ -218,9 +245,11 @@ export type Database = {
           created_at: string
           department_id: string | null
           description: string
+          first_response_at: string | null
           id: string
           priority: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
+          resolution_summary: string | null
           resolved_at: string | null
           status: Database["public"]["Enums"]["ticket_status"]
           ticket_number: number
@@ -233,9 +262,11 @@ export type Database = {
           created_at?: string
           department_id?: string | null
           description: string
+          first_response_at?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
+          resolution_summary?: string | null
           resolved_at?: string | null
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number
@@ -248,9 +279,11 @@ export type Database = {
           created_at?: string
           department_id?: string | null
           description?: string
+          first_response_at?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id?: string
+          resolution_summary?: string | null
           resolved_at?: string | null
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number

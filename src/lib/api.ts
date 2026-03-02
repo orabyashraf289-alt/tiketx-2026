@@ -19,10 +19,31 @@ export interface Ticket {
   updated_at: string;
   resolved_at: string | null;
   closed_at: string | null;
+  resolution_summary: string | null;
+  first_response_at: string | null;
   // Joined
   departments?: { name: string } | null;
   requester?: { full_name: string; email: string } | null;
   agent?: { full_name: string; email: string } | null;
+}
+
+export interface SLAPolicy {
+  id: string;
+  priority: TicketPriority;
+  response_time_hours: number;
+  resolution_time_hours: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TicketAttachment {
+  id: string;
+  ticket_id: string;
+  uploaded_by: string;
+  file_name: string;
+  file_url: string;
+  file_size: number | null;
+  created_at: string;
 }
 
 export interface TicketComment {
@@ -201,4 +222,124 @@ export async function fetchTicketStats() {
     stats[t.status as keyof typeof stats]++;
   });
   return stats;
+}
+
+// SLA
+export async function fetchSLAPolicies() {
+  const { data, error } = await supabase.from('sla_policies').select('*').order('priority');
+  if (error) throw error;
+  return (data as unknown) as SLAPolicy[];
+}
+
+export async function updateSLAPolicy(id: string, updates: Partial<SLAPolicy>) {
+  const { data, error } = await supabase.from('sla_policies').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+// Attachments
+export async function fetchAttachments(ticketId: string) {
+  const { data, error } = await supabase.from('ticket_attachments').select('*').eq('ticket_id', ticketId).order('created_at');
+  if (error) throw error;
+  return (data as unknown) as TicketAttachment[];
+}
+
+export async function addAttachment(attachment: { ticket_id: string; uploaded_by: string; file_name: string; file_url: string; file_size: number | null }) {
+  const { data, error } = await supabase.from('ticket_attachments').insert(attachment).select().single();
+  if (error) throw error;
+  return data;
+}
+
+// User management
+export async function fetchAllUsers() {
+  const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+
+  const { data: roles } = await supabase.from('user_roles').select('*');
+  return (data || []).map(p => ({
+    ...p,
+    role: roles?.find(r => r.user_id === p.id)?.role || 'requester',
+    role_id: roles?.find(r => r.user_id === p.id)?.id,
+  }));
+}
+
+export async function updateUserRole(userId: string, newRole: AppRole) {
+  // Check if user already has a role entry
+  const { data: existing } = await supabase.from('user_roles').select('id').eq('user_id', userId).single();
+  if (existing) {
+    const { error } = await supabase.from('user_roles').update({ role: newRole }).eq('user_id', userId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
+    if (error) throw error;
+  }
+}
+
+// Departments management
+export async function createDepartment(dept: { name: string; description?: string }) {
+  const { data, error } = await supabase.from('departments').insert(dept).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateDepartment(id: string, updates: { name?: string; description?: string }) {
+  const { data, error } = await supabase.from('departments').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDepartment(id: string) {
+  const { error } = await supabase.from('departments').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// Reports
+export async function fetchReportData() {
+  const { data: tickets, error } = await supabase.from('tickets').select('status, priority, created_at, resolved_at, first_response_at, department_id, departments(name)');
+  if (error) throw error;
+
+  const { data: sla } = await supabase.from('sla_policies').select('*');
+
+  const slaMap: Record<string, SLAPolicy> = {};
+  (sla || []).forEach((s: any) => { slaMap[s.priority] = s; });
+
+  let totalResolutionMs = 0;
+  let resolvedCount = 0;
+  let slaBreaches = 0;
+  let slaMet = 0;
+
+  const byStatus: Record<string, number> = {};
+  const byPriority: Record<string, number> = {};
+  const byDepartment: Record<string, number> = {};
+
+  (tickets || []).forEach((t: any) => {
+    byStatus[t.status] = (byStatus[t.status] || 0) + 1;
+    byPriority[t.priority] = (byPriority[t.priority] || 0) + 1;
+    const deptName = t.departments?.name || 'بدون قسم';
+    byDepartment[deptName] = (byDepartment[deptName] || 0) + 1;
+
+    if (t.resolved_at) {
+      const resMs = new Date(t.resolved_at).getTime() - new Date(t.created_at).getTime();
+      totalResolutionMs += resMs;
+      resolvedCount++;
+
+      const policy = slaMap[t.priority];
+      if (policy) {
+        const resHours = resMs / (1000 * 60 * 60);
+        if (resHours > policy.resolution_time_hours) slaBreaches++;
+        else slaMet++;
+      }
+    }
+  });
+
+  return {
+    total: (tickets || []).length,
+    byStatus,
+    byPriority,
+    byDepartment,
+    avgResolutionHours: resolvedCount > 0 ? Math.round(totalResolutionMs / resolvedCount / (1000 * 60 * 60) * 10) / 10 : 0,
+    slaBreaches,
+    slaMet,
+    slaCompliancePercent: (slaMet + slaBreaches) > 0 ? Math.round(slaMet / (slaMet + slaBreaches) * 100) : 100,
+  };
 }
