@@ -14,6 +14,7 @@ import {
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Sidebar,
   SidebarContent,
@@ -109,14 +110,17 @@ export function AppSidebar() {
       <SidebarFooter className="p-3">
         {!collapsed && profile && (
           <div className="rounded-lg bg-sidebar-accent/30 p-3">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground shrink-0">
-                {profile.full_name?.charAt(0) || 'م'}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground shrink-0">
+                  {profile.full_name?.charAt(0) || 'م'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
+                  <p className="text-[10px] text-sidebar-foreground/60">{role ? roleLabels[role] : ''}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
-                <p className="text-[10px] text-sidebar-foreground/60">{role ? roleLabels[role] : ''}</p>
-              </div>
+              <ThemeToggle size="icon" />
             </div>
             <Button
               variant="ghost"
@@ -127,6 +131,11 @@ export function AppSidebar() {
               <LogOut className="h-3 w-3 ml-1" />
               تسجيل خروج
             </Button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="flex flex-col items-center gap-2">
+            <ThemeToggle size="icon" />
           </div>
         )}
       </SidebarFooter>

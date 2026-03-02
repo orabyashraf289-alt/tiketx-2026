@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,10 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +37,23 @@ export default function AuthPage() {
       toast({ title: 'خطأ في تسجيل الدخول', description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setForgotSent(true);
+      toast({ title: 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني' });
+    } catch (err: any) {
+      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -161,7 +183,7 @@ export default function AuthPage() {
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] as const }}
-            className="rounded-2xl bg-white shadow-xl shadow-black/[0.05] border border-black/[0.04] overflow-hidden"
+            className="rounded-2xl bg-white shadow-xl shadow-black/[0.05] border border-black/[0.04] overflow-hidden relative"
           >
             {/* Top accent bar */}
             <div className="h-1.5" style={{ background: 'linear-gradient(90deg, hsl(152,45%,35%), hsl(160,50%,40%), hsl(152,45%,35%))' }} />
@@ -233,6 +255,21 @@ export default function AuthPage() {
                 </motion.div>
 
                 <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.55 }}
+                  className="text-left"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setForgotMode(true)}
+                    className="text-[11px] text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+                  >
+                    نسيت كلمة المرور؟
+                  </button>
+                </motion.div>
+
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
@@ -256,6 +293,70 @@ export default function AuthPage() {
                   </motion.div>
                 </motion.div>
               </form>
+
+              {/* Forgot Password Modal */}
+              {forgotMode && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute inset-0 bg-white rounded-2xl p-7 flex flex-col justify-center z-10"
+                >
+                  {forgotSent ? (
+                    <div className="text-center">
+                      <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+                      <h3 className="text-lg font-bold text-gray-800">تم الإرسال!</h3>
+                      <p className="text-xs text-gray-400 mt-2 mb-6">تحقق من بريدك الإلكتروني لإعادة تعيين كلمة المرور</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => { setForgotMode(false); setForgotSent(false); }}
+                        className="text-xs"
+                      >
+                        العودة لتسجيل الدخول
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-center mb-6">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg"
+                          style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}>
+                          <Mail className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800">نسيت كلمة المرور</h3>
+                        <p className="text-xs text-gray-400 mt-1">سنرسل لك رابط إعادة التعيين</p>
+                      </div>
+                      <form onSubmit={handleForgotPassword} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-gray-500 text-xs">البريد الإلكتروني</Label>
+                          <Input
+                            type="email"
+                            value={forgotEmail}
+                            onChange={e => setForgotEmail(e.target.value)}
+                            placeholder="name@company.com"
+                            required
+                            dir="ltr"
+                            className="h-12 bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-300 rounded-xl text-sm"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          disabled={forgotLoading}
+                          className="w-full h-12 rounded-xl font-bold text-sm text-white shadow-lg gap-2"
+                          style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}
+                        >
+                          {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إرسال رابط الاستعادة'}
+                        </Button>
+                      </form>
+                      <button
+                        onClick={() => setForgotMode(false)}
+                        className="text-xs text-gray-400 hover:text-gray-600 mt-4 mx-auto block"
+                      >
+                        العودة لتسجيل الدخول
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              )}
 
               <motion.p
                 initial={{ opacity: 0 }}
