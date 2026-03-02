@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTickets, fetchTicketStats, fetchDepartments, TicketStatus, TicketPriority } from '@/lib/api';
+import { fetchTickets, fetchTicketStats, fetchDepartments, TicketStatus, TicketPriority, Department } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { StatsCard } from '@/components/StatsCard';
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [deptFilter, setDeptFilter] = useState<string>('all');
 
   const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['tickets'],
@@ -38,10 +39,16 @@ export default function Dashboard() {
     queryFn: fetchTicketStats,
   });
 
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: fetchDepartments,
+  });
+
   const filteredTickets = tickets.filter((t) => {
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
     const matchesSearch = !searchQuery || t.title.includes(searchQuery) || t.ticket_number.toString().includes(searchQuery);
-    return matchesStatus && matchesSearch;
+    const matchesDept = deptFilter === 'all' || t.department_id === deptFilter;
+    return matchesStatus && matchesSearch && matchesDept;
   });
 
   return (
@@ -96,6 +103,21 @@ export default function Dashboard() {
                     </button>
                   ))}
                 </div>
+                {(role === 'agent' || role === 'admin') && departments.length > 0 && (
+                  <div className="flex gap-1 flex-wrap mt-2">
+                    <button
+                      onClick={() => setDeptFilter('all')}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${deptFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                    >الكل</button>
+                    {departments.map(d => (
+                      <button
+                        key={d.id}
+                        onClick={() => setDeptFilter(d.id)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${deptFilter === d.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                      >{d.name}</button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {ticketsLoading ? (

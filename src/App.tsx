@@ -8,6 +8,10 @@ import Index from './pages/Index';
 import AuthPage from './pages/Auth';
 import NewTicket from './pages/NewTicket';
 import TicketDetail from './pages/TicketDetail';
+import AdminDepartments from './pages/AdminDepartments';
+import AdminUsers from './pages/AdminUsers';
+import AdminSLA from './pages/AdminSLA';
+import AdminReports from './pages/AdminReports';
 import NotFound from './pages/NotFound';
 import { Loader2 } from 'lucide-react';
 
@@ -51,6 +55,10 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/tickets/new" element={<ProtectedRoute><NewTicket /></ProtectedRoute>} />
             <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+            <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
