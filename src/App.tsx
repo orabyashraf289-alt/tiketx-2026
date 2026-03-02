@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Index from './pages/Index';
 import AuthPage from './pages/Auth';
 import NewTicket from './pages/NewTicket';
+import TicketsInbox from './pages/TicketsInbox';
 import TicketDetail from './pages/TicketDetail';
 import AdminDepartments from './pages/AdminDepartments';
 import AdminUsers from './pages/AdminUsers';
@@ -54,6 +55,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/tickets" element={<ProtectedRoute><TicketsInbox /></ProtectedRoute>} />
             <Route path="/tickets/new" element={<ProtectedRoute><NewTicket /></ProtectedRoute>} />
             <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
             <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />

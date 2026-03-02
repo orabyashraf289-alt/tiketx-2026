@@ -8,6 +8,7 @@ import {
   Timer,
   BarChart3,
   BookOpen,
+  Inbox,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,6 +31,7 @@ import { roleLabels, AppRole } from '@/lib/api';
 
 const mainItems = [
   { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
+  { title: 'صندوق التذاكر', url: '/tickets', icon: Inbox },
   { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
 ];
 
