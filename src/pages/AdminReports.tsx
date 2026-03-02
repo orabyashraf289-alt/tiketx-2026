@@ -1,12 +1,30 @@
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReportData, statusLabels, priorityLabels } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Button } from '@/components/ui/button';
+import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
-const COLORS = ['hsl(213, 58%, 23%)', 'hsl(28, 80%, 52%)', 'hsl(142, 60%, 40%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)', 'hsl(199, 89%, 48%)', 'hsl(280, 60%, 50%)'];
+const COLORS = ['hsl(252, 56%, 52%)', 'hsl(216, 72%, 52%)', 'hsl(152, 55%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(0, 72%, 51%)', 'hsl(199, 89%, 48%)', 'hsl(280, 60%, 50%)'];
+
+function downloadCSV(data: Record<string, any>[], filename: string) {
+  if (data.length === 0) return;
+  const headers = Object.keys(data[0]);
+  const csv = [
+    '\uFEFF' + headers.join(','),
+    ...data.map(row => headers.map(h => `"${row[h] ?? ''}"`).join(','))
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function AdminReports() {
   const { data: report, isLoading } = useQuery({
@@ -42,51 +60,104 @@ export default function AdminReports() {
     value: val as number,
   }));
 
+  const systemData = Object.entries(report.bySystem || {}).map(([key, val]) => ({
+    name: key,
+    value: val as number,
+  }));
+
+  const serviceData = Object.entries(report.byService || {}).map(([key, val]) => ({
+    name: key,
+    value: val as number,
+  }));
+
+  const slaByServiceData = Object.entries(report.slaByService || {}).map(([key, val]: any) => ({
+    name: key,
+    compliance: val.compliance,
+    breaches: val.breaches,
+  }));
+
+  const handleExportAll = () => {
+    const rows = (report.rawTickets || []).map((t: any) => ({
+      'رقم التذكرة': t.ticket_number,
+      'العنوان': t.title,
+      'الحالة': statusLabels[t.status as keyof typeof statusLabels] || t.status,
+      'الأولوية': priorityLabels[t.priority as keyof typeof priorityLabels] || t.priority,
+      'القسم': t.department || '',
+      'النظام': t.system || '',
+      'الخدمة': t.service || '',
+      'تاريخ الإنشاء': t.created_at,
+      'تاريخ الحل': t.resolved_at || '',
+      'زمن الحل (ساعات)': t.resolutionHours ?? '',
+      'زمن أول رد (ساعات)': t.firstResponseHours ?? '',
+    }));
+    downloadCSV(rows, `tickets-report-${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b bg-card px-4 gap-3 shrink-0">
-            <SidebarTrigger />
-            <h1 className="text-lg font-bold">التقارير</h1>
+          <header className="h-14 flex items-center justify-between border-b bg-card px-4 gap-3 shrink-0">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <h1 className="text-lg font-bold">التقارير</h1>
+            </div>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleExportAll}>
+              <Download className="h-3.5 w-3.5" />
+              تصدير CSV
+            </Button>
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <div className="max-w-5xl mx-auto space-y-6">
+            <div className="max-w-6xl mx-auto space-y-6">
               {/* KPI Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 <Card>
                   <CardContent className="pt-4 text-center">
-                    <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <BarChart3 className="h-5 w-5 mx-auto mb-1.5 text-primary" />
                     <p className="text-2xl font-bold">{report.total}</p>
                     <p className="text-xs text-muted-foreground">إجمالي التذاكر</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-4 text-center">
-                    <Clock className="h-6 w-6 mx-auto mb-2 text-accent" />
-                    <p className="text-2xl font-bold">{report.avgResolutionHours} ساعة</p>
+                    <Clock className="h-5 w-5 mx-auto mb-1.5 text-accent" />
+                    <p className="text-2xl font-bold">{report.avgResolutionHours}h</p>
                     <p className="text-xs text-muted-foreground">متوسط زمن الحل</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-4 text-center">
-                    <ShieldCheck className="h-6 w-6 mx-auto mb-2 text-success" />
+                    <Timer className="h-5 w-5 mx-auto mb-1.5 text-info" />
+                    <p className="text-2xl font-bold">{report.avgFirstResponseHours ?? 0}h</p>
+                    <p className="text-xs text-muted-foreground">متوسط أول رد</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 text-center">
+                    <ShieldCheck className="h-5 w-5 mx-auto mb-1.5 text-success" />
                     <p className="text-2xl font-bold">{report.slaCompliancePercent}%</p>
                     <p className="text-xs text-muted-foreground">الالتزام بالـ SLA</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="pt-4 text-center">
-                    <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-destructive" />
+                    <AlertTriangle className="h-5 w-5 mx-auto mb-1.5 text-destructive" />
                     <p className="text-2xl font-bold">{report.slaBreaches}</p>
                     <p className="text-xs text-muted-foreground">تجاوزات SLA</p>
                   </CardContent>
                 </Card>
+                <Card>
+                  <CardContent className="pt-4 text-center">
+                    <AlertTriangle className="h-5 w-5 mx-auto mb-1.5 text-warning" />
+                    <p className="text-2xl font-bold">{report.overdueCount ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">متأخرة حالياً</p>
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Charts */}
+              {/* Row 1: Status + Priority */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader><CardTitle className="text-sm">التذاكر حسب الحالة</CardTitle></CardHeader>
@@ -96,7 +167,7 @@ export default function AdminReports() {
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Bar dataKey="value" fill="hsl(213, 58%, 23%)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="hsl(252, 56%, 52%)" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -115,8 +186,46 @@ export default function AdminReports() {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
+              </div>
 
-                <Card className="lg:col-span-2">
+              {/* Row 2: System + Service */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {systemData.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm">التذاكر حسب النظام</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={systemData}>
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Bar dataKey="value" fill="hsl(216, 72%, 52%)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {serviceData.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm">التذاكر حسب الخدمة</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={serviceData} layout="vertical">
+                          <XAxis type="number" tick={{ fontSize: 11 }} />
+                          <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                          <Tooltip />
+                          <Bar dataKey="value" fill="hsl(152, 55%, 42%)" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Row 3: Department + SLA by Service */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
                   <CardHeader><CardTitle className="text-sm">التذاكر حسب القسم</CardTitle></CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={250}>
@@ -124,11 +233,27 @@ export default function AdminReports() {
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Bar dataKey="value" fill="hsl(28, 80%, 52%)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
+
+                {slaByServiceData.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm">التزام SLA حسب الخدمة (%)</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={slaByServiceData}>
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
+                          <Tooltip />
+                          <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(152, 55%, 42%)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           </main>

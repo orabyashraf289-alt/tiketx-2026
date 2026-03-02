@@ -125,6 +125,7 @@ export interface Notification {
   title: string;
   message: string;
   is_read: boolean;
+  type: string | null;
   created_at: string;
 }
 
@@ -347,7 +348,7 @@ export async function deleteDepartment(id: string) {
 
 // Reports
 export async function fetchReportData() {
-  const { data: tickets, error } = await supabase.from('tickets').select('status, priority, created_at, resolved_at, first_response_at, department_id, departments(name)');
+  const { data: tickets, error } = await supabase.from('tickets').select('ticket_number, title, status, priority, created_at, resolved_at, first_response_at, department_id, departments(name), service_id, services(name, system_id, systems(name)), sla_resolution_due_at');
   if (error) throw error;
 
   const { data: sla } = await supabase.from('sla_policies').select('*');
@@ -359,29 +360,85 @@ export async function fetchReportData() {
   let resolvedCount = 0;
   let slaBreaches = 0;
   let slaMet = 0;
+  let totalFirstResponseMs = 0;
+  let firstResponseCount = 0;
+  let overdueCount = 0;
 
   const byStatus: Record<string, number> = {};
   const byPriority: Record<string, number> = {};
   const byDepartment: Record<string, number> = {};
+  const bySystem: Record<string, number> = {};
+  const byService: Record<string, number> = {};
+  const slaByService: Record<string, { met: number; breaches: number }> = {};
 
-  (tickets || []).forEach((t: any) => {
+  const now = Date.now();
+
+  const rawTickets = (tickets || []).map((t: any) => {
     byStatus[t.status] = (byStatus[t.status] || 0) + 1;
     byPriority[t.priority] = (byPriority[t.priority] || 0) + 1;
     const deptName = t.departments?.name || 'بدون قسم';
     byDepartment[deptName] = (byDepartment[deptName] || 0) + 1;
 
+    const systemName = t.services?.systems?.name || 'بدون نظام';
+    bySystem[systemName] = (bySystem[systemName] || 0) + 1;
+
+    const serviceName = t.services?.name || 'بدون خدمة';
+    byService[serviceName] = (byService[serviceName] || 0) + 1;
+
+    let resolutionHours: number | null = null;
+    let firstResponseHours: number | null = null;
+
+    if (t.first_response_at) {
+      const frMs = new Date(t.first_response_at).getTime() - new Date(t.created_at).getTime();
+      totalFirstResponseMs += frMs;
+      firstResponseCount++;
+      firstResponseHours = Math.round(frMs / (1000 * 60 * 60) * 10) / 10;
+    }
+
     if (t.resolved_at) {
       const resMs = new Date(t.resolved_at).getTime() - new Date(t.created_at).getTime();
       totalResolutionMs += resMs;
       resolvedCount++;
+      resolutionHours = Math.round(resMs / (1000 * 60 * 60) * 10) / 10;
 
       const policy = slaMap[t.priority];
       if (policy) {
+        if (!slaByService[serviceName]) slaByService[serviceName] = { met: 0, breaches: 0 };
         const resMins = resMs / (1000 * 60);
-        if (resMins > policy.resolution_minutes) slaBreaches++;
-        else slaMet++;
+        if (resMins > policy.resolution_minutes) {
+          slaBreaches++;
+          slaByService[serviceName].breaches++;
+        } else {
+          slaMet++;
+          slaByService[serviceName].met++;
+        }
       }
     }
+
+    // Check overdue
+    if (t.sla_resolution_due_at && !t.resolved_at && new Date(t.sla_resolution_due_at).getTime() < now) {
+      overdueCount++;
+    }
+
+    return {
+      ticket_number: t.ticket_number,
+      title: t.title,
+      status: t.status,
+      priority: t.priority,
+      department: deptName,
+      system: systemName,
+      service: serviceName,
+      created_at: t.created_at,
+      resolved_at: t.resolved_at,
+      resolutionHours,
+      firstResponseHours,
+    };
+  });
+
+  const slaByServiceFormatted: Record<string, { compliance: number; breaches: number }> = {};
+  Object.entries(slaByService).forEach(([k, v]) => {
+    const total = v.met + v.breaches;
+    slaByServiceFormatted[k] = { compliance: total > 0 ? Math.round(v.met / total * 100) : 100, breaches: v.breaches };
   });
 
   return {
@@ -389,10 +446,16 @@ export async function fetchReportData() {
     byStatus,
     byPriority,
     byDepartment,
+    bySystem,
+    byService,
+    slaByService: slaByServiceFormatted,
     avgResolutionHours: resolvedCount > 0 ? Math.round(totalResolutionMs / resolvedCount / (1000 * 60 * 60) * 10) / 10 : 0,
+    avgFirstResponseHours: firstResponseCount > 0 ? Math.round(totalFirstResponseMs / firstResponseCount / (1000 * 60 * 60) * 10) / 10 : 0,
     slaBreaches,
     slaMet,
     slaCompliancePercent: (slaMet + slaBreaches) > 0 ? Math.round(slaMet / (slaMet + slaBreaches) * 100) : 100,
+    overdueCount,
+    rawTickets,
   };
 }
 

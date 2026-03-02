@@ -142,8 +142,13 @@ export default function TicketDetailPage() {
     statusMutation.mutate({ newStatus: 'reopened' });
   };
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/plain', 'text/csv'];
+
   const fileUploadMutation = useMutation({
     mutationFn: async (file: File) => {
+      if (file.size > MAX_FILE_SIZE) throw new Error('حجم الملف يتجاوز 10 ميجابايت');
+      if (!ALLOWED_TYPES.includes(file.type)) throw new Error('نوع الملف غير مسموح به. الأنواع المسموحة: صور، PDF، Word، Excel، نصوص');
       const filePath = `${id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
