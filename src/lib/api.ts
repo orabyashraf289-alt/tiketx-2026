@@ -9,6 +9,7 @@ export type SourceSystem = 'PORTAL' | 'ERP' | 'LMS' | 'CPAY';
 export interface Ticket {
   id: string;
   ticket_number: number;
+  code: string | null;
   title: string;
   description: string;
   status: TicketStatus;
@@ -22,6 +23,9 @@ export interface Ticket {
   closed_at: string | null;
   resolution_summary: string | null;
   first_response_at: string | null;
+  sla_first_response_due_at: string | null;
+  sla_resolution_due_at: string | null;
+  last_activity_at: string;
   source_system: SourceSystem;
   service_id: string | null;
   category_id: string | null;
@@ -71,8 +75,8 @@ export interface ServiceCategory {
 export interface SLAPolicy {
   id: string;
   priority: TicketPriority;
-  response_time_hours: number;
-  resolution_time_hours: number;
+  first_response_minutes: number;
+  resolution_minutes: number;
   created_at: string;
   updated_at: string;
 }
@@ -279,7 +283,7 @@ export async function fetchSLAPolicies() {
   return (data as unknown) as SLAPolicy[];
 }
 
-export async function updateSLAPolicy(id: string, updates: Partial<SLAPolicy>) {
+export async function updateSLAPolicy(id: string, updates: { first_response_minutes?: number; resolution_minutes?: number }) {
   const { data, error } = await supabase.from('sla_policies').update(updates).eq('id', id).select().single();
   if (error) throw error;
   return data;
@@ -373,8 +377,8 @@ export async function fetchReportData() {
 
       const policy = slaMap[t.priority];
       if (policy) {
-        const resHours = resMs / (1000 * 60 * 60);
-        if (resHours > policy.resolution_time_hours) slaBreaches++;
+        const resMins = resMs / (1000 * 60);
+        if (resMins > policy.resolution_minutes) slaBreaches++;
         else slaMet++;
       }
     }

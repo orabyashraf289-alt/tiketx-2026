@@ -136,7 +136,7 @@ export default function AdminServiceCatalog() {
                       <Select value={svcSla} onValueChange={setSvcSla}>
                         <SelectTrigger><SelectValue placeholder="اختر سياسة SLA" /></SelectTrigger>
                         <SelectContent>
-                          {slaPolicies.map(p => <SelectItem key={p.id} value={p.id}>{priorityLabels[p.priority]} ({p.response_time_hours}h / {p.resolution_time_hours}h)</SelectItem>)}
+                          {slaPolicies.map(p => <SelectItem key={p.id} value={p.id}>{priorityLabels[p.priority]} ({p.first_response_minutes}د / {p.resolution_minutes}د)</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
