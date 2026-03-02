@@ -347,8 +347,17 @@ export async function deleteDepartment(id: string) {
 }
 
 // Reports
-export async function fetchReportData() {
-  const { data: tickets, error } = await supabase.from('tickets').select('ticket_number, title, status, priority, created_at, resolved_at, first_response_at, department_id, departments(name), service_id, services(name, system_id, systems(name)), sla_resolution_due_at');
+export async function fetchReportData(dateRange?: { from: string; to: string }) {
+  let query = supabase.from('tickets').select('ticket_number, title, status, priority, created_at, resolved_at, first_response_at, department_id, departments(name), service_id, services(name, system_id, systems(name)), sla_resolution_due_at');
+  
+  if (dateRange?.from) {
+    query = query.gte('created_at', dateRange.from);
+  }
+  if (dateRange?.to) {
+    query = query.lte('created_at', dateRange.to + 'T23:59:59');
+  }
+  
+  const { data: tickets, error } = await query;
   if (error) throw error;
 
   const { data: sla } = await supabase.from('sla_policies').select('*');

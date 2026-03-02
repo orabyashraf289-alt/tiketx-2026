@@ -1,13 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReportData, statusLabels, priorityLabels } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Input } from '@/components/ui/input';
+import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { motion } from 'framer-motion';
+import { NotificationsPopover } from '@/components/NotificationsPopover';
 
 const COLORS = ['hsl(152, 55%, 38%)', 'hsl(160, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(45, 90%, 48%)'];
 
@@ -29,14 +31,36 @@ function downloadCSV(data: Record<string, any>[], filename: string) {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }),
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
+// Quick date range presets
+const datePresets = [
+  { label: 'اليوم', getValue: () => { const d = new Date().toISOString().slice(0, 10); return { from: d, to: d }; } },
+  { label: 'آخر 7 أيام', getValue: () => { const to = new Date(); const from = new Date(to); from.setDate(from.getDate() - 7); return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }; } },
+  { label: 'آخر 30 يوم', getValue: () => { const to = new Date(); const from = new Date(to); from.setDate(from.getDate() - 30); return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }; } },
+  { label: 'آخر 90 يوم', getValue: () => { const to = new Date(); const from = new Date(to); from.setDate(from.getDate() - 90); return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }; } },
+  { label: 'الكل', getValue: () => ({ from: '', to: '' }) },
+];
+
 export default function AdminReports() {
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [activePreset, setActivePreset] = useState('الكل');
+
+  const dateRange = dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined;
+
   const { data: report, isLoading } = useQuery({
-    queryKey: ['reports'],
-    queryFn: fetchReportData,
+    queryKey: ['reports', dateFrom, dateTo],
+    queryFn: () => fetchReportData(dateRange),
   });
+
+  const applyPreset = (preset: typeof datePresets[0]) => {
+    const val = preset.getValue();
+    setDateFrom(val.from);
+    setDateTo(val.to);
+    setActivePreset(preset.label);
+  };
 
   if (isLoading || !report) {
     return (
@@ -82,6 +106,17 @@ export default function AdminReports() {
     breaches: val.breaches,
   }));
 
+  // Trend data - group by day
+  const trendMap: Record<string, { date: string; count: number; resolved: number }> = {};
+  (report.rawTickets || []).forEach((t: any) => {
+    const day = t.created_at?.slice(0, 10);
+    if (!day) return;
+    if (!trendMap[day]) trendMap[day] = { date: day, count: 0, resolved: 0 };
+    trendMap[day].count++;
+    if (t.resolved_at) trendMap[day].resolved++;
+  });
+  const trendData = Object.values(trendMap).sort((a, b) => a.date.localeCompare(b.date));
+
   const handleExportAll = () => {
     const rows = (report.rawTickets || []).map((t: any) => ({
       'رقم التذكرة': t.ticket_number,
@@ -102,12 +137,12 @@ export default function AdminReports() {
   const handlePrint = () => window.print();
 
   const kpis = [
-    { icon: BarChart3, value: report.total, label: 'إجمالي التذاكر', color: 'text-primary' },
-    { icon: Clock, value: `${report.avgResolutionHours}h`, label: 'متوسط زمن الحل', color: 'text-accent' },
-    { icon: Timer, value: `${report.avgFirstResponseHours ?? 0}h`, label: 'متوسط أول رد', color: 'text-info' },
-    { icon: ShieldCheck, value: `${report.slaCompliancePercent}%`, label: 'الالتزام بالـ SLA', color: 'text-success' },
-    { icon: AlertTriangle, value: report.slaBreaches, label: 'تجاوزات SLA', color: 'text-destructive' },
-    { icon: AlertTriangle, value: report.overdueCount ?? 0, label: 'متأخرة حالياً', color: 'text-warning' },
+    { icon: BarChart3, value: report.total, label: 'إجمالي التذاكر', color: 'text-primary', trend: null },
+    { icon: Clock, value: `${report.avgResolutionHours}h`, label: 'متوسط زمن الحل', color: 'text-accent', trend: null },
+    { icon: Timer, value: `${report.avgFirstResponseHours ?? 0}h`, label: 'متوسط أول رد', color: 'text-info', trend: null },
+    { icon: ShieldCheck, value: `${report.slaCompliancePercent}%`, label: 'الالتزام بالـ SLA', color: 'text-success', trend: report.slaCompliancePercent >= 80 ? 'up' : 'down' },
+    { icon: AlertTriangle, value: report.slaBreaches, label: 'تجاوزات SLA', color: 'text-destructive', trend: report.slaBreaches === 0 ? 'up' : 'down' },
+    { icon: AlertTriangle, value: report.overdueCount ?? 0, label: 'متأخرة حالياً', color: 'text-warning', trend: (report.overdueCount ?? 0) === 0 ? 'up' : 'down' },
   ];
 
   return (
@@ -115,39 +150,90 @@ export default function AdminReports() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4 gap-3 shrink-0 no-print">
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 no-print sticky top-0 z-30"
+          >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold">التقارير</h1>
+              <h1 className="text-lg font-bold">التقارير والتحليلات</h1>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <NotificationsPopover />
               <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handlePrint}>
                 <Printer className="h-3.5 w-3.5" />
-                طباعة
+                <span className="hidden sm:inline">طباعة</span>
               </Button>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleExportAll}>
                 <Download className="h-3.5 w-3.5" />
-                تصدير CSV
+                <span className="hidden sm:inline">تصدير CSV</span>
               </Button>
             </div>
-          </header>
+          </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto" id="report-content">
             <div className="max-w-6xl mx-auto space-y-6">
-              {/* Print Header */}
-              <div className="hidden print-only text-center mb-6">
-                <h1 className="text-2xl font-bold">تقرير التذاكر</h1>
-                <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('ar-SA')}</p>
-              </div>
+              {/* Date Filters */}
+              <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
+                <Card>
+                  <CardContent className="pt-5 pb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Filter className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">فلتر الفترة الزمنية</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {datePresets.map(p => (
+                        <Button
+                          key={p.label}
+                          variant={activePreset === p.label ? 'default' : 'outline'}
+                          size="sm"
+                          className="text-xs rounded-full"
+                          onClick={() => applyPreset(p)}
+                        >
+                          {p.label}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="flex gap-3 items-center">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          type="date"
+                          value={dateFrom}
+                          onChange={e => { setDateFrom(e.target.value); setActivePreset(''); }}
+                          className="h-8 text-xs w-36"
+                          dir="ltr"
+                        />
+                      </div>
+                      <span className="text-muted-foreground text-xs">إلى</span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="date"
+                          value={dateTo}
+                          onChange={e => { setDateTo(e.target.value); setActivePreset(''); }}
+                          className="h-8 text-xs w-36"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
               {/* KPI Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 {kpis.map((kpi, i) => (
-                  <motion.div key={i} custom={i} variants={fadeUp} initial="hidden" animate="show">
-                    <Card className="hover:shadow-card-hover transition-shadow duration-300">
-                      <CardContent className="pt-4 text-center">
+                  <motion.div key={i} custom={i + 1} variants={fadeUp} initial="hidden" animate="show">
+                    <Card className="hover:shadow-card-hover transition-shadow duration-300 group">
+                      <CardContent className="pt-4 text-center relative overflow-hidden">
+                        <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-primary/5 blur-xl group-hover:bg-primary/10 transition-colors" />
                         <kpi.icon className={`h-5 w-5 mx-auto mb-1.5 ${kpi.color}`} />
-                        <p className="text-2xl font-bold">{kpi.value}</p>
+                        <div className="flex items-center justify-center gap-1">
+                          <p className="text-2xl font-bold">{kpi.value}</p>
+                          {kpi.trend === 'up' && <TrendingUp className="h-3.5 w-3.5 text-success" />}
+                          {kpi.trend === 'down' && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
+                        </div>
                         <p className="text-xs text-muted-foreground">{kpi.label}</p>
                       </CardContent>
                     </Card>
@@ -155,9 +241,31 @@ export default function AdminReports() {
                 ))}
               </div>
 
+              {/* Trend Line Chart */}
+              {trendData.length > 1 && (
+                <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show">
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm">اتجاه التذاكر بمرور الوقت</CardTitle></CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <LineChart data={trendData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="count" name="تم إنشاؤها" stroke="hsl(152, 55%, 38%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="resolved" name="تم حلها" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
               {/* Row 1: Status + Priority */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show">
+                <motion.div custom={8} variants={fadeUp} initial="hidden" animate="show">
                   <Card>
                     <CardHeader><CardTitle className="text-sm">التذاكر حسب الحالة</CardTitle></CardHeader>
                     <CardContent>
@@ -173,7 +281,7 @@ export default function AdminReports() {
                   </Card>
                 </motion.div>
 
-                <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show">
+                <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show">
                   <Card>
                     <CardHeader><CardTitle className="text-sm">التذاكر حسب الأولوية</CardTitle></CardHeader>
                     <CardContent>
@@ -193,7 +301,7 @@ export default function AdminReports() {
               {/* Row 2: System + Service */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {systemData.length > 0 && (
-                  <motion.div custom={8} variants={fadeUp} initial="hidden" animate="show">
+                  <motion.div custom={10} variants={fadeUp} initial="hidden" animate="show">
                     <Card>
                       <CardHeader><CardTitle className="text-sm">التذاكر حسب النظام</CardTitle></CardHeader>
                       <CardContent>
@@ -211,7 +319,7 @@ export default function AdminReports() {
                 )}
 
                 {serviceData.length > 0 && (
-                  <motion.div custom={9} variants={fadeUp} initial="hidden" animate="show">
+                  <motion.div custom={11} variants={fadeUp} initial="hidden" animate="show">
                     <Card>
                       <CardHeader><CardTitle className="text-sm">التذاكر حسب الخدمة</CardTitle></CardHeader>
                       <CardContent>
@@ -231,7 +339,7 @@ export default function AdminReports() {
 
               {/* Row 3: Department + SLA */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <motion.div custom={10} variants={fadeUp} initial="hidden" animate="show">
+                <motion.div custom={12} variants={fadeUp} initial="hidden" animate="show">
                   <Card>
                     <CardHeader><CardTitle className="text-sm">التذاكر حسب القسم</CardTitle></CardHeader>
                     <CardContent>
@@ -248,7 +356,7 @@ export default function AdminReports() {
                 </motion.div>
 
                 {slaByServiceData.length > 0 && (
-                  <motion.div custom={11} variants={fadeUp} initial="hidden" animate="show">
+                  <motion.div custom={13} variants={fadeUp} initial="hidden" animate="show">
                     <Card>
                       <CardHeader><CardTitle className="text-sm">التزام SLA حسب الخدمة (%)</CardTitle></CardHeader>
                       <CardContent>
@@ -267,7 +375,7 @@ export default function AdminReports() {
               </div>
 
               {/* Printable Table */}
-              <motion.div custom={12} variants={fadeUp} initial="hidden" animate="show">
+              <motion.div custom={14} variants={fadeUp} initial="hidden" animate="show">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm">جدول التذاكر التفصيلي</CardTitle>
