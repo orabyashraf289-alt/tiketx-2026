@@ -229,6 +229,47 @@ export type Database = {
           },
         ]
       }
+      service_fields: {
+        Row: {
+          created_at: string
+          field_name: string
+          field_type: string
+          id: string
+          is_required: boolean
+          options: Json | null
+          service_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          service_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          service_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_fields_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           created_at: string
@@ -413,6 +454,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "ticket_comments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_field_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          id: string
+          ticket_id: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          id?: string
+          ticket_id: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          id?: string
+          ticket_id?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_field_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "service_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_field_values_ticket_id_fkey"
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "tickets"

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, fetchDepartments, TicketStatus, TicketPriority, statusLabels, priorityLabels } from '@/lib/api';
+import { fetchTickets, fetchDepartments, fetchServices, TicketStatus, TicketPriority, statusLabels, priorityLabels } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { TicketListItem } from '@/components/TicketListItem';
@@ -41,6 +41,11 @@ export default function TicketsInbox() {
     queryFn: fetchDepartments,
   });
 
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => fetchServices(),
+  });
+
   // Determine user's department (for agent tab)
   const isAgentOrAdmin = role === 'agent' || role === 'admin';
 
@@ -66,6 +71,18 @@ export default function TicketsInbox() {
       const deptName = t.departments?.name || 'بدون قسم';
       if (!map[deptName]) map[deptName] = [];
       map[deptName].push(t);
+    });
+    return map;
+  }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
+
+  // Group by service
+  const byService = useMemo(() => {
+    const filtered = applyFilters(tickets);
+    const map: Record<string, typeof tickets> = {};
+    filtered.forEach(t => {
+      const svcName = t.services ? `${t.services.systems?.name || ''} → ${t.services.name}` : 'بدون خدمة';
+      if (!map[svcName]) map[svcName] = [];
+      map[svcName].push(t);
     });
     return map;
   }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
@@ -183,6 +200,11 @@ export default function TicketsInbox() {
                       حسب القسم
                     </TabsTrigger>
                   )}
+                  {isAgentOrAdmin && (
+                    <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
+                      حسب الخدمة
+                    </TabsTrigger>
+                  )}
                   {role === 'admin' && (
                     <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
                       الكل
@@ -223,6 +245,33 @@ export default function TicketsInbox() {
                               <span className="text-xs text-muted-foreground mr-2">({deptTickets.length})</span>
                             </div>
                             {deptTickets.map((ticket, i) => (
+                              <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                )}
+
+                {isAgentOrAdmin && (
+                  <TabsContent value="service" className="m-0 flex-1">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                    ) : Object.keys(byService).length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                        <Inbox className="h-12 w-12 mb-3 opacity-30" />
+                        <p className="font-medium">لا توجد تذاكر</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {Object.entries(byService).map(([svc, svcTickets]) => (
+                          <div key={svc}>
+                            <div className="px-4 py-2 bg-muted/50 sticky top-0">
+                              <span className="text-sm font-semibold">{svc}</span>
+                              <span className="text-xs text-muted-foreground mr-2">({svcTickets.length})</span>
+                            </div>
+                            {svcTickets.map((ticket, i) => (
                               <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                             ))}
                           </div>

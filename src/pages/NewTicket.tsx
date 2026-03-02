@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { fetchDepartments, createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, TicketPriority, SourceSystem } from '@/lib/api';
+import { fetchDepartments, createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, TicketPriority, SourceSystem } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -35,6 +35,7 @@ export default function NewTicket() {
   const [serviceId, setServiceId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: departments = [] } = useQuery({
@@ -59,6 +60,12 @@ export default function NewTicket() {
     enabled: !!serviceId,
   });
 
+  const { data: serviceFields = [] } = useQuery({
+    queryKey: ['service-fields', serviceId],
+    queryFn: () => fetchServiceFields(serviceId || undefined),
+    enabled: !!serviceId,
+  });
+
   const filteredServices = systemId ? services.filter(s => s.system_id === systemId) : services;
 
   const mutation = useMutation({
@@ -72,6 +79,15 @@ export default function NewTicket() {
         ...(serviceId ? { service_id: serviceId } : {}),
         ...(categoryId ? { category_id: categoryId } : {}),
       } as any);
+
+      // Save custom field values
+      const fieldEntries = Object.entries(customFieldValues).filter(([_, v]) => v.trim());
+      if (fieldEntries.length > 0) {
+        await upsertTicketFieldValues(
+          fieldEntries.map(([fieldId, value]) => ({ ticket_id: ticket.id, field_id: fieldId, value }))
+        );
+      }
+
       // Upload files
       for (const file of files) {
         const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
@@ -102,6 +118,13 @@ export default function NewTicket() {
     if (!title.trim() || !description.trim() || !departmentId) {
       toast({ title: 'يرجى ملء جميع الحقول المطلوبة', variant: 'destructive' });
       return;
+    }
+    // Validate required custom fields
+    for (const field of serviceFields) {
+      if (field.is_required && !customFieldValues[field.id]?.trim()) {
+        toast({ title: `الحقل "${field.field_name}" مطلوب`, variant: 'destructive' });
+        return;
+      }
     }
     mutation.mutate();
   };
@@ -194,6 +217,57 @@ export default function NewTicket() {
                       </Select>
                     </div>
                   </div>
+
+                  {/* Dynamic service fields */}
+                  {serviceFields.length > 0 && (
+                    <div className="space-y-4 p-4 rounded-lg border border-dashed bg-muted/30">
+                      <p className="text-sm font-semibold text-muted-foreground">حقول إضافية للخدمة</p>
+                      {serviceFields.map(field => (
+                        <div key={field.id} className="space-y-2">
+                          <Label>{field.field_name} {field.is_required && '*'}</Label>
+                          {field.field_type === 'text' && (
+                            <Input
+                              value={customFieldValues[field.id] || ''}
+                              onChange={e => setCustomFieldValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+                              placeholder={field.field_name}
+                              required={field.is_required}
+                            />
+                          )}
+                          {field.field_type === 'number' && (
+                            <Input
+                              type="number"
+                              value={customFieldValues[field.id] || ''}
+                              onChange={e => setCustomFieldValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+                              placeholder={field.field_name}
+                              required={field.is_required}
+                            />
+                          )}
+                          {field.field_type === 'textarea' && (
+                            <Textarea
+                              value={customFieldValues[field.id] || ''}
+                              onChange={e => setCustomFieldValues(prev => ({ ...prev, [field.id]: e.target.value }))}
+                              placeholder={field.field_name}
+                              required={field.is_required}
+                              className="min-h-[80px]"
+                            />
+                          )}
+                          {field.field_type === 'select' && (
+                            <Select
+                              value={customFieldValues[field.id] || ''}
+                              onValueChange={v => setCustomFieldValues(prev => ({ ...prev, [field.id]: v }))}
+                            >
+                              <SelectTrigger><SelectValue placeholder={`اختر ${field.field_name}`} /></SelectTrigger>
+                              <SelectContent>
+                                {(field.options || []).map((opt: string) => (
+                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* File attachments */}
                   <div className="space-y-2">

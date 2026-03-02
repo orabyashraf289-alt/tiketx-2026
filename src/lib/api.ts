@@ -458,3 +458,63 @@ export async function deleteServiceCategory(id: string) {
   const { error } = await supabase.from('service_categories').delete().eq('id', id);
   if (error) throw error;
 }
+
+// Service Fields (Form Builder)
+export interface ServiceField {
+  id: string;
+  service_id: string;
+  field_name: string;
+  field_type: 'text' | 'number' | 'select' | 'textarea';
+  options: string[];
+  is_required: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface TicketFieldValue {
+  id: string;
+  ticket_id: string;
+  field_id: string;
+  value: string | null;
+  created_at: string;
+}
+
+export async function fetchServiceFields(serviceId?: string) {
+  let query = supabase.from('service_fields').select('*').order('sort_order');
+  if (serviceId) query = query.eq('service_id', serviceId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data as unknown) as ServiceField[];
+}
+
+export async function createServiceField(field: { service_id: string; field_name: string; field_type: string; options?: string[]; is_required?: boolean; sort_order?: number }) {
+  const { data, error } = await supabase.from('service_fields').insert({
+    ...field,
+    options: field.options || [],
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateServiceField(id: string, updates: Partial<ServiceField>) {
+  const { data, error } = await supabase.from('service_fields').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteServiceField(id: string) {
+  const { error } = await supabase.from('service_fields').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function fetchTicketFieldValues(ticketId: string) {
+  const { data, error } = await supabase.from('ticket_field_values').select('*').eq('ticket_id', ticketId);
+  if (error) throw error;
+  return (data as unknown) as TicketFieldValue[];
+}
+
+export async function upsertTicketFieldValues(values: { ticket_id: string; field_id: string; value: string }[]) {
+  if (values.length === 0) return;
+  const { error } = await supabase.from('ticket_field_values').upsert(values, { onConflict: 'ticket_id,field_id' });
+  if (error) throw error;
+}
