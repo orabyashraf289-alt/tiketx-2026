@@ -1,6 +1,6 @@
 import {
   LayoutDashboard,
-  Headphones,
+  Inbox,
   Plus,
   LogOut,
   Building2,
@@ -8,7 +8,6 @@ import {
   Timer,
   BarChart3,
   BookOpen,
-  Inbox,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +27,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { roleLabels, AppRole } from '@/lib/api';
+import logoImg from '@/assets/logo.png';
 
 const mainItems = [
   { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
@@ -53,13 +53,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
-            <Headphones className="h-5 w-5 text-accent-foreground" />
-          </div>
+          <img src={logoImg} alt="TicketFlow" className="h-9 w-9 rounded-lg shrink-0 object-contain" />
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-accent-foreground">مكتب المساعدة</h2>
-              <p className="text-xs text-sidebar-foreground/60">إدارة التذاكر</p>
+              <h2 className="text-sm font-bold text-sidebar-accent-foreground">TicketFlow</h2>
+              <p className="text-xs text-sidebar-foreground/60">نظام إدارة التذاكر</p>
             </div>
           )}
         </div>
