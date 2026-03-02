@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType, statusLabels, priorityLabels } from '@/lib/api';
+import { ApprovalTimeline } from '@/components/ApprovalTimeline';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -489,6 +490,9 @@ export default function TicketDetailPage() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Approval Timeline */}
+                <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
 
                 {/* Actions for agents/admins */}
                 {isAgentOrAdmin && (
