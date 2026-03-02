@@ -129,8 +129,8 @@ export default function NewTicket() {
         title: title.trim(),
         description: description.trim(),
         priority,
-        department_id: departmentId || '',
         requester_id: user!.id,
+        ...(departmentId ? { department_id: departmentId } : {}),
         ...(serviceId ? { service_id: serviceId } : {}),
         ...(categoryId ? { category_id: categoryId } : {}),
       } as any);
