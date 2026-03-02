@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      approval_stages: {
+        Row: {
+          approver_id: string | null
+          approver_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+          department_id: string
+          id: string
+          stage_name: string
+          stage_order: number
+          stage_type: Database["public"]["Enums"]["approval_stage_type"]
+        }
+        Insert: {
+          approver_id?: string | null
+          approver_role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          department_id: string
+          id?: string
+          stage_name: string
+          stage_order?: number
+          stage_type?: Database["public"]["Enums"]["approval_stage_type"]
+        }
+        Update: {
+          approver_id?: string | null
+          approver_role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          department_id?: string
+          id?: string
+          stage_name?: string
+          stage_order?: number
+          stage_type?: Database["public"]["Enums"]["approval_stage_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_stages_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -382,6 +423,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_approvals: {
+        Row: {
+          approver_id: string | null
+          created_at: string
+          decided_at: string | null
+          id: string
+          notes: string | null
+          stage_id: string
+          status: Database["public"]["Enums"]["approval_status"]
+          ticket_id: string
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          notes?: string | null
+          stage_id: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          ticket_id: string
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          notes?: string | null
+          stage_id?: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_approvals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "approval_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_approvals_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_attachments: {
         Row: {
           created_at: string
@@ -640,6 +729,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "agent" | "requester"
+      approval_stage_type: "sequential" | "parallel"
+      approval_status: "pending" | "approved" | "rejected"
       note_type: "public" | "private"
       source_system: "PORTAL" | "ERP" | "LMS" | "CPAY"
       ticket_event_type:
@@ -790,6 +881,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "agent", "requester"],
+      approval_stage_type: ["sequential", "parallel"],
+      approval_status: ["pending", "approved", "rejected"],
       note_type: ["public", "private"],
       source_system: ["PORTAL", "ERP", "LMS", "CPAY"],
       ticket_event_type: [
