@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Headphones, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import logoImg from '@/assets/logo.png';
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
@@ -52,10 +53,8 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl gradient-accent mb-4">
-            <Headphones className="h-7 w-7 text-accent-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold">مكتب المساعدة</h1>
+          <img src={logoImg} alt="TicketFlow" className="h-16 w-16 mx-auto mb-4 rounded-2xl" />
+          <h1 className="text-2xl font-bold">TicketFlow</h1>
           <p className="text-muted-foreground mt-1">نظام إدارة التذاكر والدعم الفني</p>
         </div>
 
