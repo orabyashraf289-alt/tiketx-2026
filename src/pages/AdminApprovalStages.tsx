@@ -13,10 +13,21 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader2, ShieldCheck, ArrowDown, GitBranch } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 const stageTypeLabels: Record<ApprovalStageType, string> = {
   sequential: 'تسلسلي',
   parallel: 'متوازي',
+};
+
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 export default function AdminApprovalStages() {
@@ -26,7 +37,6 @@ export default function AdminApprovalStages() {
   const [editId, setEditId] = useState<string | null>(null);
   const [filterDept, setFilterDept] = useState<string>('all');
 
-  // Form state
   const [departmentId, setDepartmentId] = useState('');
   const [stageName, setStageName] = useState('');
   const [stageOrder, setStageOrder] = useState(1);
@@ -115,14 +125,19 @@ export default function AdminApprovalStages() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4 shrink-0">
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 shrink-0 sticky top-0 z-30"
+          >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold">مراحل الاعتماد</h1>
+              <h1 className="text-lg font-bold text-foreground">مراحل الاعتماد</h1>
             </div>
             <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
               <DialogTrigger asChild>
-                <Button className="gradient-accent text-accent-foreground gap-2 text-sm">
+                <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl">
                   <Plus className="h-4 w-4" /> مرحلة جديدة
                 </Button>
               </DialogTrigger>
@@ -134,7 +149,7 @@ export default function AdminApprovalStages() {
                   <div className="space-y-2">
                     <Label>القسم *</Label>
                     <Select value={departmentId} onValueChange={setDepartmentId}>
-                      <SelectTrigger><SelectValue placeholder="اختر القسم" /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر القسم" /></SelectTrigger>
                       <SelectContent>
                         {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                       </SelectContent>
@@ -142,17 +157,17 @@ export default function AdminApprovalStages() {
                   </div>
                   <div className="space-y-2">
                     <Label>اسم المرحلة *</Label>
-                    <Input value={stageName} onChange={e => setStageName(e.target.value)} placeholder="مثال: موافقة المدير المباشر" />
+                    <Input value={stageName} onChange={e => setStageName(e.target.value)} placeholder="مثال: موافقة المدير المباشر" className="rounded-xl" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label>الترتيب</Label>
-                      <Input type="number" min={1} value={stageOrder} onChange={e => setStageOrder(Number(e.target.value))} />
+                      <Input type="number" min={1} value={stageOrder} onChange={e => setStageOrder(Number(e.target.value))} className="rounded-xl" />
                     </div>
                     <div className="space-y-2">
                       <Label>نوع المرحلة</Label>
                       <Select value={stageType} onValueChange={v => setStageType(v as ApprovalStageType)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="sequential">تسلسلي</SelectItem>
                           <SelectItem value="parallel">متوازي</SelectItem>
@@ -163,7 +178,7 @@ export default function AdminApprovalStages() {
                   <div className="space-y-2">
                     <Label>دور المعتمد</Label>
                     <Select value={approverRole} onValueChange={v => setApproverRole(v as AppRole)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="agent">{roleLabels.agent}</SelectItem>
                         <SelectItem value="admin">{roleLabels.admin}</SelectItem>
@@ -171,7 +186,7 @@ export default function AdminApprovalStages() {
                     </Select>
                   </div>
                   <Button
-                    className="w-full gradient-accent text-accent-foreground"
+                    className="w-full gradient-accent text-accent-foreground rounded-xl"
                     disabled={!stageName.trim() || !departmentId || createMut.isPending || updateMut.isPending}
                     onClick={() => editId ? updateMut.mutate() : createMut.mutate()}
                   >
@@ -181,76 +196,87 @@ export default function AdminApprovalStages() {
                 </div>
               </DialogContent>
             </Dialog>
-          </header>
+          </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
-            {/* Filter */}
-            <div className="max-w-3xl mx-auto mb-6">
-              <Select value={filterDept} onValueChange={setFilterDept}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="جميع الأقسام" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الأقسام</SelectItem>
-                  {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-3xl mx-auto">
+              <motion.div variants={fadeUp} className="mb-6">
+                <Select value={filterDept} onValueChange={setFilterDept}>
+                  <SelectTrigger className="w-48 rounded-xl">
+                    <SelectValue placeholder="جميع الأقسام" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع الأقسام</SelectItem>
+                    {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </motion.div>
 
-            {isLoading ? (
-              <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-            ) : Object.keys(grouped).length === 0 ? (
-              <div className="flex flex-col items-center py-20 text-muted-foreground">
-                <ShieldCheck className="h-12 w-12 mb-3 opacity-30" />
-                <p>لا توجد مراحل اعتماد بعد</p>
-              </div>
-            ) : (
-              <div className="max-w-3xl mx-auto space-y-6">
-                {Object.entries(grouped).map(([deptName, deptStages]) => (
-                  <Card key={deptName}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">{deptName}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {deptStages.sort((a, b) => a.stage_order - b.stage_order).map((stage, i) => (
-                        <div key={stage.id}>
-                          <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
-                            <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-full bg-accent/15 flex items-center justify-center text-xs font-bold text-accent">
-                                {stage.stage_order}
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">{stage.stage_name}</p>
-                                <div className="flex gap-2 mt-0.5">
-                                  <Badge variant="outline" className="text-[10px]">
-                                    {stage.stage_type === 'parallel' ? <GitBranch className="h-2.5 w-2.5 ml-1" /> : <ArrowDown className="h-2.5 w-2.5 ml-1" />}
-                                    {stageTypeLabels[stage.stage_type]}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-[10px]">{roleLabels[stage.approver_role]}</Badge>
+              {isLoading ? (
+                <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              ) : Object.keys(grouped).length === 0 ? (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
+                  <ShieldCheck className="h-12 w-12 mb-3 opacity-30" />
+                  <p>لا توجد مراحل اعتماد بعد</p>
+                </motion.div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.entries(grouped).map(([deptName, deptStages]) => (
+                    <motion.div key={deptName} variants={fadeUp}>
+                      <Card className="rounded-2xl border-border/50 shadow-card">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                              <ShieldCheck className="h-4 w-4 text-primary" />
+                            </div>
+                            {deptName}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {deptStages.sort((a, b) => a.stage_order - b.stage_order).map((stage, i) => (
+                            <div key={stage.id}>
+                              <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
+                                    {stage.stage_order}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium">{stage.stage_name}</p>
+                                    <div className="flex gap-2 mt-0.5">
+                                      <Badge variant="outline" className="text-[10px] rounded-lg">
+                                        {stage.stage_type === 'parallel' ? <GitBranch className="h-2.5 w-2.5 ml-1" /> : <ArrowDown className="h-2.5 w-2.5 ml-1" />}
+                                        {stageTypeLabels[stage.stage_type]}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-[10px] rounded-lg">{roleLabels[stage.approver_role]}</Badge>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => startEdit(stage)}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => deleteMut.mutate(stage.id)} disabled={deleteMut.isPending}>
+                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                  </Button>
+                                </div>
+                              </motion.div>
+                              {i < deptStages.length - 1 && (
+                                <div className="flex justify-center py-1">
+                                  <ArrowDown className="h-3 w-3 text-muted-foreground/40" />
+                                </div>
+                              )}
                             </div>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(stage)}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteMut.mutate(stage.id)} disabled={deleteMut.isPending}>
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                              </Button>
-                            </div>
-                          </div>
-                          {i < deptStages.length - 1 && (
-                            <div className="flex justify-center py-1">
-                              <ArrowDown className="h-3 w-3 text-muted-foreground/40" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                          ))}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </main>
         </div>
       </div>

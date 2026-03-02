@@ -8,7 +8,7 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Loader2, Filter, CalendarDays } from 'lucide-react';
+import { Search, Inbox, Loader2, Filter, CalendarDays, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,30 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
+
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+};
+
+const staggerList = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.04 } },
+};
+
+const listItem = {
+  hidden: { opacity: 0, x: 15 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
+};
 
 export default function TicketsInbox() {
   const { user, role } = useAuth();
@@ -46,7 +67,6 @@ export default function TicketsInbox() {
     queryFn: () => fetchServices(),
   });
 
-  // Determine user's department (for agent tab)
   const isAgentOrAdmin = role === 'agent' || role === 'admin';
 
   const applyFilters = (list: typeof tickets) => {
@@ -63,7 +83,6 @@ export default function TicketsInbox() {
   const unassigned = useMemo(() => applyFilters(tickets.filter(t => !t.assigned_agent_id)), [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
   const assignedToMe = useMemo(() => applyFilters(tickets.filter(t => t.assigned_agent_id === user?.id)), [tickets, user, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
   
-  // Group by department
   const byDepartment = useMemo(() => {
     const filtered = applyFilters(tickets);
     const map: Record<string, typeof tickets> = {};
@@ -75,7 +94,6 @@ export default function TicketsInbox() {
     return map;
   }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
 
-  // Group by service
   const byService = useMemo(() => {
     const filtered = applyFilters(tickets);
     const map: Record<string, typeof tickets> = {};
@@ -91,35 +109,45 @@ export default function TicketsInbox() {
 
   const renderList = (list: typeof tickets) => {
     if (isLoading) {
-      return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+      return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </motion.div>
+      );
     }
     if (list.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center justify-center py-20 text-muted-foreground"
+        >
           <Inbox className="h-12 w-12 mb-3 opacity-30" />
           <p className="font-medium">لا توجد تذاكر</p>
-        </div>
+        </motion.div>
       );
     }
     return (
-      <div className="divide-y">
+      <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
         {list.map((ticket, i) => (
-          <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+          <motion.div key={ticket.id} variants={listItem}>
+            <TicketListItem ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     );
   };
 
   const FiltersBar = () => (
-    <div className="p-4 border-b space-y-3">
+    <motion.div variants={fadeUp} className="p-4 border-b border-border/50 space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="بحث بالعنوان أو رقم التذكرة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9" />
+          <Input placeholder="بحث بالعنوان أو رقم التذكرة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36 rounded-xl">
             <SelectValue placeholder="الحالة" />
           </SelectTrigger>
           <SelectContent>
@@ -129,7 +157,7 @@ export default function TicketsInbox() {
         </Select>
 
         <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-32 rounded-xl">
             <SelectValue placeholder="الأولوية" />
           </SelectTrigger>
           <SelectContent>
@@ -140,7 +168,7 @@ export default function TicketsInbox() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl">
               <CalendarDays className="h-3.5 w-3.5" />
               {dateFrom ? format(dateFrom, 'dd/MM', { locale: ar }) : 'من'}
               {' - '}
@@ -162,10 +190,9 @@ export default function TicketsInbox() {
           </PopoverContent>
         </Popover>
       </div>
-    </div>
+    </motion.div>
   );
 
-  // Determine default tab
   const defaultTab = isAgentOrAdmin ? 'unassigned' : 'my';
 
   return (
@@ -173,121 +200,138 @@ export default function TicketsInbox() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4 gap-4 shrink-0">
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-4 shrink-0 sticky top-0 z-30"
+          >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold hidden sm:block">صندوق التذاكر</h1>
+              <h1 className="text-lg font-bold hidden sm:block text-foreground">صندوق التذاكر</h1>
             </div>
-            <NotificationsPopover />
-          </header>
+            <div className="flex items-center gap-2">
+              <NotificationsPopover />
+              <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">تذكرة جديدة</span>
+              </Button>
+            </div>
+          </motion.header>
 
           <main className="flex-1 overflow-auto">
-            <Tabs defaultValue={defaultTab} className="flex flex-col h-full" dir="rtl">
-              <div className="border-b bg-card px-4">
-                <TabsList className="bg-transparent h-auto p-0 gap-0">
-                  {isAgentOrAdmin && (
-                    <TabsTrigger value="unassigned" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
-                      غير معيّنة
-                      <span className="mr-1.5 bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded-full">{unassigned.length}</span>
+            <motion.div
+              variants={pageVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Tabs defaultValue={defaultTab} className="flex flex-col h-full" dir="rtl">
+                <motion.div variants={fadeUp} className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-4">
+                  <TabsList className="bg-transparent h-auto p-0 gap-0">
+                    {isAgentOrAdmin && (
+                      <TabsTrigger value="unassigned" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
+                        غير معيّنة
+                        <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{unassigned.length}</span>
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger value="my" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
+                      {isAgentOrAdmin ? 'معيّنة لي' : 'تذاكري'}
+                      <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{assignedToMe.length}</span>
                     </TabsTrigger>
-                  )}
-                  <TabsTrigger value="my" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
-                    {isAgentOrAdmin ? 'معيّنة لي' : 'تذاكري'}
-                    <span className="mr-1.5 bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded-full">{assignedToMe.length}</span>
-                  </TabsTrigger>
+                    {isAgentOrAdmin && (
+                      <TabsTrigger value="department" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
+                        حسب القسم
+                      </TabsTrigger>
+                    )}
+                    {isAgentOrAdmin && (
+                      <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
+                        حسب الخدمة
+                      </TabsTrigger>
+                    )}
+                    {role === 'admin' && (
+                      <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
+                        الكل
+                        <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{allFiltered.length}</span>
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                </motion.div>
+
+                <motion.div variants={fadeUp} className="rounded-2xl border border-border/50 bg-card m-4 md:m-6 flex-1 flex flex-col overflow-hidden shadow-card">
+                  <FiltersBar />
+
                   {isAgentOrAdmin && (
-                    <TabsTrigger value="department" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
-                      حسب القسم
-                    </TabsTrigger>
+                    <TabsContent value="unassigned" className="m-0 flex-1">
+                      {renderList(unassigned)}
+                    </TabsContent>
                   )}
+
+                  <TabsContent value="my" className="m-0 flex-1">
+                    {renderList(assignedToMe)}
+                  </TabsContent>
+
                   {isAgentOrAdmin && (
-                    <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
-                      حسب الخدمة
-                    </TabsTrigger>
+                    <TabsContent value="department" className="m-0 flex-1">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                      ) : Object.keys(byDepartment).length === 0 ? (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                          <Inbox className="h-12 w-12 mb-3 opacity-30" />
+                          <p className="font-medium">لا توجد تذاكر</p>
+                        </motion.div>
+                      ) : (
+                        <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
+                          {Object.entries(byDepartment).map(([dept, deptTickets]) => (
+                            <motion.div key={dept} variants={listItem}>
+                              <div className="px-4 py-2.5 bg-muted/30 sticky top-0 backdrop-blur-sm border-b border-border/30">
+                                <span className="text-sm font-semibold text-foreground">{dept}</span>
+                                <span className="text-xs text-muted-foreground mr-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">({deptTickets.length})</span>
+                              </div>
+                              {deptTickets.map((ticket, i) => (
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                              ))}
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </TabsContent>
                   )}
+
+                  {isAgentOrAdmin && (
+                    <TabsContent value="service" className="m-0 flex-1">
+                      {isLoading ? (
+                        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                      ) : Object.keys(byService).length === 0 ? (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                          <Inbox className="h-12 w-12 mb-3 opacity-30" />
+                          <p className="font-medium">لا توجد تذاكر</p>
+                        </motion.div>
+                      ) : (
+                        <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
+                          {Object.entries(byService).map(([svc, svcTickets]) => (
+                            <motion.div key={svc} variants={listItem}>
+                              <div className="px-4 py-2.5 bg-muted/30 sticky top-0 backdrop-blur-sm border-b border-border/30">
+                                <span className="text-sm font-semibold text-foreground">{svc}</span>
+                                <span className="text-xs text-muted-foreground mr-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">({svcTickets.length})</span>
+                              </div>
+                              {svcTickets.map((ticket, i) => (
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                              ))}
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </TabsContent>
+                  )}
+
                   {role === 'admin' && (
-                    <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm">
-                      الكل
-                      <span className="mr-1.5 bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded-full">{allFiltered.length}</span>
-                    </TabsTrigger>
+                    <TabsContent value="all" className="m-0 flex-1">
+                      {renderList(allFiltered)}
+                    </TabsContent>
                   )}
-                </TabsList>
-              </div>
-
-              <div className="rounded-lg border bg-card m-4 md:m-6 flex-1 flex flex-col">
-                <FiltersBar />
-
-                {isAgentOrAdmin && (
-                  <TabsContent value="unassigned" className="m-0 flex-1">
-                    {renderList(unassigned)}
-                  </TabsContent>
-                )}
-
-                <TabsContent value="my" className="m-0 flex-1">
-                  {renderList(assignedToMe)}
-                </TabsContent>
-
-                {isAgentOrAdmin && (
-                  <TabsContent value="department" className="m-0 flex-1">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-                    ) : Object.keys(byDepartment).length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                        <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                        <p className="font-medium">لا توجد تذاكر</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {Object.entries(byDepartment).map(([dept, deptTickets]) => (
-                          <div key={dept}>
-                            <div className="px-4 py-2 bg-muted/50 sticky top-0">
-                              <span className="text-sm font-semibold">{dept}</span>
-                              <span className="text-xs text-muted-foreground mr-2">({deptTickets.length})</span>
-                            </div>
-                            {deptTickets.map((ticket, i) => (
-                              <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-                )}
-
-                {isAgentOrAdmin && (
-                  <TabsContent value="service" className="m-0 flex-1">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-                    ) : Object.keys(byService).length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                        <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                        <p className="font-medium">لا توجد تذاكر</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {Object.entries(byService).map(([svc, svcTickets]) => (
-                          <div key={svc}>
-                            <div className="px-4 py-2 bg-muted/50 sticky top-0">
-                              <span className="text-sm font-semibold">{svc}</span>
-                              <span className="text-xs text-muted-foreground mr-2">({svcTickets.length})</span>
-                            </div>
-                            {svcTickets.map((ticket, i) => (
-                              <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-                )}
-
-                {role === 'admin' && (
-                  <TabsContent value="all" className="m-0 flex-1">
-                    {renderList(allFiltered)}
-                  </TabsContent>
-                )}
-              </div>
-            </Tabs>
+                </motion.div>
+              </Tabs>
+            </motion.div>
           </main>
         </div>
       </div>
