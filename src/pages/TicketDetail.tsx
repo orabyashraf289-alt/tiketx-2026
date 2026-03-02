@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, TicketStatus, NoteType, statusLabels } from '@/lib/api';
+import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType, statusLabels, priorityLabels } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
+const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -65,6 +66,24 @@ export default function TicketDetailPage() {
     queryKey: ['attachments', id],
     queryFn: () => fetchAttachments(id!),
     enabled: !!id,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => fetchServices(),
+    enabled: role === 'agent' || role === 'admin',
+  });
+
+  const { data: fieldValues = [] } = useQuery({
+    queryKey: ['ticket-field-values', id],
+    queryFn: () => fetchTicketFieldValues(id!),
+    enabled: !!id,
+  });
+
+  const { data: serviceFields = [] } = useQuery({
+    queryKey: ['service-fields', ticket?.service_id],
+    queryFn: () => fetchServiceFields(ticket?.service_id || undefined),
+    enabled: !!ticket?.service_id,
   });
 
   const commentMutation = useMutation({
@@ -161,6 +180,44 @@ export default function TicketDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['ticket', id] });
       queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
       toast({ title: 'تم تعيين المعالج' });
+    },
+  });
+
+  const priorityMutation = useMutation({
+    mutationFn: async (newPriority: TicketPriority) => {
+      const oldPriority = ticket!.priority;
+      await updateTicket(id!, { priority: newPriority } as any);
+      await addAuditLog({
+        ticket_id: id!,
+        user_id: user!.id,
+        action: 'تغيير الأولوية',
+        old_value: priorityLabels[oldPriority],
+        new_value: priorityLabels[newPriority],
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({ title: 'تم تحديث الأولوية' });
+    },
+  });
+
+  const serviceMutation = useMutation({
+    mutationFn: async (serviceId: string) => {
+      const svc = services.find(s => s.id === serviceId);
+      await updateTicket(id!, { service_id: serviceId } as any);
+      await addAuditLog({
+        ticket_id: id!,
+        user_id: user!.id,
+        action: 'تغيير الخدمة',
+        new_value: svc?.name || serviceId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
+      toast({ title: 'تم تحديث الخدمة' });
     },
   });
 
@@ -430,36 +487,78 @@ export default function TicketDetailPage() {
 
                 {/* Actions for agents/admins */}
                 {isAgentOrAdmin && (
-                  <Card className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-                    <CardHeader><CardTitle className="text-sm">إجراءات</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs">تغيير الحالة</Label>
-                        <Select value={ticket.status} onValueChange={(v) => handleStatusChange(v as TicketStatus)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {allStatuses.map(s => (
-                              <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <>
+                    <Card className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+                      <CardHeader><CardTitle className="text-sm">إجراءات</CardTitle></CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">تغيير الحالة</Label>
+                          <Select value={ticket.status} onValueChange={(v) => handleStatusChange(v as TicketStatus)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {allStatuses.map(s => (
+                                <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">تعيين معالج</Label>
+                          <Select value={ticket.assigned_agent_id || ''} onValueChange={v => assignMutation.mutate(v)}>
+                            <SelectTrigger><SelectValue placeholder="اختر معالج" /></SelectTrigger>
+                            <SelectContent>
+                              {agents.map((a: any) => (
+                                <SelectItem key={a.user_id} value={a.user_id}>
+                                  {a.profiles?.full_name || a.user_id}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">تغيير الأولوية</Label>
+                          <Select value={ticket.priority} onValueChange={(v) => priorityMutation.mutate(v as TicketPriority)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {allPriorities.map(p => (
+                                <SelectItem key={p} value={p}>{priorityLabels[p]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">تغيير الخدمة</Label>
+                          <Select value={ticket.service_id || ''} onValueChange={v => serviceMutation.mutate(v)}>
+                            <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
+                            <SelectContent>
+                              {services.map(s => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.systems?.name} → {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                      <div className="space-y-2">
-                        <Label className="text-xs">تعيين معالج</Label>
-                        <Select value={ticket.assigned_agent_id || ''} onValueChange={v => assignMutation.mutate(v)}>
-                          <SelectTrigger><SelectValue placeholder="اختر معالج" /></SelectTrigger>
-                          <SelectContent>
-                            {agents.map((a: any) => (
-                              <SelectItem key={a.user_id} value={a.user_id}>
-                                {a.profiles?.full_name || a.user_id}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    {serviceFields.length > 0 && (
+                      <Card className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+                        <CardHeader><CardTitle className="text-sm">حقول مخصصة</CardTitle></CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                          {serviceFields.map(f => {
+                            const val = fieldValues.find(v => v.field_id === f.id);
+                            return (
+                              <div key={f.id}>
+                                <p className="text-xs text-muted-foreground">{f.field_name}</p>
+                                <p className="font-medium">{val?.value || '-'}</p>
+                              </div>
+                            );
+                          })}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </>
                 )}
               </div>
             </div>

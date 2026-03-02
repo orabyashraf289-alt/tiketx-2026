@@ -8,6 +8,7 @@ import {
   Timer,
   BarChart3,
   BookOpen,
+  FormInput,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,6 +38,7 @@ const mainItems = [
 
 const adminItems = [
   { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
+  { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
   { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
   { title: 'المستخدمين', url: '/admin/users', icon: Users },
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
