@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export type TicketStatus = 'new' | 'open' | 'in_progress' | 'waiting_on_customer' | 'resolved' | 'closed' | 'reopened';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -86,23 +86,25 @@ export const roleLabels: Record<AppRole, string> = {
 };
 
 // API functions
+const TICKET_SELECT = '*, departments(name), requester:profiles!tickets_requester_id_fkey(full_name, email), agent:profiles!tickets_assigned_agent_id_fkey(full_name, email)';
+
 export async function fetchTickets() {
   const { data, error } = await supabase
     .from('tickets')
-    .select('*, departments(name), requester:profiles!tickets_requester_id_fkey(full_name, email), agent:profiles!tickets_assigned_agent_id_fkey(full_name, email)')
+    .select(TICKET_SELECT)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data as Ticket[];
+  return (data as unknown) as Ticket[];
 }
 
 export async function fetchTicketById(id: string) {
   const { data, error } = await supabase
     .from('tickets')
-    .select('*, departments(name), requester:profiles!tickets_requester_id_fkey(full_name, email), agent:profiles!tickets_assigned_agent_id_fkey(full_name, email)')
+    .select(TICKET_SELECT)
     .eq('id', id)
     .single();
   if (error) throw error;
-  return data as Ticket;
+  return (data as unknown) as Ticket;
 }
 
 export async function createTicket(ticket: { title: string; description: string; priority: TicketPriority; department_id: string; requester_id: string }) {
@@ -124,7 +126,7 @@ export async function fetchComments(ticketId: string) {
     .eq('ticket_id', ticketId)
     .order('created_at', { ascending: true });
   if (error) throw error;
-  return data as TicketComment[];
+  return (data as unknown) as TicketComment[];
 }
 
 export async function addComment(comment: { ticket_id: string; author_id: string; content: string; note_type: NoteType }) {
@@ -146,7 +148,7 @@ export async function fetchAuditLogs(ticketId: string) {
     .eq('ticket_id', ticketId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data as AuditLog[];
+  return (data as unknown) as AuditLog[];
 }
 
 export async function addAuditLog(log: { ticket_id: string; user_id: string; action: string; old_value?: string; new_value?: string }) {
