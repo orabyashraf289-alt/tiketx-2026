@@ -581,3 +581,84 @@ export async function upsertTicketFieldValues(values: { ticket_id: string; field
   const { error } = await supabase.from('ticket_field_values').upsert(values, { onConflict: 'ticket_id,field_id' });
   if (error) throw error;
 }
+
+// Approval Stages & Ticket Approvals
+export type ApprovalStageType = 'sequential' | 'parallel';
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ApprovalStage {
+  id: string;
+  department_id: string;
+  stage_name: string;
+  stage_order: number;
+  stage_type: ApprovalStageType;
+  approver_role: AppRole;
+  approver_id: string | null;
+  created_at: string;
+  departments?: { name: string } | null;
+}
+
+export interface TicketApproval {
+  id: string;
+  ticket_id: string;
+  stage_id: string;
+  approver_id: string | null;
+  status: ApprovalStatus;
+  notes: string | null;
+  decided_at: string | null;
+  created_at: string;
+  approval_stages?: { stage_name: string; stage_order: number; stage_type: ApprovalStageType; approver_role: AppRole } | null;
+  approver?: { full_name: string } | null;
+}
+
+export async function fetchApprovalStages(departmentId?: string) {
+  let query = supabase.from('approval_stages').select('*, departments(name)').order('stage_order');
+  if (departmentId) query = query.eq('department_id', departmentId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data as unknown) as ApprovalStage[];
+}
+
+export async function createApprovalStage(stage: { department_id: string; stage_name: string; stage_order: number; stage_type: ApprovalStageType; approver_role: AppRole; approver_id?: string }) {
+  const { data, error } = await supabase.from('approval_stages').insert(stage).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateApprovalStage(id: string, updates: Partial<ApprovalStage>) {
+  const { data, error } = await supabase.from('approval_stages').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteApprovalStage(id: string) {
+  const { error } = await supabase.from('approval_stages').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function fetchTicketApprovals(ticketId: string) {
+  const { data, error } = await supabase
+    .from('ticket_approvals')
+    .select('*, approval_stages(stage_name, stage_order, stage_type, approver_role), approver:profiles!ticket_approvals_approver_id_fkey(full_name)')
+    .eq('ticket_id', ticketId)
+    .order('created_at');
+  if (error) throw error;
+  return (data as unknown) as TicketApproval[];
+}
+
+export async function updateTicketApproval(id: string, updates: { status: ApprovalStatus; approver_id: string; notes?: string }) {
+  const { data, error } = await supabase
+    .from('ticket_approvals')
+    .update({ ...updates, decided_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export const approvalStatusLabels: Record<ApprovalStatus, string> = {
+  pending: 'في الانتظار',
+  approved: 'معتمد',
+  rejected: 'مرفوض',
+};
