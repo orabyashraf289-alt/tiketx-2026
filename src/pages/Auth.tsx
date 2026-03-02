@@ -3,11 +3,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, ShieldCheck, Zap, BarChart3, ArrowLeft, Ticket, CheckCircle2 } from 'lucide-react';
+import { Loader2, ShieldCheck, Zap, BarChart3, Ticket, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import logoImg from '@/assets/logo.png';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const features = [
   { icon: Zap, title: 'إدارة ذكية', desc: 'تتبّع التذاكر مع SLA تلقائي وتصعيد آلي' },
@@ -24,16 +23,12 @@ const floatingTickets = [
 ];
 
 export default function AuthPage() {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('login');
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,19 +38,6 @@ export default function AuthPage() {
       toast({ title: 'تم تسجيل الدخول بنجاح' });
     } catch (err: any) {
       toast({ title: 'خطأ في تسجيل الدخول', description: err.message, variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await signUp(regEmail, regPassword, regName);
-      toast({ title: 'تم إنشاء الحساب', description: 'يرجى تأكيد البريد الإلكتروني' });
-    } catch (err: any) {
-      toast({ title: 'خطأ في التسجيل', description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -149,7 +131,6 @@ export default function AuthPage() {
             ))}
           </div>
 
-          {/* Trust indicators */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -166,7 +147,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Right form panel */}
+      {/* Right form panel - Login Only */}
       <div className="flex-1 flex items-center justify-center relative z-10 p-4 sm:p-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -190,139 +171,50 @@ export default function AuthPage() {
           </motion.div>
 
           {/* Glass card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-              <div className="p-6 pb-0">
-                <TabsList className="w-full bg-white/[0.06] border border-white/[0.06] rounded-xl p-1 h-11">
-                  <TabsTrigger
-                    value="login"
-                    className="flex-1 rounded-lg text-sm font-medium text-white/50 data-[state=active]:bg-[hsl(252,56%,52%)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
-                  >
-                    تسجيل الدخول
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="register"
-                    className="flex-1 rounded-lg text-sm font-medium text-white/50 data-[state=active]:bg-[hsl(252,56%,52%)] data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
-                  >
-                    حساب جديد
-                  </TabsTrigger>
-                </TabsList>
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden p-6">
+            <h2 className="text-lg font-bold text-white mb-6 text-center">تسجيل الدخول</h2>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="login-email" className="text-white/60 text-xs">البريد الإلكتروني</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  value={loginEmail}
+                  onChange={e => setLoginEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  required
+                  dir="ltr"
+                  className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
+                />
               </div>
-
-              <div className="p-6 pt-5">
-                <AnimatePresence mode="wait">
-                  <TabsContent value="login" className="mt-0" asChild>
-                    <motion.div
-                      key="login"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="login-email" className="text-white/60 text-xs">البريد الإلكتروني</Label>
-                          <Input
-                            id="login-email"
-                            type="email"
-                            value={loginEmail}
-                            onChange={e => setLoginEmail(e.target.value)}
-                            placeholder="email@example.com"
-                            required
-                            dir="ltr"
-                            className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="login-password" className="text-white/60 text-xs">كلمة المرور</Label>
-                          <Input
-                            id="login-password"
-                            type="password"
-                            value={loginPassword}
-                            onChange={e => setLoginPassword(e.target.value)}
-                            placeholder="••••••••"
-                            required
-                            dir="ltr"
-                            className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
-                          />
-                        </div>
-                        <motion.div whileTap={{ scale: 0.98 }}>
-                          <Button
-                            type="submit"
-                            className="w-full h-12 rounded-xl font-semibold text-sm text-white bg-gradient-to-l from-[hsl(252,56%,52%)] to-[hsl(216,72%,52%)] hover:from-[hsl(252,56%,58%)] hover:to-[hsl(216,72%,58%)] shadow-lg shadow-[hsl(252,56%,30%/0.3)] transition-all duration-300"
-                            disabled={loading}
-                          >
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
-                            تسجيل الدخول
-                          </Button>
-                        </motion.div>
-                      </form>
-                    </motion.div>
-                  </TabsContent>
-
-                  <TabsContent value="register" className="mt-0" asChild>
-                    <motion.div
-                      key="register"
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <form onSubmit={handleRegister} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="reg-name" className="text-white/60 text-xs">الاسم الكامل</Label>
-                          <Input
-                            id="reg-name"
-                            value={regName}
-                            onChange={e => setRegName(e.target.value)}
-                            placeholder="أحمد محمد"
-                            required
-                            className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="reg-email" className="text-white/60 text-xs">البريد الإلكتروني</Label>
-                          <Input
-                            id="reg-email"
-                            type="email"
-                            value={regEmail}
-                            onChange={e => setRegEmail(e.target.value)}
-                            placeholder="email@example.com"
-                            required
-                            dir="ltr"
-                            className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="reg-password" className="text-white/60 text-xs">كلمة المرور</Label>
-                          <Input
-                            id="reg-password"
-                            type="password"
-                            value={regPassword}
-                            onChange={e => setRegPassword(e.target.value)}
-                            placeholder="6 أحرف على الأقل"
-                            required
-                            dir="ltr"
-                            minLength={6}
-                            className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
-                          />
-                        </div>
-                        <motion.div whileTap={{ scale: 0.98 }}>
-                          <Button
-                            type="submit"
-                            className="w-full h-12 rounded-xl font-semibold text-sm text-white bg-gradient-to-l from-[hsl(252,56%,52%)] to-[hsl(216,72%,52%)] hover:from-[hsl(252,56%,58%)] hover:to-[hsl(216,72%,58%)] shadow-lg shadow-[hsl(252,56%,30%/0.3)] transition-all duration-300"
-                            disabled={loading}
-                          >
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
-                            إنشاء حساب
-                          </Button>
-                        </motion.div>
-                      </form>
-                    </motion.div>
-                  </TabsContent>
-                </AnimatePresence>
+              <div className="space-y-2">
+                <Label htmlFor="login-password" className="text-white/60 text-xs">كلمة المرور</Label>
+                <Input
+                  id="login-password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  dir="ltr"
+                  className="h-11 bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-[hsl(252,56%,52%)] focus-visible:border-[hsl(252,56%,40%)] rounded-xl transition-colors"
+                />
               </div>
-            </Tabs>
+              <motion.div whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="submit"
+                  className="w-full h-12 rounded-xl font-semibold text-sm text-white bg-gradient-to-l from-[hsl(252,56%,52%)] to-[hsl(216,72%,52%)] hover:from-[hsl(252,56%,58%)] hover:to-[hsl(216,72%,58%)] shadow-lg shadow-[hsl(252,56%,30%/0.3)] transition-all duration-300"
+                  disabled={loading}
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
+                  تسجيل الدخول
+                </Button>
+              </motion.div>
+            </form>
+
+            <p className="text-center text-white/30 text-xs mt-4">
+              للحصول على حساب، تواصل مع مسؤول النظام
+            </p>
           </div>
 
           <motion.p

@@ -1,17 +1,29 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAllUsers, updateUserRole, AppRole, roleLabels } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Users, UserPlus } from 'lucide-react';
 
 const roles: AppRole[] = ['requester', 'agent', 'admin'];
 
 export default function AdminUsers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<AppRole>('requester');
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
@@ -29,14 +41,91 @@ export default function AdminUsers() {
     },
   });
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) {
+      toast({ title: 'جميع الحقول مطلوبة', variant: 'destructive' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', variant: 'destructive' });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke('create-user', {
+        body: { email: newEmail.trim(), password: newPassword, full_name: newName.trim(), role: newRole },
+      });
+
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+
+      toast({ title: 'تم إنشاء المستخدم بنجاح' });
+      setOpen(false);
+      setNewName('');
+      setNewEmail('');
+      setNewPassword('');
+      setNewRole('requester');
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+    } catch (err: any) {
+      toast({ title: 'خطأ في إنشاء المستخدم', description: err.message, variant: 'destructive' });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b bg-card px-4 gap-3 shrink-0">
-            <SidebarTrigger />
-            <h1 className="text-lg font-bold">إدارة المستخدمين</h1>
+          <header className="h-14 flex items-center justify-between border-b bg-card px-4 gap-3 shrink-0">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <h1 className="text-lg font-bold">إدارة المستخدمين</h1>
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1.5 gradient-accent text-accent-foreground">
+                  <UserPlus className="h-4 w-4" />
+                  مستخدم جديد
+                </Button>
+              </DialogTrigger>
+              <DialogContent dir="rtl">
+                <DialogHeader>
+                  <DialogTitle>إنشاء مستخدم جديد</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateUser} className="space-y-4 mt-2">
+                  <div className="space-y-2">
+                    <Label>الاسم الكامل *</Label>
+                    <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="أحمد محمد" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>البريد الإلكتروني *</Label>
+                    <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>كلمة المرور *</Label>
+                    <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6 أحرف على الأقل" required dir="ltr" minLength={6} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>الدور</Label>
+                    <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button type="submit" className="w-full gradient-accent text-accent-foreground" disabled={creating}>
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin ml-2" /> : null}
+                    إنشاء المستخدم
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
