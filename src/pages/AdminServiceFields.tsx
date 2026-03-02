@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchServices, fetchServiceFields, createServiceField, deleteServiceField, ServiceField } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Loader2, FormInput, Type, Hash, List, AlignLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const fieldTypeLabels: Record<string, string> = {
   text: 'نص قصير',
@@ -25,6 +26,16 @@ const fieldTypeIcons: Record<string, any> = {
   number: Hash,
   select: List,
   textarea: AlignLeft,
+};
+
+const pageVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 export default function AdminServiceFields() {
@@ -85,15 +96,20 @@ export default function AdminServiceFields() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b bg-card px-4 shrink-0">
+          <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 shrink-0 sticky top-0 z-30"
+          >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold">محرر حقول الخدمات</h1>
+              <h1 className="text-lg font-bold text-foreground">محرر حقول الخدمات</h1>
             </div>
             {selectedService && (
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="gradient-accent text-accent-foreground gap-1 text-xs">
+                  <Button size="sm" className="gradient-accent text-accent-foreground gap-1 text-xs shadow-lg shadow-primary/20 rounded-xl">
                     <Plus className="h-3.5 w-3.5" /> حقل جديد
                   </Button>
                 </DialogTrigger>
@@ -102,12 +118,12 @@ export default function AdminServiceFields() {
                   <div className="space-y-4 pt-2">
                     <div className="space-y-2">
                       <Label>اسم الحقل *</Label>
-                      <Input value={fieldName} onChange={e => setFieldName(e.target.value)} placeholder="مثال: رقم الموظف" />
+                      <Input value={fieldName} onChange={e => setFieldName(e.target.value)} placeholder="مثال: رقم الموظف" className="rounded-xl" />
                     </div>
                     <div className="space-y-2">
                       <Label>نوع الحقل</Label>
                       <Select value={fieldType} onValueChange={setFieldType}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="text">نص قصير</SelectItem>
                           <SelectItem value="number">رقم</SelectItem>
@@ -123,7 +139,7 @@ export default function AdminServiceFields() {
                           value={options}
                           onChange={e => setOptions(e.target.value)}
                           placeholder={"الخيار الأول\nالخيار الثاني\nالخيار الثالث"}
-                          className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex min-h-[100px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </div>
                     )}
@@ -132,7 +148,7 @@ export default function AdminServiceFields() {
                       <Label htmlFor="required" className="text-sm">حقل مطلوب</Label>
                     </div>
                     <Button
-                      className="w-full gradient-accent text-accent-foreground"
+                      className="w-full gradient-accent text-accent-foreground rounded-xl"
                       disabled={!fieldName.trim() || createMut.isPending}
                       onClick={() => createMut.mutate()}
                     >
@@ -143,14 +159,14 @@ export default function AdminServiceFields() {
                 </DialogContent>
               </Dialog>
             )}
-          </header>
+          </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <div className="max-w-3xl mx-auto space-y-4">
-              <div className="space-y-2">
+            <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-3xl mx-auto space-y-4">
+              <motion.div variants={fadeUp} className="space-y-2">
                 <Label>اختر الخدمة</Label>
                 <Select value={selectedService} onValueChange={setSelectedService}>
-                  <SelectTrigger className="max-w-sm">
+                  <SelectTrigger className="max-w-sm rounded-xl">
                     <SelectValue placeholder="اختر خدمة لإدارة حقولها" />
                   </SelectTrigger>
                   <SelectContent>
@@ -161,55 +177,57 @@ export default function AdminServiceFields() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </motion.div>
 
               {!selectedService ? (
-                <div className="flex flex-col items-center py-20 text-muted-foreground">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
                   <FormInput className="h-12 w-12 mb-3 opacity-30" />
                   <p className="font-medium">اختر خدمة لعرض وإدارة حقولها المخصصة</p>
-                </div>
+                </motion.div>
               ) : isLoading ? (
-                <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
               ) : fields.length === 0 ? (
-                <div className="flex flex-col items-center py-20 text-muted-foreground">
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
                   <FormInput className="h-12 w-12 mb-3 opacity-30" />
                   <p className="font-medium">لا توجد حقول مخصصة لهذه الخدمة</p>
                   <p className="text-xs mt-1">أضف حقلاً جديداً من الزر أعلاه</p>
-                </div>
+                </motion.div>
               ) : (
                 <div className="space-y-3">
                   {fields.map((field, i) => {
                     const Icon = fieldTypeIcons[field.field_type] || Type;
                     return (
-                      <Card key={field.id}>
-                        <CardContent className="flex items-center justify-between py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-                              <Icon className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-sm">{field.field_name}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs text-muted-foreground">{fieldTypeLabels[field.field_type]}</span>
-                                {field.is_required && (
-                                  <span className="text-xs bg-destructive/10 text-destructive px-1.5 py-0.5 rounded">مطلوب</span>
-                                )}
-                                {field.field_type === 'select' && field.options?.length > 0 && (
-                                  <span className="text-xs text-muted-foreground">({field.options.length} خيارات)</span>
-                                )}
+                      <motion.div key={field.id} variants={fadeUp} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+                        <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                          <CardContent className="flex items-center justify-between py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
+                                <Icon className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-sm text-foreground">{field.field_name}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs text-muted-foreground">{fieldTypeLabels[field.field_type]}</span>
+                                  {field.is_required && (
+                                    <span className="text-xs bg-destructive/10 text-destructive px-1.5 py-0.5 rounded-lg">مطلوب</span>
+                                  )}
+                                  {field.field_type === 'select' && field.options?.length > 0 && (
+                                    <span className="text-xs text-muted-foreground">({field.options.length} خيارات)</span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => deleteMut.mutate(field.id)} disabled={deleteMut.isPending}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </CardContent>
-                      </Card>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => deleteMut.mutate(field.id)} disabled={deleteMut.isPending}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
                     );
                   })}
                 </div>
               )}
-            </div>
+            </motion.div>
           </main>
         </div>
       </div>
