@@ -271,9 +271,16 @@ export default function NewTicket() {
 
                   {/* File attachments */}
                   <div className="space-y-2">
-                    <Label>المرفقات</Label>
-                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={e => {
-                      if (e.target.files) setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                    <Label>المرفقات <span className="text-xs text-muted-foreground">(الحد الأقصى 10 ميجابايت لكل ملف)</span></Label>
+                    <input ref={fileInputRef} type="file" multiple accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" className="hidden" onChange={e => {
+                      if (e.target.files) {
+                        const maxSize = 10 * 1024 * 1024;
+                        const valid = Array.from(e.target.files).filter(f => {
+                          if (f.size > maxSize) { toast({ title: `الملف "${f.name}" يتجاوز 10 ميجابايت`, variant: 'destructive' }); return false; }
+                          return true;
+                        });
+                        setFiles(prev => [...prev, ...valid]);
+                      }
                       e.target.value = '';
                     }} />
                     <Button type="button" variant="outline" className="gap-2 text-sm" onClick={() => fileInputRef.current?.click()}>
@@ -284,7 +291,7 @@ export default function NewTicket() {
                       <div className="flex flex-wrap gap-2 mt-2">
                         {files.map((f, i) => (
                           <span key={i} className="flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-md">
-                            {f.name}
+                            {f.name} <span className="text-muted-foreground">({(f.size / 1024).toFixed(0)}KB)</span>
                             <button type="button" onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))}>
                               <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                             </button>
