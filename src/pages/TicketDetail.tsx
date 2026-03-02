@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { AiChatPanel } from '@/components/AiChatPanel';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -632,6 +633,9 @@ export default function TicketDetailPage() {
           </main>
         </div>
       </div>
+
+      {/* AI Chat Panel */}
+      <AiChatPanel ticketId={ticket.id} ticketTitle={ticket.title} />
 
       {/* Resolution Summary Dialog */}
       <Dialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
