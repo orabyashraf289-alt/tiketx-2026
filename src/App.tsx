@@ -12,6 +12,7 @@ import AdminDepartments from './pages/AdminDepartments';
 import AdminUsers from './pages/AdminUsers';
 import AdminSLA from './pages/AdminSLA';
 import AdminReports from './pages/AdminReports';
+import AdminServiceCatalog from './pages/AdminServiceCatalog';
 import NotFound from './pages/NotFound';
 import { Loader2 } from 'lucide-react';
 
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
+            <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

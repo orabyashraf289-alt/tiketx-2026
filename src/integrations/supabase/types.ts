@@ -138,6 +138,99 @@ export type Database = {
         }
         Relationships: []
       }
+      service_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_categories_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          default_assignment_group: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sla_policy_id: string | null
+          system_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_assignment_group?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sla_policy_id?: string | null
+          system_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_assignment_group?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sla_policy_id?: string | null
+          system_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_default_assignment_group_fkey"
+            columns: ["default_assignment_group"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_sla_policy_id_fkey"
+            columns: ["sla_policy_id"]
+            isOneToOne: false
+            referencedRelation: "sla_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sla_policies: {
         Row: {
           created_at: string
@@ -162,6 +255,33 @@ export type Database = {
           resolution_time_hours?: number
           response_time_hours?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      systems: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
         }
         Relationships: []
       }
@@ -241,16 +361,21 @@ export type Database = {
       tickets: {
         Row: {
           assigned_agent_id: string | null
+          category_id: string | null
           closed_at: string | null
           created_at: string
           department_id: string | null
           description: string
+          external_payload: Json | null
+          external_reference: string | null
           first_response_at: string | null
           id: string
           priority: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
           resolution_summary: string | null
           resolved_at: string | null
+          service_id: string | null
+          source_system: Database["public"]["Enums"]["source_system"]
           status: Database["public"]["Enums"]["ticket_status"]
           ticket_number: number
           title: string
@@ -258,16 +383,21 @@ export type Database = {
         }
         Insert: {
           assigned_agent_id?: string | null
+          category_id?: string | null
           closed_at?: string | null
           created_at?: string
           department_id?: string | null
           description: string
+          external_payload?: Json | null
+          external_reference?: string | null
           first_response_at?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
           resolution_summary?: string | null
           resolved_at?: string | null
+          service_id?: string | null
+          source_system?: Database["public"]["Enums"]["source_system"]
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number
           title: string
@@ -275,16 +405,21 @@ export type Database = {
         }
         Update: {
           assigned_agent_id?: string | null
+          category_id?: string | null
           closed_at?: string | null
           created_at?: string
           department_id?: string | null
           description?: string
+          external_payload?: Json | null
+          external_reference?: string | null
           first_response_at?: string | null
           id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id?: string
           resolution_summary?: string | null
           resolved_at?: string | null
+          service_id?: string | null
+          source_system?: Database["public"]["Enums"]["source_system"]
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number
           title?: string
@@ -292,10 +427,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "tickets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tickets_department_id_fkey"
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -338,6 +487,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "agent" | "requester"
       note_type: "public" | "private"
+      source_system: "PORTAL" | "ERP" | "LMS" | "CPAY"
       ticket_priority: "low" | "medium" | "high" | "urgent"
       ticket_status:
         | "new"
@@ -476,6 +626,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "agent", "requester"],
       note_type: ["public", "private"],
+      source_system: ["PORTAL", "ERP", "LMS", "CPAY"],
       ticket_priority: ["low", "medium", "high", "urgent"],
       ticket_status: [
         "new",

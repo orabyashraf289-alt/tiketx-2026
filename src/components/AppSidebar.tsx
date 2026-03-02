@@ -1,7 +1,5 @@
 import {
   LayoutDashboard,
-  Ticket,
-  Settings,
   Headphones,
   Plus,
   LogOut,
@@ -9,6 +7,7 @@ import {
   Users,
   Timer,
   BarChart3,
+  BookOpen,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +34,7 @@ const mainItems = [
 ];
 
 const adminItems = [
+  { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
   { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
   { title: 'المستخدمين', url: '/admin/users', icon: Users },
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },

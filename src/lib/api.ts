@@ -4,6 +4,7 @@ export type TicketStatus = 'new' | 'open' | 'in_progress' | 'waiting_on_customer
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NoteType = 'public' | 'private';
 export type AppRole = 'admin' | 'agent' | 'requester';
+export type SourceSystem = 'PORTAL' | 'ERP' | 'LMS' | 'CPAY';
 
 export interface Ticket {
   id: string;
@@ -21,10 +22,50 @@ export interface Ticket {
   closed_at: string | null;
   resolution_summary: string | null;
   first_response_at: string | null;
+  source_system: SourceSystem;
+  service_id: string | null;
+  category_id: string | null;
+  external_reference: string | null;
+  external_payload: any;
   // Joined
   departments?: { name: string } | null;
   requester?: { full_name: string; email: string } | null;
   agent?: { full_name: string; email: string } | null;
+  services?: { name: string; system_id: string; systems?: { code: string; name: string } | null } | null;
+  service_categories?: { name: string } | null;
+}
+
+export interface System {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Service {
+  id: string;
+  system_id: string;
+  name: string;
+  description: string | null;
+  default_assignment_group: string | null;
+  sla_policy_id: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  systems?: { code: string; name: string } | null;
+  departments?: { name: string } | null;
+  sla_policies?: { response_time_hours: number; resolution_time_hours: number } | null;
+}
+
+export interface ServiceCategory {
+  id: string;
+  service_id: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface SLAPolicy {
@@ -100,6 +141,13 @@ export const priorityLabels: Record<TicketPriority, string> = {
   urgent: 'عاجلة',
 };
 
+export const sourceSystemLabels: Record<SourceSystem, string> = {
+  PORTAL: 'البوابة',
+  ERP: 'ERP',
+  LMS: 'LMS',
+  CPAY: 'CPAY',
+};
+
 export const roleLabels: Record<AppRole, string> = {
   admin: 'مشرف',
   agent: 'دعم فني',
@@ -107,7 +155,7 @@ export const roleLabels: Record<AppRole, string> = {
 };
 
 // API functions
-const TICKET_SELECT = '*, departments(name), requester:profiles!tickets_requester_id_fkey(full_name, email), agent:profiles!tickets_assigned_agent_id_fkey(full_name, email)';
+const TICKET_SELECT = '*, departments(name), requester:profiles!tickets_requester_id_fkey(full_name, email), agent:profiles!tickets_assigned_agent_id_fkey(full_name, email), services(name, system_id, systems(code, name)), service_categories(name)';
 
 export async function fetchTickets() {
   const { data, error } = await supabase
@@ -128,7 +176,7 @@ export async function fetchTicketById(id: string) {
   return (data as unknown) as Ticket;
 }
 
-export async function createTicket(ticket: { title: string; description: string; priority: TicketPriority; department_id: string; requester_id: string }) {
+export async function createTicket(ticket: { title: string; description: string; priority: TicketPriority; department_id: string; requester_id: string; service_id?: string; category_id?: string; source_system?: SourceSystem; external_reference?: string; external_payload?: any }) {
   const { data, error } = await supabase.from('tickets').insert(ticket).select().single();
   if (error) throw error;
   return data;
@@ -342,4 +390,67 @@ export async function fetchReportData() {
     slaMet,
     slaCompliancePercent: (slaMet + slaBreaches) > 0 ? Math.round(slaMet / (slaMet + slaBreaches) * 100) : 100,
   };
+}
+
+// Service Catalog
+export async function fetchSystems() {
+  const { data, error } = await supabase.from('systems').select('*').eq('is_active', true).order('name');
+  if (error) throw error;
+  return (data as unknown) as System[];
+}
+
+export async function createSystem(sys: { code: string; name: string; description?: string }) {
+  const { data, error } = await supabase.from('systems').insert(sys).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateSystem(id: string, updates: Partial<System>) {
+  const { data, error } = await supabase.from('systems').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchServices(systemId?: string) {
+  let query = supabase.from('services').select('*, systems(code, name), departments:departments!services_default_assignment_group_fkey(name), sla_policies(response_time_hours, resolution_time_hours)').eq('is_active', true).order('name');
+  if (systemId) query = query.eq('system_id', systemId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data as unknown) as Service[];
+}
+
+export async function createService(svc: { system_id: string; name: string; description?: string; default_assignment_group?: string; sla_policy_id?: string }) {
+  const { data, error } = await supabase.from('services').insert(svc).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateService(id: string, updates: Partial<Service>) {
+  const { data, error } = await supabase.from('services').update(updates).eq('id', id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteService(id: string) {
+  const { error } = await supabase.from('services').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function fetchServiceCategories(serviceId?: string) {
+  let query = supabase.from('service_categories').select('*').eq('is_active', true).order('name');
+  if (serviceId) query = query.eq('service_id', serviceId);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data as unknown) as ServiceCategory[];
+}
+
+export async function createServiceCategory(cat: { service_id: string; name: string; description?: string }) {
+  const { data, error } = await supabase.from('service_categories').insert(cat).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteServiceCategory(id: string) {
+  const { error } = await supabase.from('service_categories').delete().eq('id', id);
+  if (error) throw error;
 }
