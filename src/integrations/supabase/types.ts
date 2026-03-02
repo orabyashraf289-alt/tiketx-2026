@@ -456,6 +456,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "ticket_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ticket_approvals_stage_id_fkey"
             columns: ["stage_id"]
             isOneToOne: false
