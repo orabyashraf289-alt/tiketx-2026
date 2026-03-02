@@ -1,13 +1,14 @@
 import {
   LayoutDashboard,
   Ticket,
-  Users,
   Settings,
-  BarChart3,
   Headphones,
   Plus,
-} from "lucide-react";
-import { NavLink } from "@/components/NavLink";
+  LogOut,
+} from 'lucide-react';
+import { NavLink } from '@/components/NavLink';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -20,29 +21,26 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { roleLabels, AppRole } from '@/lib/api';
 
 const mainItems = [
-  { title: "لوحة التحكم", url: "/", icon: LayoutDashboard },
-  { title: "التذاكر", url: "/tickets", icon: Ticket },
-  { title: "التقارير", url: "/reports", icon: BarChart3 },
-];
-
-const adminItems = [
-  { title: "المستخدمون", url: "/users", icon: Users },
-  { title: "الإعدادات", url: "/settings", icon: Settings },
+  { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
+  { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const collapsed = state === 'collapsed';
+  const { profile, role, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
             <Headphones className="h-5 w-5 text-accent-foreground" />
           </div>
           {!collapsed && (
@@ -55,15 +53,6 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {!collapsed && (
-          <div className="px-3 mb-3">
-            <Button className="w-full gradient-accent text-accent-foreground gap-2 text-sm">
-              <Plus className="h-4 w-4" />
-              تذكرة جديدة
-            </Button>
-          </div>
-        )}
-
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50">القائمة الرئيسية</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -81,36 +70,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50">الإدارة</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
-                      <item.icon className="h-4 w-4 ml-2" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-3">
-        {!collapsed && (
-          <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/30 p-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground">
-              م
+        {!collapsed && profile && (
+          <div className="rounded-lg bg-sidebar-accent/30 p-3">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground shrink-0">
+                {profile.full_name?.charAt(0) || 'م'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
+                <p className="text-[10px] text-sidebar-foreground/60">{role ? roleLabels[role] : ''}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-sidebar-accent-foreground">مدير النظام</p>
-              <p className="text-xs text-sidebar-foreground/60">admin@company.com</p>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-3 w-3 ml-1" />
+              تسجيل خروج
+            </Button>
           </div>
         )}
       </SidebarFooter>
