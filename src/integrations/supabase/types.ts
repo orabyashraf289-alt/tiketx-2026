@@ -18,27 +18,33 @@ export type Database = {
         Row: {
           action: string
           created_at: string
+          event_type: Database["public"]["Enums"]["ticket_event_type"] | null
           id: string
           new_value: string | null
           old_value: string | null
+          payload: Json | null
           ticket_id: string
           user_id: string
         }
         Insert: {
           action: string
           created_at?: string
+          event_type?: Database["public"]["Enums"]["ticket_event_type"] | null
           id?: string
           new_value?: string | null
           old_value?: string | null
+          payload?: Json | null
           ticket_id: string
           user_id: string
         }
         Update: {
           action?: string
           created_at?: string
+          event_type?: Database["public"]["Enums"]["ticket_event_type"] | null
           id?: string
           new_value?: string | null
           old_value?: string | null
+          payload?: Json | null
           ticket_id?: string
           user_id?: string
         }
@@ -73,32 +79,68 @@ export type Database = {
         }
         Relationships: []
       }
-      notifications: {
+      devices: {
         Row: {
           created_at: string
+          fcm_token: string
+          id: string
+          last_seen_at: string
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fcm_token: string
+          id?: string
+          last_seen_at?: string
+          platform: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fcm_token?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json | null
           id: string
           is_read: boolean
           message: string
           ticket_id: string | null
           title: string
+          type: string | null
           user_id: string
         }
         Insert: {
+          body?: string | null
           created_at?: string
+          data?: Json | null
           id?: string
           is_read?: boolean
           message: string
           ticket_id?: string | null
           title: string
+          type?: string | null
           user_id: string
         }
         Update: {
+          body?: string | null
           created_at?: string
+          data?: Json | null
           id?: string
           is_read?: boolean
           message?: string
           ticket_id?: string | null
           title?: string
+          type?: string | null
           user_id?: string
         }
         Relationships: [
@@ -115,28 +157,42 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          department_id: string | null
           email: string
           full_name: string
           id: string
+          is_active: boolean
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          department_id?: string | null
           email?: string
           full_name?: string
           id: string
+          is_active?: boolean
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          department_id?: string | null
           email?: string
           full_name?: string
           id?: string
+          is_active?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_categories: {
         Row: {
@@ -234,26 +290,26 @@ export type Database = {
       sla_policies: {
         Row: {
           created_at: string
+          first_response_minutes: number
           id: string
           priority: Database["public"]["Enums"]["ticket_priority"]
-          resolution_time_hours: number
-          response_time_hours: number
+          resolution_minutes: number
           updated_at: string
         }
         Insert: {
           created_at?: string
+          first_response_minutes?: number
           id?: string
           priority: Database["public"]["Enums"]["ticket_priority"]
-          resolution_time_hours?: number
-          response_time_hours?: number
+          resolution_minutes?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
+          first_response_minutes?: number
           id?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
-          resolution_time_hours?: number
-          response_time_hours?: number
+          resolution_minutes?: number
           updated_at?: string
         }
         Relationships: []
@@ -292,6 +348,8 @@ export type Database = {
           file_size: number | null
           file_url: string
           id: string
+          mime_type: string | null
+          storage_key: string | null
           ticket_id: string
           uploaded_by: string
         }
@@ -301,6 +359,8 @@ export type Database = {
           file_size?: number | null
           file_url: string
           id?: string
+          mime_type?: string | null
+          storage_key?: string | null
           ticket_id: string
           uploaded_by: string
         }
@@ -310,6 +370,8 @@ export type Database = {
           file_size?: number | null
           file_url?: string
           id?: string
+          mime_type?: string | null
+          storage_key?: string | null
           ticket_id?: string
           uploaded_by?: string
         }
@@ -363,6 +425,7 @@ export type Database = {
           assigned_agent_id: string | null
           category_id: string | null
           closed_at: string | null
+          code: string | null
           created_at: string
           department_id: string | null
           description: string
@@ -370,11 +433,14 @@ export type Database = {
           external_reference: string | null
           first_response_at: string | null
           id: string
+          last_activity_at: string
           priority: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
           resolution_summary: string | null
           resolved_at: string | null
           service_id: string | null
+          sla_first_response_due_at: string | null
+          sla_resolution_due_at: string | null
           source_system: Database["public"]["Enums"]["source_system"]
           status: Database["public"]["Enums"]["ticket_status"]
           ticket_number: number
@@ -385,6 +451,7 @@ export type Database = {
           assigned_agent_id?: string | null
           category_id?: string | null
           closed_at?: string | null
+          code?: string | null
           created_at?: string
           department_id?: string | null
           description: string
@@ -392,11 +459,14 @@ export type Database = {
           external_reference?: string | null
           first_response_at?: string | null
           id?: string
+          last_activity_at?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id: string
           resolution_summary?: string | null
           resolved_at?: string | null
           service_id?: string | null
+          sla_first_response_due_at?: string | null
+          sla_resolution_due_at?: string | null
           source_system?: Database["public"]["Enums"]["source_system"]
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number
@@ -407,6 +477,7 @@ export type Database = {
           assigned_agent_id?: string | null
           category_id?: string | null
           closed_at?: string | null
+          code?: string | null
           created_at?: string
           department_id?: string | null
           description?: string
@@ -414,11 +485,14 @@ export type Database = {
           external_reference?: string | null
           first_response_at?: string | null
           id?: string
+          last_activity_at?: string
           priority?: Database["public"]["Enums"]["ticket_priority"]
           requester_id?: string
           resolution_summary?: string | null
           resolved_at?: string | null
           service_id?: string | null
+          sla_first_response_due_at?: string | null
+          sla_resolution_due_at?: string | null
           source_system?: Database["public"]["Enums"]["source_system"]
           status?: Database["public"]["Enums"]["ticket_status"]
           ticket_number?: number
@@ -488,6 +562,17 @@ export type Database = {
       app_role: "admin" | "agent" | "requester"
       note_type: "public" | "private"
       source_system: "PORTAL" | "ERP" | "LMS" | "CPAY"
+      ticket_event_type:
+        | "status_changed"
+        | "assigned"
+        | "priority_changed"
+        | "department_changed"
+        | "comment_added"
+        | "attachment_added"
+        | "created"
+        | "resolved"
+        | "closed"
+        | "reopened"
       ticket_priority: "low" | "medium" | "high" | "urgent"
       ticket_status:
         | "new"
@@ -627,6 +712,18 @@ export const Constants = {
       app_role: ["admin", "agent", "requester"],
       note_type: ["public", "private"],
       source_system: ["PORTAL", "ERP", "LMS", "CPAY"],
+      ticket_event_type: [
+        "status_changed",
+        "assigned",
+        "priority_changed",
+        "department_changed",
+        "comment_added",
+        "attachment_added",
+        "created",
+        "resolved",
+        "closed",
+        "reopened",
+      ],
       ticket_priority: ["low", "medium", "high", "urgent"],
       ticket_status: [
         "new",

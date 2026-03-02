@@ -25,7 +25,7 @@ export default function AdminSLA() {
     if (policies.length > 0) {
       const map: typeof edits = {};
       policies.forEach(p => {
-        map[p.id] = { response: p.response_time_hours, resolution: p.resolution_time_hours };
+        map[p.id] = { response: p.first_response_minutes, resolution: p.resolution_minutes };
       });
       setEdits(map);
     }
@@ -33,7 +33,7 @@ export default function AdminSLA() {
 
   const updateMut = useMutation({
     mutationFn: ({ id, response, resolution }: { id: string; response: number; resolution: number }) =>
-      updateSLAPolicy(id, { response_time_hours: response, resolution_time_hours: resolution }),
+      updateSLAPolicy(id, { first_response_minutes: response, resolution_minutes: resolution }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sla-policies'] });
       toast({ title: 'تم تحديث إعدادات SLA' });
@@ -55,7 +55,7 @@ export default function AdminSLA() {
               <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
             ) : (
               <div className="max-w-2xl mx-auto space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">حدد زمن الاستجابة والحل المتوقع لكل مستوى أولوية (بالساعات)</p>
+                <p className="text-sm text-muted-foreground mb-4">حدد زمن الاستجابة والحل المتوقع لكل مستوى أولوية (بالدقائق)</p>
                 {policies.map(policy => (
                   <Card key={policy.id}>
                     <CardHeader className="pb-2">
@@ -67,11 +67,11 @@ export default function AdminSLA() {
                     <CardContent>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <Label className="text-xs">زمن الاستجابة (ساعات)</Label>
+                          <Label className="text-xs">زمن الاستجابة (دقائق)</Label>
                           <Input
                             type="number"
                             min={1}
-                            value={edits[policy.id]?.response ?? policy.response_time_hours}
+                            value={edits[policy.id]?.response ?? policy.first_response_minutes}
                             onChange={e => setEdits(prev => ({
                               ...prev,
                               [policy.id]: { ...prev[policy.id], response: parseInt(e.target.value) || 1 }
@@ -79,11 +79,11 @@ export default function AdminSLA() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">زمن الحل (ساعات)</Label>
+                          <Label className="text-xs">زمن الحل (دقائق)</Label>
                           <Input
                             type="number"
                             min={1}
-                            value={edits[policy.id]?.resolution ?? policy.resolution_time_hours}
+                            value={edits[policy.id]?.resolution ?? policy.resolution_minutes}
                             onChange={e => setEdits(prev => ({
                               ...prev,
                               [policy.id]: { ...prev[policy.id], resolution: parseInt(e.target.value) || 1 }
@@ -97,8 +97,8 @@ export default function AdminSLA() {
                         disabled={updateMut.isPending}
                         onClick={() => updateMut.mutate({
                           id: policy.id,
-                          response: edits[policy.id]?.response ?? policy.response_time_hours,
-                          resolution: edits[policy.id]?.resolution ?? policy.resolution_time_hours,
+                          response: edits[policy.id]?.response ?? policy.first_response_minutes,
+                          resolution: edits[policy.id]?.resolution ?? policy.resolution_minutes,
                         })}
                       >
                         {updateMut.isPending && <Loader2 className="h-3 w-3 animate-spin ml-1" />}

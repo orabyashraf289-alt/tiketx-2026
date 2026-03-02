@@ -20,7 +20,7 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-xs font-mono font-medium text-muted-foreground">#{ticket.ticket_number}</span>
+            <span className="text-xs font-mono font-medium text-muted-foreground">{ticket.code || `#${ticket.ticket_number}`}</span>
             <StatusBadge status={ticket.status} />
             <PriorityBadge priority={ticket.priority} />
             {ticket.services && (

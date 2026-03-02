@@ -191,7 +191,7 @@ export default function TicketDetailPage() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-bold truncate">تذكرة #{ticket.ticket_number}</h1>
+            <h1 className="text-lg font-bold truncate">تذكرة {ticket.code || `#${ticket.ticket_number}`}</h1>
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
