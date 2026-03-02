@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { fetchDepartments, createTicket, addAttachment, TicketPriority } from '@/lib/api';
+import { fetchDepartments, createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, TicketPriority, SourceSystem } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -31,6 +31,9 @@ export default function NewTicket() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TicketPriority>('medium');
   const [departmentId, setDepartmentId] = useState('');
+  const [systemId, setSystemId] = useState('');
+  const [serviceId, setServiceId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +41,25 @@ export default function NewTicket() {
     queryKey: ['departments'],
     queryFn: fetchDepartments,
   });
+
+  const { data: systems = [] } = useQuery({
+    queryKey: ['systems'],
+    queryFn: fetchSystems,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services', systemId],
+    queryFn: () => fetchServices(systemId || undefined),
+    enabled: true,
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['service-categories', serviceId],
+    queryFn: () => fetchServiceCategories(serviceId || undefined),
+    enabled: !!serviceId,
+  });
+
+  const filteredServices = systemId ? services.filter(s => s.system_id === systemId) : services;
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -47,7 +69,9 @@ export default function NewTicket() {
         priority,
         department_id: departmentId,
         requester_id: user!.id,
-      });
+        ...(serviceId ? { service_id: serviceId } : {}),
+        ...(categoryId ? { category_id: categoryId } : {}),
+      } as any);
       // Upload files
       for (const file of files) {
         const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
@@ -110,6 +134,39 @@ export default function NewTicket() {
                   <div className="space-y-2">
                     <Label htmlFor="desc">الوصف التفصيلي *</Label>
                     <Textarea id="desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="اشرح المشكلة بالتفصيل..." className="min-h-[120px]" required maxLength={2000} />
+                  </div>
+
+                  {/* Service Catalog */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>النظام</Label>
+                      <Select value={systemId} onValueChange={v => { setSystemId(v); setServiceId(''); setCategoryId(''); }}>
+                        <SelectTrigger><SelectValue placeholder="اختر النظام" /></SelectTrigger>
+                        <SelectContent>
+                          {systems.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>الخدمة</Label>
+                      <Select value={serviceId} onValueChange={v => { setServiceId(v); setCategoryId(''); }}>
+                        <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
+                        <SelectContent>
+                          {filteredServices.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {categories.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>التصنيف</Label>
+                        <Select value={categoryId} onValueChange={setCategoryId}>
+                          <SelectTrigger><SelectValue placeholder="اختر التصنيف" /></SelectTrigger>
+                          <SelectContent>
+                            {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

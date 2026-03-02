@@ -23,6 +23,9 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
             <span className="text-xs font-mono font-medium text-muted-foreground">#{ticket.ticket_number}</span>
             <StatusBadge status={ticket.status} />
             <PriorityBadge priority={ticket.priority} />
+            {ticket.services && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{ticket.services.systems?.name} → {ticket.services.name}</span>
+            )}
             {ticket.departments?.name && (
               <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">{ticket.departments.name}</span>
             )}

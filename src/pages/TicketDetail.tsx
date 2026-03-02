@@ -397,6 +397,34 @@ export default function TicketDetailPage() {
                         <p className="font-medium">{ticket.departments?.name || '-'}</p>
                       </div>
                     </div>
+                    {ticket.services && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">الخدمة</p>
+                          <p className="font-medium">{ticket.services.systems?.name} → {ticket.services.name}</p>
+                        </div>
+                      </div>
+                    )}
+                    {ticket.service_categories && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">التصنيف</p>
+                          <p className="font-medium">{ticket.service_categories.name}</p>
+                        </div>
+                      </div>
+                    )}
+                    {ticket.source_system && ticket.source_system !== 'PORTAL' && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">المصدر</p>
+                          <p className="font-medium">{ticket.source_system}</p>
+                          {ticket.external_reference && <p className="text-xs text-muted-foreground">المرجع: {ticket.external_reference}</p>}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
