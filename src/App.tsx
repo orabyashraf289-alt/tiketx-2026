@@ -20,6 +20,7 @@ import AdminServiceFields from './pages/AdminServiceFields';
 import AdminApprovalStages from './pages/AdminApprovalStages';
 import KnowledgeBase from './pages/KnowledgeBase';
 import ProfilePage from './pages/ProfilePage';
+import AgentPerformance from './pages/AgentPerformance';
 import NotFound from './pages/NotFound';
 import { Loader2 } from 'lucide-react';
 
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
               <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
