@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { exportReportPDF } from '@/components/ReportPDFExport';
 
-const COLORS = ['hsl(152, 55%, 38%)', 'hsl(160, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(45, 90%, 48%)'];
+const COLORS = ['hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(152, 55%, 42%)'];
 
 function downloadCSV(data: Record<string, any>[], filename: string) {
   if (data.length === 0) return;
@@ -259,7 +259,7 @@ export default function AdminReports() {
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
                           <Legend />
-                          <Line type="monotone" dataKey="count" name="تم إنشاؤها" stroke="hsl(152, 55%, 38%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="count" name="تم إنشاؤها" stroke="hsl(217, 72%, 50%)" strokeWidth={2} dot={false} />
                           <Line type="monotone" dataKey="resolved" name="تم حلها" stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={false} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -279,7 +279,7 @@ export default function AdminReports() {
                           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
-                          <Bar dataKey="value" fill="hsl(152, 55%, 38%)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -315,7 +315,7 @@ export default function AdminReports() {
                             <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                             <YAxis tick={{ fontSize: 11 }} />
                             <Tooltip />
-                            <Bar dataKey="value" fill="hsl(160, 60%, 42%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="value" fill="hsl(222, 60%, 42%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -333,7 +333,7 @@ export default function AdminReports() {
                             <XAxis type="number" tick={{ fontSize: 11 }} />
                             <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
                             <Tooltip />
-                            <Bar dataKey="value" fill="hsl(152, 55%, 42%)" radius={[0, 4, 4, 0]} />
+                            <Bar dataKey="value" fill="hsl(217, 72%, 50%)" radius={[0, 4, 4, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -370,7 +370,7 @@ export default function AdminReports() {
                             <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
                             <Tooltip />
-                            <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(152, 55%, 42%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>

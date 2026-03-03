@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 140 20% 97%;
-    --foreground: 160 25% 12%;
+    --background: 220 20% 97%;
+    --foreground: 222 30% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 160 25% 12%;
+    --card-foreground: 222 30% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 25% 12%;
+    --popover-foreground: 222 30% 14%;
 
-    --primary: 152 55% 38%;
+    --primary: 217 72% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 145 20% 93%;
-    --secondary-foreground: 152 55% 32%;
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 217 60% 40%;
 
-    --muted: 140 14% 94%;
-    --muted-foreground: 150 10% 46%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 160 60% 42%;
+    --accent: 217 72% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -39,52 +39,52 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --border: 145 14% 88%;
-    --input: 145 14% 88%;
-    --ring: 152 55% 38%;
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 217 72% 50%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 158 35% 12%;
-    --sidebar-foreground: 145 20% 82%;
-    --sidebar-primary: 152 55% 42%;
+    --sidebar-background: 222 35% 16%;
+    --sidebar-foreground: 220 20% 78%;
+    --sidebar-primary: 217 72% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 158 30% 18%;
-    --sidebar-accent-foreground: 145 30% 95%;
-    --sidebar-border: 158 25% 22%;
-    --sidebar-ring: 152 55% 42%;
-    --sidebar-muted: 158 22% 24%;
+    --sidebar-accent: 222 30% 22%;
+    --sidebar-accent-foreground: 220 30% 95%;
+    --sidebar-border: 222 25% 24%;
+    --sidebar-ring: 217 72% 55%;
+    --sidebar-muted: 222 22% 26%;
   }
 
   .dark {
-    --background: 160 25% 7%;
-    --foreground: 145 18% 90%;
-    --card: 160 22% 11%;
-    --card-foreground: 145 18% 90%;
-    --popover: 160 22% 11%;
-    --popover-foreground: 145 18% 90%;
-    --primary: 152 55% 45%;
+    --background: 222 30% 7%;
+    --foreground: 220 18% 90%;
+    --card: 222 28% 11%;
+    --card-foreground: 220 18% 90%;
+    --popover: 222 28% 11%;
+    --popover-foreground: 220 18% 90%;
+    --primary: 217 72% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 160 18% 16%;
-    --secondary-foreground: 145 18% 90%;
-    --muted: 160 14% 15%;
-    --muted-foreground: 145 10% 52%;
-    --accent: 160 60% 48%;
+    --secondary: 222 18% 16%;
+    --secondary-foreground: 220 18% 90%;
+    --muted: 222 14% 15%;
+    --muted-foreground: 220 10% 52%;
+    --accent: 217 72% 55%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 32%;
     --destructive-foreground: 210 40% 98%;
-    --border: 160 14% 18%;
-    --input: 160 14% 18%;
-    --ring: 152 55% 45%;
-    --sidebar-background: 158 35% 6%;
-    --sidebar-foreground: 145 18% 78%;
-    --sidebar-primary: 152 55% 48%;
+    --border: 222 14% 18%;
+    --input: 222 14% 18%;
+    --ring: 217 72% 55%;
+    --sidebar-background: 222 35% 8%;
+    --sidebar-foreground: 220 18% 78%;
+    --sidebar-primary: 217 72% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 158 28% 12%;
-    --sidebar-accent-foreground: 145 18% 90%;
-    --sidebar-border: 158 22% 14%;
-    --sidebar-ring: 152 55% 48%;
-    --sidebar-muted: 158 20% 16%;
+    --sidebar-accent: 222 28% 14%;
+    --sidebar-accent-foreground: 220 18% 90%;
+    --sidebar-border: 222 22% 14%;
+    --sidebar-ring: 217 72% 58%;
+    --sidebar-muted: 222 20% 16%;
   }
 }
 
@@ -104,16 +104,16 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(152 55% 38%), hsl(160 60% 42%));
+    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(222 60% 42%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(152 55% 38%), hsl(160 60% 46%));
+    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(217 72% 58%));
   }
   .shadow-card {
-    box-shadow: 0 1px 3px hsl(160 25% 12% / 0.06), 0 1px 2px hsl(160 25% 12% / 0.04);
+    box-shadow: 0 1px 3px hsl(222 30% 14% / 0.06), 0 1px 2px hsl(222 30% 14% / 0.04);
   }
   .shadow-card-hover {
-    box-shadow: 0 4px 12px hsl(160 25% 12% / 0.1), 0 2px 4px hsl(160 25% 12% / 0.06);
+    box-shadow: 0 4px 12px hsl(222 30% 14% / 0.1), 0 2px 4px hsl(222 30% 14% / 0.06);
   }
 
   /* Print styles */
