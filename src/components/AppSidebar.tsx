@@ -11,6 +11,7 @@ import {
   FormInput,
   ShieldCheck,
   Award,
+  Globe,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +50,7 @@ const adminItems = [
   { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
   { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
+  { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
 ];
 
 export function AppSidebar() {
