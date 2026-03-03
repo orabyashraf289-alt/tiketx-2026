@@ -488,7 +488,7 @@ export async function updateSystem(id: string, updates: Partial<System>) {
 }
 
 export async function fetchServices(systemId?: string) {
-  let query = supabase.from('services').select('*, systems(code, name), departments:departments!services_default_assignment_group_fkey(name), sla_policies(response_time_hours, resolution_time_hours)').eq('is_active', true).order('name');
+  let query = supabase.from('services').select('*, systems(code, name), departments:departments!services_default_assignment_group_fkey(name), sla_policies(first_response_minutes, resolution_minutes)').eq('is_active', true).order('name');
   if (systemId) query = query.eq('system_id', systemId);
   const { data, error } = await query;
   if (error) throw error;
