@@ -112,7 +112,7 @@ export function AppSidebar() {
         {!collapsed && profile && (
           <div className="rounded-lg bg-sidebar-accent/30 p-3">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/profile'}>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground shrink-0">
                   {profile.full_name?.charAt(0) || 'م'}
                 </div>
