@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import { AiChatPanel } from '@/components/AiChatPanel';
+import { CSATWidget } from '@/components/CSATWidget';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -548,6 +549,9 @@ export default function TicketDetailPage() {
                 <motion.div variants={fadeScale}>
                   <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
                 </motion.div>
+
+                {/* CSAT Rating */}
+                <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
 
                 {/* Actions for agents/admins */}
                 {isAgentOrAdmin && (

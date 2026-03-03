@@ -10,6 +10,7 @@ import {
   BookOpen,
   FormInput,
   ShieldCheck,
+  Award,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -45,6 +46,7 @@ const adminItems = [
   { title: 'مراحل الاعتماد', url: '/admin/approval-stages', icon: ShieldCheck },
   { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
   { title: 'المستخدمين', url: '/admin/users', icon: Users },
+  { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
   { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
 ];
