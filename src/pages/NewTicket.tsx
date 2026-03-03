@@ -172,7 +172,7 @@ export default function NewTicket() {
     },
     onSuccess: () => {
       toast({ title: 'تم إنشاء التذكرة بنجاح 🎉' });
-      navigate('/');
+      navigate('/tickets');
     },
     onError: (err: any) => {
       toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
