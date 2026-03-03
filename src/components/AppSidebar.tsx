@@ -12,10 +12,13 @@ import {
   ShieldCheck,
   Award,
   Globe,
+  Settings,
+  HelpCircle,
+  MessageSquare,
+  Mail,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   Sidebar,
@@ -31,12 +34,13 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { roleLabels, AppRole } from '@/lib/api';
+import { roleLabels } from '@/lib/api';
 import logoImg from '@/assets/logo.png';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const mainItems = [
   { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
-  { title: 'صندوق التذاكر', url: '/tickets', icon: Inbox },
+  { title: 'التذاكر', url: '/tickets', icon: Inbox },
   { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
   { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
 ];
@@ -57,33 +61,41 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
-  const navigate = useNavigate();
 
   return (
     <Sidebar collapsible="icon" side="right">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <img src={logoImg} alt="TicketFlow" className="h-9 w-9 rounded-lg shrink-0 object-contain" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary shrink-0">
+            <img src={logoImg} alt="TicketFlow" className="h-6 w-6 object-contain" />
+          </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-accent-foreground">TicketFlow</h2>
-              <p className="text-xs text-sidebar-foreground/60">نظام إدارة التذاكر</p>
+              <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">TicketFlow</h2>
+              <p className="text-[10px] text-sidebar-foreground/50 font-medium">HELPDESK</p>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/50">القائمة الرئيسية</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider font-semibold px-3">
+            القائمة
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
-                      <item.icon className="h-4 w-4 ml-2" />
-                      {!collapsed && <span>{item.title}</span>}
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent transition-colors"
+                      activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium hover:bg-sidebar-primary hover:text-sidebar-primary-foreground"
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="text-sm">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -94,15 +106,21 @@ export function AppSidebar() {
 
         {role === 'admin' && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-sidebar-foreground/50">الإدارة</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider font-semibold px-3">
+              الإدارة
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium">
-                        <item.icon className="h-4 w-4 ml-2" />
-                        {!collapsed && <span>{item.title}</span>}
+                      <NavLink
+                        to={item.url}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent transition-colors"
+                        activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium hover:bg-sidebar-primary hover:text-sidebar-primary-foreground"
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span className="text-sm">{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -112,25 +130,24 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
-      <SidebarFooter className="p-3">
+
+      <SidebarFooter className="p-3 border-t border-sidebar-border">
         {!collapsed && profile && (
-          <div className="rounded-lg bg-sidebar-accent/30 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/profile'}>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-xs font-bold text-primary-foreground shrink-0">
-                  {profile.full_name?.charAt(0) || 'م'}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
-                  <p className="text-[10px] text-sidebar-foreground/60">{role ? roleLabels[role] : ''}</p>
-                </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 cursor-pointer rounded-lg p-2 hover:bg-sidebar-accent transition-colors" onClick={() => window.location.href = '/profile'}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground shrink-0">
+                {profile.full_name?.charAt(0) || 'م'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
+                <p className="text-[10px] text-sidebar-foreground/50">{role ? roleLabels[role] : ''}</p>
               </div>
               <ThemeToggle size="icon" />
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="w-full text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
+              className="w-full text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => signOut()}
             >
               <LogOut className="h-3 w-3 ml-1" />
@@ -141,6 +158,14 @@ export function AppSidebar() {
         {collapsed && (
           <div className="flex flex-col items-center gap-2">
             <ThemeToggle size="icon" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-sidebar-foreground/50 hover:text-sidebar-foreground" onClick={() => signOut()}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">تسجيل خروج</TooltipContent>
+            </Tooltip>
           </div>
         )}
       </SidebarFooter>

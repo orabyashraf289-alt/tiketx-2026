@@ -10,8 +10,8 @@ import { statusLabels, TicketStatus } from '@/lib/api';
 import { motion } from 'framer-motion';
 
 const COLORS = [
-  'hsl(152, 55%, 38%)', 'hsl(160, 60%, 42%)', 'hsl(38, 92%, 50%)',
-  'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(45, 90%, 48%)'
+  'hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)',
+  'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(152, 55%, 42%)'
 ];
 
 const fadeUp = {
@@ -96,8 +96,8 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="gradCreated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(152, 55%, 38%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(152, 55%, 38%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(217, 72%, 50%)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(217, 72%, 50%)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0.3} />
@@ -109,7 +109,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name="تم إنشاؤها" stroke="hsl(152, 55%, 38%)" fill="url(#gradCreated)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="created" name="تم إنشاؤها" stroke="hsl(217, 72%, 50%)" fill="url(#gradCreated)" strokeWidth={2} />
                   <Area type="monotone" dataKey="resolved" name="تم حلها" stroke="hsl(199, 89%, 48%)" fill="url(#gradResolved)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -165,7 +165,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                     <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
                     <Bar dataKey="value" name="التذاكر" radius={[0, 6, 6, 0]}>
                       {priorityData.map((_, i) => (
-                        <Cell key={i} fill={['hsl(152, 55%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
+                        <Cell key={i} fill={['hsl(217, 72%, 50%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -192,7 +192,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
-                    <Bar dataKey="value" name="التذاكر" fill="hsl(160, 60%, 42%)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="value" name="التذاكر" fill="hsl(222, 60%, 42%)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -218,7 +218,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} />
                   <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(152, 55%, 42%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(217, 72%, 50%)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

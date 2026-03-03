@@ -1,9 +1,8 @@
 import { Ticket } from '@/lib/api';
-import { StatusBadge, PriorityBadge } from '@/components/TicketBadges';
+import { StatusBadge, PriorityBadge, SLABadge } from '@/components/TicketBadges';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { User, Clock, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface Props {
   ticket: Ticket;
@@ -15,10 +14,9 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
 
   return (
-    <motion.button
+    <button
       onClick={onClick}
-      whileHover={{ backgroundColor: 'hsl(var(--muted) / 0.5)' }}
-      className={`w-full text-right p-4 transition-all duration-200 ${isOverdue ? 'border-r-2 border-r-destructive' : ''}`}
+      className={`w-full text-right px-4 py-3 transition-colors hover:bg-muted/50 ${isOverdue ? 'border-r-2 border-r-destructive' : ''}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
@@ -28,6 +26,7 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
             </span>
             <StatusBadge status={ticket.status} />
             <PriorityBadge priority={ticket.priority} />
+            <SLABadge slaResolutionDueAt={ticket.sla_resolution_due_at} resolvedAt={ticket.resolved_at} />
             {ticket.services && (
               <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                 {ticket.services.systems?.name} → {ticket.services.name}
@@ -36,12 +35,6 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
             {ticket.departments?.name && (
               <span className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
                 {ticket.departments.name}
-              </span>
-            )}
-            {isOverdue && (
-              <span className="text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded-full flex items-center gap-0.5 font-medium">
-                <AlertTriangle className="h-2.5 w-2.5" />
-                متأخرة
               </span>
             )}
           </div>
@@ -66,6 +59,6 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
           {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: ar })}
         </span>
       </div>
-    </motion.button>
+    </button>
   );
 }

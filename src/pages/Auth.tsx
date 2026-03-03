@@ -58,46 +58,24 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, hsl(152,30%,96%) 0%, hsl(160,25%,92%) 50%, hsl(145,20%,94%) 100%)' }}>
-      {/* Floating particles on entire page */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: 4 + Math.random() * 6,
-              height: 4 + Math.random() * 6,
-              background: `hsl(152, 50%, ${40 + i * 5}%)`,
-              left: `${10 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              x: [0, 10, 0],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
-          />
-        ))}
-      </div>
-      {/* Left panel - branding (green side) */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, hsl(152,45%,28%) 0%, hsl(158,40%,22%) 50%, hsl(165,35%,18%) 100%)' }}>
+    <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, hsl(220,20%,96%) 0%, hsl(222,25%,93%) 50%, hsl(218,20%,95%) 100%)' }}>
+      {/* Left panel - branding (dark navy side) */}
+      <div className="hidden lg:flex flex-1 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, hsl(222,35%,18%) 0%, hsl(222,40%,14%) 50%, hsl(225,35%,12%) 100%)' }}>
         {/* Decorative circles */}
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.08, 0.12, 0.08] }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.06, 0.1, 0.06] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full"
-          style={{ background: 'radial-gradient(circle, hsl(152,55%,45%) 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, hsl(217,72%,55%) 0%, transparent 70%)' }}
         />
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.06, 0.1, 0.06] }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.04, 0.08, 0.04] }}
           transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
           className="absolute -bottom-40 -left-20 w-[400px] h-[400px] rounded-full"
-          style={{ background: 'radial-gradient(circle, hsl(160,50%,40%) 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, hsl(217,72%,50%) 0%, transparent 70%)' }}
         />
-        {/* Pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
+        {/* Pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
           backgroundSize: '32px 32px',
         }} />
@@ -111,12 +89,12 @@ export default function AuthPage() {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }}
               className="flex items-center gap-4 mb-10"
             >
-              <motion.div whileHover={{ rotate: [0, -5, 5, 0] }} transition={{ duration: 0.5 }}>
-                <img src={logoImg} alt="TicketFlow" className="h-14 w-14 rounded-2xl shadow-xl ring-2 ring-white/20" />
-              </motion.div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl shadow-xl ring-2 ring-white/10" style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(217,72%,58%))' }}>
+                <img src={logoImg} alt="TicketFlow" className="h-8 w-8 object-contain" />
+              </div>
               <div>
                 <h1 className="text-2xl font-extrabold text-white">TicketFlow</h1>
-                <p className="text-xs text-white/60 font-medium tracking-widest mt-0.5">SMART HELPDESK</p>
+                <p className="text-xs text-white/50 font-medium tracking-widest mt-0.5">SMART HELPDESK</p>
               </div>
             </motion.div>
 
@@ -131,11 +109,11 @@ export default function AuthPage() {
                 أدِر طلباتك
                 <br />
                 <motion.span
-                  className="text-emerald-300 inline-block"
+                  className="inline-block"
                   animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
                   transition={{ duration: 5, repeat: Infinity }}
                   style={{
-                    backgroundImage: 'linear-gradient(90deg, hsl(152,70%,70%), hsl(180,70%,65%), hsl(152,70%,70%))',
+                    backgroundImage: 'linear-gradient(90deg, hsl(217,72%,70%), hsl(199,89%,65%), hsl(217,72%,70%))',
                     backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -144,7 +122,7 @@ export default function AuthPage() {
                   بذكاء وكفاءة
                 </motion.span>
               </h2>
-              <p className="text-sm text-white/60 leading-relaxed max-w-md">
+              <p className="text-sm text-white/50 leading-relaxed max-w-md">
                 منصة متكاملة تجمع بين سهولة الاستخدام وقوة الأداء.
                 من تقديم الطلب حتى إغلاقه — كل شيء تحت السيطرة.
               </p>
@@ -158,14 +136,14 @@ export default function AuthPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
-                  whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.08)' }}
-                  className="rounded-xl bg-white/[0.05] border border-white/[0.08] p-4 transition-all duration-300 cursor-default"
+                  whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.06)' }}
+                  className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-4 transition-all duration-300 cursor-default"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-emerald-400/20 flex items-center justify-center mb-2.5">
-                    <f.icon className="h-4.5 w-4.5 text-emerald-300" />
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-2.5" style={{ background: 'hsl(217,72%,50% / 0.2)' }}>
+                    <f.icon className="h-4.5 w-4.5" style={{ color: 'hsl(217,72%,70%)' }} />
                   </div>
                   <h3 className="text-sm font-bold text-white mb-0.5">{f.title}</h3>
-                  <p className="text-[11px] text-white/45 leading-relaxed">{f.desc}</p>
+                  <p className="text-[11px] text-white/40 leading-relaxed">{f.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -183,8 +161,8 @@ export default function AuthPage() {
                 { icon: Users, t: 'متعدد المستخدمين' },
               ].map((b, i) => (
                 <div key={i} className="flex items-center gap-1.5">
-                  <b.icon className="h-3.5 w-3.5 text-emerald-400/70" />
-                  <span className="text-[11px] text-white/40">{b.t}</span>
+                  <b.icon className="h-3.5 w-3.5" style={{ color: 'hsl(217,72%,60% / 0.7)' }} />
+                  <span className="text-[11px] text-white/35">{b.t}</span>
                 </div>
               ))}
             </motion.div>
@@ -192,7 +170,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Right panel - form (light side) */}
+      {/* Right panel - form */}
       <div className="flex-1 flex items-center justify-center relative z-10 p-5 sm:p-8">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
@@ -207,7 +185,9 @@ export default function AuthPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-8 lg:hidden"
           >
-            <img src={logoImg} alt="TicketFlow" className="h-12 w-12 mx-auto rounded-xl shadow-lg" />
+            <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(222,60%,42%))' }}>
+              <img src={logoImg} alt="TicketFlow" className="h-7 w-7 object-contain" />
+            </div>
             <h1 className="text-lg font-bold text-foreground mt-3">TicketFlow</h1>
             <p className="text-muted-foreground mt-1 text-xs">منصة إدارة الطلبات الذكية</p>
           </motion.div>
@@ -217,13 +197,12 @@ export default function AuthPage() {
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] as const }}
-            className="rounded-2xl bg-white shadow-xl shadow-black/[0.05] border border-black/[0.04] overflow-hidden relative"
+            className="rounded-2xl bg-card shadow-xl shadow-foreground/[0.04] border border-border overflow-hidden relative"
           >
             {/* Top accent bar */}
-            <div className="h-1.5" style={{ background: 'linear-gradient(90deg, hsl(152,45%,35%), hsl(160,50%,40%), hsl(152,45%,35%))' }} />
+            <div className="h-1.5" style={{ background: 'linear-gradient(90deg, hsl(217,72%,50%), hsl(217,72%,58%), hsl(217,72%,50%))' }} />
 
             <div className="p-7">
-              {/* Icon + heading */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -235,180 +214,98 @@ export default function AuthPage() {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.35, type: 'spring', stiffness: 200, damping: 15 }}
                   className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-                  style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}
+                  style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(222,60%,42%))' }}
                 >
                   <Lock className="h-6 w-6 text-white" />
                 </motion.div>
-                <h2 className="text-xl font-bold text-gray-800">مرحباً بعودتك</h2>
-                <p className="text-xs text-gray-400 mt-1">سجّل دخولك للوصول إلى لوحة التحكم</p>
+                <h2 className="text-xl font-bold text-foreground">مرحباً بعودتك</h2>
+                <p className="text-xs text-muted-foreground mt-1">سجّل دخولك للوصول إلى لوحة التحكم</p>
               </motion.div>
 
               <form onSubmit={handleLogin} className="space-y-5">
-                <motion.div
-                  initial={{ opacity: 0, x: 15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4, duration: 0.4 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="email" className="text-gray-500 text-xs font-medium flex items-center gap-1.5">
+                <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.4 }} className="space-y-2">
+                  <Label htmlFor="email" className="text-muted-foreground text-xs font-medium flex items-center gap-1.5">
                     <Mail className="h-3 w-3" />
                     البريد الإلكتروني
                   </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={loginEmail}
-                    onChange={e => setLoginEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    required
-                    dir="ltr"
-                    className="h-12 bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-400 rounded-xl transition-all text-sm"
+                    id="email" type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
+                    placeholder="name@company.com" required dir="ltr"
+                    className="h-12 rounded-xl text-sm"
                   />
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: 15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="password" className="text-gray-500 text-xs font-medium flex items-center gap-1.5">
+                <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="space-y-2">
+                  <Label htmlFor="password" className="text-muted-foreground text-xs font-medium flex items-center gap-1.5">
                     <Lock className="h-3 w-3" />
                     كلمة المرور
                   </Label>
                   <Input
-                    id="password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={e => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    dir="ltr"
-                    className="h-12 bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-emerald-500/30 focus-visible:border-emerald-400 rounded-xl transition-all text-sm"
+                    id="password" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
+                    placeholder="••••••••" required dir="ltr"
+                    className="h-12 rounded-xl text-sm"
                   />
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.55 }}
-                  className="text-left"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setForgotMode(true)}
-                    className="text-[11px] text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
-                  >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="text-left">
+                  <button type="button" onClick={() => setForgotMode(true)} className="text-[11px] text-primary hover:underline transition-colors">
                     نسيت كلمة المرور؟
                   </button>
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
                   <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.985 }}>
                     <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full h-12 rounded-xl font-bold text-sm text-white shadow-lg shadow-emerald-600/20 transition-all duration-300 gap-2"
-                      style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}
+                      type="submit" disabled={loading}
+                      className="w-full h-12 rounded-xl font-bold text-sm gradient-accent text-accent-foreground shadow-lg shadow-primary/20 transition-all duration-300 gap-2"
                     >
-                      {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          تسجيل الدخول
-                          <ArrowLeft className="h-4 w-4" />
-                        </>
-                      )}
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>تسجيل الدخول<ArrowLeft className="h-4 w-4" /></>)}
                     </Button>
                   </motion.div>
                 </motion.div>
               </form>
 
-              {/* Forgot Password Modal */}
+              {/* Forgot Password */}
               {forgotMode && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute inset-0 bg-white rounded-2xl p-7 flex flex-col justify-center z-10"
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute inset-0 bg-card rounded-2xl p-7 flex flex-col justify-center z-10">
                   {forgotSent ? (
                     <div className="text-center">
-                      <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-                      <h3 className="text-lg font-bold text-gray-800">تم الإرسال!</h3>
-                      <p className="text-xs text-gray-400 mt-2 mb-6">تحقق من بريدك الإلكتروني لإعادة تعيين كلمة المرور</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => { setForgotMode(false); setForgotSent(false); }}
-                        className="text-xs"
-                      >
-                        العودة لتسجيل الدخول
-                      </Button>
+                      <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-3" />
+                      <h3 className="text-lg font-bold text-foreground">تم الإرسال!</h3>
+                      <p className="text-xs text-muted-foreground mt-2 mb-6">تحقق من بريدك الإلكتروني لإعادة تعيين كلمة المرور</p>
+                      <Button variant="outline" size="sm" onClick={() => { setForgotMode(false); setForgotSent(false); }} className="text-xs">العودة لتسجيل الدخول</Button>
                     </div>
                   ) : (
                     <>
                       <div className="text-center mb-6">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg"
-                          style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}>
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg" style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(222,60%,42%))' }}>
                           <Mail className="h-5 w-5 text-white" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800">نسيت كلمة المرور</h3>
-                        <p className="text-xs text-gray-400 mt-1">سنرسل لك رابط إعادة التعيين</p>
+                        <h3 className="text-lg font-bold text-foreground">نسيت كلمة المرور</h3>
+                        <p className="text-xs text-muted-foreground mt-1">سنرسل لك رابط إعادة التعيين</p>
                       </div>
                       <form onSubmit={handleForgotPassword} className="space-y-4">
                         <div className="space-y-2">
-                          <Label className="text-gray-500 text-xs">البريد الإلكتروني</Label>
-                          <Input
-                            type="email"
-                            value={forgotEmail}
-                            onChange={e => setForgotEmail(e.target.value)}
-                            placeholder="name@company.com"
-                            required
-                            dir="ltr"
-                            className="h-12 bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-300 rounded-xl text-sm"
-                          />
+                          <Label className="text-muted-foreground text-xs">البريد الإلكتروني</Label>
+                          <Input type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="name@company.com" required dir="ltr" className="h-12 rounded-xl text-sm" />
                         </div>
-                        <Button
-                          type="submit"
-                          disabled={forgotLoading}
-                          className="w-full h-12 rounded-xl font-bold text-sm text-white shadow-lg gap-2"
-                          style={{ background: 'linear-gradient(135deg, hsl(152,45%,35%), hsl(160,50%,38%))' }}
-                        >
+                        <Button type="submit" disabled={forgotLoading} className="w-full h-12 rounded-xl font-bold text-sm gradient-accent text-accent-foreground shadow-lg gap-2">
                           {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إرسال رابط الاستعادة'}
                         </Button>
                       </form>
-                      <button
-                        onClick={() => setForgotMode(false)}
-                        className="text-xs text-gray-400 hover:text-gray-600 mt-4 mx-auto block"
-                      >
-                        العودة لتسجيل الدخول
-                      </button>
+                      <button onClick={() => setForgotMode(false)} className="text-xs text-muted-foreground hover:text-foreground mt-4 mx-auto block">العودة لتسجيل الدخول</button>
                     </>
                   )}
                 </motion.div>
               )}
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="text-center text-gray-300 text-[11px] mt-6"
-              >
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-center text-muted-foreground text-[11px] mt-6">
                 للحصول على حساب جديد، تواصل مع مسؤول النظام
               </motion.p>
             </div>
           </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="text-center text-gray-400 text-[11px] mt-6"
-          >
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="text-center text-muted-foreground text-[11px] mt-6">
             © {new Date().getFullYear()} TicketFlow — جميع الحقوق محفوظة
           </motion.p>
         </motion.div>
