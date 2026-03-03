@@ -6,20 +6,17 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Inbox, Clock, CheckCircle2, AlertTriangle, Search, Plus, Loader2,
   Users, BarChart3, Shield, Zap, Globe, Headphones, Timer, TrendingUp,
-  TrendingDown, Activity, BookOpen
+  TrendingDown, Activity, BookOpen, Download
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, CartesianGrid
-} from 'recharts';
+import { DashboardCharts, exportToCSV } from '@/components/DashboardCharts';
+import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 
 const statusFilters: { label: string; value: TicketStatus | 'all' }[] = [
   { label: 'الكل', value: 'all' },
@@ -29,11 +26,6 @@ const statusFilters: { label: string; value: TicketStatus | 'all' }[] = [
   { label: 'بانتظار العميل', value: 'waiting_on_customer' },
   { label: 'تم الحل', value: 'resolved' },
   { label: 'مغلقة', value: 'closed' },
-];
-
-const COLORS = [
-  'hsl(152, 55%, 38%)', 'hsl(160, 60%, 42%)', 'hsl(38, 92%, 50%)',
-  'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(45, 90%, 48%)'
 ];
 
 const fadeUp = {
@@ -64,6 +56,9 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deptFilter, setDeptFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState(7);
+
+  // Enable Realtime
+  useRealtimeTickets();
 
   const rangeFrom = useMemo(() => {
     const d = new Date();
@@ -115,24 +110,6 @@ export default function Dashboard() {
       if (t.resolved_at) map[day].resolved++;
     });
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
-  }, [report]);
-
-  // Status data for pie
-  const statusPieData = useMemo(() => {
-    if (!report?.byStatus) return [];
-    return Object.entries(report.byStatus).map(([k, v]) => ({
-      name: statusLabels[k as TicketStatus] || k,
-      value: v as number,
-    })).filter(d => d.value > 0);
-  }, [report]);
-
-  // Source data
-  const sourceData = useMemo(() => {
-    if (!report?.bySystem) return [];
-    return Object.entries(report.bySystem).map(([k, v]) => ({
-      name: k,
-      value: v as number,
-    })).filter(d => d.value > 0);
   }, [report]);
 
   const isAdmin = role === 'admin' || role === 'agent';
@@ -187,126 +164,19 @@ export default function Dashboard() {
               animate={{ opacity: 1 }}
               className="p-4 md:p-6 space-y-6"
             >
-              {/* Top KPI Row - matching wireframe */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {/* Top KPI Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                 <KPICard title="تذاكر غير محلولة" value={unresolvedCount} icon={Inbox} color="text-primary" bgGradient="from-primary/10 to-primary/5" />
                 <KPICard title="معلّقة" value={pendingCount} icon={Clock} color="text-warning" bgGradient="from-warning/10 to-warning/5" />
                 <KPICard title="متأخرة" value={report?.overdueCount ?? 0} icon={AlertTriangle} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" />
                 <KPICard title="تجاوزات SLA" value={report?.slaBreaches ?? 0} icon={Shield} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
+                <KPICard title="متوسط أول رد" value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} color="text-info" bgGradient="from-info/10 to-info/5" />
+                <KPICard title="التزام SLA" value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} color="text-success" bgGradient="from-success/10 to-success/5" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
               </div>
 
-              {/* Row 2: Avg First Response + Weekly Trend */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Avg First Response */}
-                <Card className="lg:col-span-1">
-                  <CardContent className="pt-5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Timer className="h-4 w-4 text-info" />
-                      <span className="text-xs font-medium text-muted-foreground">متوسط أول رد</span>
-                    </div>
-                    <div className="flex items-end gap-2">
-                      <span className="text-3xl font-bold text-foreground">{report?.avgFirstResponseHours ?? 0}h</span>
-                      {report?.avgFirstResponseHours !== undefined && (
-                        <span className={`text-xs flex items-center gap-0.5 ${(report?.avgFirstResponseHours ?? 0) < 4 ? 'text-success' : 'text-warning'}`}>
-                          {(report?.avgFirstResponseHours ?? 0) < 4 ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-                          {(report?.avgFirstResponseHours ?? 0) < 4 ? 'جيد' : 'يحتاج تحسين'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-1 mb-3">
-                      <Activity className="h-3.5 w-3.5 text-accent" />
-                      <span className="text-xs text-muted-foreground">متوسط الحل: {report?.avgResolutionHours ?? 0}h</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">التزام SLA</span>
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-success rounded-full transition-all" style={{ width: `${report?.slaCompliancePercent ?? 0}%` }} />
-                      </div>
-                      <span className="text-xs font-bold text-success">{report?.slaCompliancePercent ?? 0}%</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Weekly Trend Area Chart */}
-                <Card className="lg:col-span-2">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4 text-primary" />
-                      اتجاه التذاكر
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {trendData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={180}>
-                        <AreaChart data={trendData}>
-                          <defs>
-                            <linearGradient id="colorCreated" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(152, 55%, 38%)" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="hsl(152, 55%, 38%)" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorResolved" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} />
-                          <YAxis tick={{ fontSize: 10 }} />
-                          <Tooltip />
-                          <Area type="monotone" dataKey="created" name="تم إنشاؤها" stroke="hsl(152, 55%, 38%)" fill="url(#colorCreated)" strokeWidth={2} />
-                          <Area type="monotone" dataKey="resolved" name="تم حلها" stroke="hsl(199, 89%, 48%)" fill="url(#colorResolved)" strokeWidth={2} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-[180px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات في هذه الفترة</div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Row 3: Status Pie + Source Bar */}
+              {/* Charts Section - Admin only */}
               {isAdmin && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">التذاكر حسب الحالة</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {statusPieData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={200}>
-                          <PieChart>
-                            <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
-                              {statusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                            </Pie>
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">التذاكر حسب المصدر</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {sourceData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={200}>
-                          <BarChart data={sourceData}>
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                            <YAxis tick={{ fontSize: 11 }} />
-                            <Tooltip />
-                            <Bar dataKey="value" fill="hsl(160, 60%, 42%)" radius={[4, 4, 0, 0]} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+                <DashboardCharts report={report} trendData={trendData} />
               )}
 
               {/* Quick Actions */}
@@ -334,7 +204,7 @@ export default function Dashboard() {
               )}
 
               {/* Ticket List */}
-              <motion.div variants={fadeUp} initial="hidden" animate="visible" className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+              <motion.div variants={fadeUp} initial="hidden" animate="visible" className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card">
                 <div className="p-4 border-b border-border/50">
                   <div className="flex items-center gap-3 mb-3 md:hidden">
                     <div className="relative flex-1">
@@ -417,19 +287,19 @@ function KPICard({ title, value, icon: Icon, color, bgGradient, trend }: {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -3 }}
-      className={`rounded-2xl border border-border/50 bg-gradient-to-br ${bgGradient} p-5 transition-shadow hover:shadow-card-hover`}
+      className={`rounded-2xl border border-border/50 bg-gradient-to-br ${bgGradient} p-4 transition-shadow hover:shadow-card-hover`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground font-medium">{title}</p>
+          <p className="text-[10px] text-muted-foreground font-medium">{title}</p>
           <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-2xl font-bold text-foreground">{value}</span>
-            {trend === 'up' && <TrendingUp className="h-3.5 w-3.5 text-success" />}
-            {trend === 'down' && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
+            <span className="text-xl font-bold text-foreground">{value}</span>
+            {trend === 'up' && <TrendingUp className="h-3 w-3 text-success" />}
+            {trend === 'down' && <TrendingDown className="h-3 w-3 text-destructive" />}
           </div>
         </div>
-        <div className={`w-10 h-10 rounded-xl bg-card/80 flex items-center justify-center ${color}`}>
-          <Icon className="h-5 w-5" />
+        <div className={`w-9 h-9 rounded-xl bg-card/80 flex items-center justify-center ${color}`}>
+          <Icon className="h-4 w-4" />
         </div>
       </div>
     </motion.div>

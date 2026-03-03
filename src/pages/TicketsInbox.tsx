@@ -8,7 +8,7 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Loader2, Filter, CalendarDays, Plus } from 'lucide-react';
+import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -41,16 +42,29 @@ const listItem = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
+interface SavedFilter {
+  name: string;
+  status: TicketStatus | 'all';
+  priority: TicketPriority | 'all';
+}
+
 export default function TicketsInbox() {
   const { user, role } = useAuth();
   const navigate = useNavigate();
 
+  // Enable Realtime
+  useRealtimeTickets();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
-  const [overdueOnly, setOverdueOnly] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ticket-saved-filters') || '[]');
+    } catch { return []; }
+  });
 
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['tickets'],
@@ -71,7 +85,7 @@ export default function TicketsInbox() {
 
   const applyFilters = (list: typeof tickets) => {
     return list.filter((t) => {
-      const matchesSearch = !searchQuery || t.title.includes(searchQuery) || t.ticket_number.toString().includes(searchQuery);
+      const matchesSearch = !searchQuery || t.title.includes(searchQuery) || t.ticket_number.toString().includes(searchQuery) || t.code?.includes(searchQuery);
       const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter;
       const matchesDateFrom = !dateFrom || !isBefore(new Date(t.created_at), startOfDay(dateFrom));
@@ -106,6 +120,35 @@ export default function TicketsInbox() {
   }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
 
   const allFiltered = useMemo(() => applyFilters(tickets), [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
+
+  const activeFiltersCount = [statusFilter !== 'all', priorityFilter !== 'all', !!dateFrom, !!dateTo].filter(Boolean).length;
+
+  const saveCurrentFilter = () => {
+    const name = `فلتر ${savedFilters.length + 1}`;
+    const newFilter: SavedFilter = { name, status: statusFilter, priority: priorityFilter };
+    const updated = [...savedFilters, newFilter];
+    setSavedFilters(updated);
+    localStorage.setItem('ticket-saved-filters', JSON.stringify(updated));
+  };
+
+  const applySavedFilter = (filter: SavedFilter) => {
+    setStatusFilter(filter.status);
+    setPriorityFilter(filter.priority);
+  };
+
+  const removeSavedFilter = (index: number) => {
+    const updated = savedFilters.filter((_, i) => i !== index);
+    setSavedFilters(updated);
+    localStorage.setItem('ticket-saved-filters', JSON.stringify(updated));
+  };
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setPriorityFilter('all');
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setSearchQuery('');
+  };
 
   const renderList = (list: typeof tickets) => {
     if (isLoading) {
@@ -143,7 +186,7 @@ export default function TicketsInbox() {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="بحث بالعنوان أو رقم التذكرة..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
+          <Input placeholder="بحث بالعنوان أو الرقم أو الكود..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
@@ -189,7 +232,35 @@ export default function TicketsInbox() {
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Save filter */}
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={saveCurrentFilter}>
+          <Bookmark className="h-3.5 w-3.5" />
+          حفظ الفلتر
+        </Button>
+
+        {activeFiltersCount > 0 && (
+          <Button variant="ghost" size="sm" className="gap-1 text-xs text-destructive" onClick={clearFilters}>
+            <X className="h-3.5 w-3.5" />
+            مسح ({activeFiltersCount})
+          </Button>
+        )}
       </div>
+
+      {/* Saved filters */}
+      {savedFilters.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] text-muted-foreground font-medium">فلاتر محفوظة:</span>
+          {savedFilters.map((f, i) => (
+            <div key={i} className="flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-1">
+              <button className="text-[10px] font-medium" onClick={() => applySavedFilter(f)}>{f.name}</button>
+              <button onClick={() => removeSavedFilter(i)} className="hover:text-destructive">
+                <X className="h-2.5 w-2.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 
@@ -209,6 +280,14 @@ export default function TicketsInbox() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <h1 className="text-lg font-bold hidden sm:block text-foreground">صندوق التذاكر</h1>
+              {/* Live indicator */}
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                </span>
+                <span className="text-[10px] text-success font-medium hidden sm:inline">مباشر</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <NotificationsPopover />
