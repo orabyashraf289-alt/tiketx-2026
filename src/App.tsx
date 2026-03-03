@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useRealtimeNotificationSound } from '@/hooks/useRealtimeNotificationSound';
 import { ThemeProvider } from '@/hooks/useTheme';
 import Index from './pages/Index';
 import AuthPage from './pages/Auth';
@@ -29,6 +30,7 @@ const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  useRealtimeNotificationSound();
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

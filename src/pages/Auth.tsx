@@ -59,6 +59,28 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, hsl(152,30%,96%) 0%, hsl(160,25%,92%) 50%, hsl(145,20%,94%) 100%)' }}>
+      {/* Floating particles on entire page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: 4 + Math.random() * 6,
+              height: 4 + Math.random() * 6,
+              background: `hsl(152, 50%, ${40 + i * 5}%)`,
+              left: `${10 + i * 15}%`,
+              top: `${20 + (i % 3) * 25}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, 10, 0],
+              opacity: [0.2, 0.5, 0.2],
+            }}
+            transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+          />
+        ))}
+      </div>
       {/* Left panel - branding (green side) */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, hsl(152,45%,28%) 0%, hsl(158,40%,22%) 50%, hsl(165,35%,18%) 100%)' }}>
         {/* Decorative circles */}
@@ -108,7 +130,19 @@ export default function AuthPage() {
               <h2 className="text-3xl xl:text-4xl font-extrabold text-white leading-tight mb-3">
                 أدِر طلباتك
                 <br />
-                <span className="text-emerald-300">بذكاء وكفاءة</span>
+                <motion.span
+                  className="text-emerald-300 inline-block"
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, hsl(152,70%,70%), hsl(180,70%,65%), hsl(152,70%,70%))',
+                    backgroundSize: '200% auto',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  بذكاء وكفاءة
+                </motion.span>
               </h2>
               <p className="text-sm text-white/60 leading-relaxed max-w-md">
                 منصة متكاملة تجمع بين سهولة الاستخدام وقوة الأداء.
