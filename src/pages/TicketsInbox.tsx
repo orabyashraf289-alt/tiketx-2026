@@ -8,7 +8,7 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark } from 'lucide-react';
+import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
+import { KanbanBoard } from '@/components/KanbanBoard';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -56,6 +57,7 @@ export default function TicketsInbox() {
   useRealtimeTickets();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -290,6 +292,17 @@ export default function TicketsInbox() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* View toggle */}
+              {isAgentOrAdmin && (
+                <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+                  <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+                    <List className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
               <NotificationsPopover />
               <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
                 <Plus className="h-4 w-4" />
@@ -304,6 +317,11 @@ export default function TicketsInbox() {
               initial="hidden"
               animate="visible"
             >
+              {viewMode === 'kanban' && isAgentOrAdmin ? (
+                <motion.div variants={fadeUp} className="p-4 md:p-6">
+                  <KanbanBoard tickets={allFiltered} isAdmin={isAgentOrAdmin} />
+                </motion.div>
+              ) : (
               <Tabs defaultValue={defaultTab} className="flex flex-col h-full" dir="rtl">
                 <motion.div variants={fadeUp} className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-4">
                   <TabsList className="bg-transparent h-auto p-0 gap-0">
@@ -410,6 +428,7 @@ export default function TicketsInbox() {
                   )}
                 </motion.div>
               </Tabs>
+              )}
             </motion.div>
           </main>
         </div>

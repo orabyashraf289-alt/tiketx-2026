@@ -6,10 +6,11 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown } from 'lucide-react';
+import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { motion } from 'framer-motion';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
+import { exportReportPDF } from '@/components/ReportPDFExport';
 
 const COLORS = ['hsl(152, 55%, 38%)', 'hsl(160, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(45, 90%, 48%)'];
 
@@ -161,6 +162,10 @@ export default function AdminReports() {
             </div>
             <div className="flex gap-2 items-center">
               <NotificationsPopover />
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportReportPDF(report, activePreset || `${dateFrom} - ${dateTo}`)}>
+                <FileText className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">تصدير PDF</span>
+              </Button>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handlePrint}>
                 <Printer className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">طباعة</span>
