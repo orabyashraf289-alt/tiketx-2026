@@ -374,8 +374,101 @@ export default function AdminReports() {
                 )}
               </div>
 
+              {/* Performance Dashboards */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Operations Overview */}
+                <motion.div custom={14} variants={fadeUp} initial="hidden" animate="show">
+                  <Card className="border-t-4 border-t-primary">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold">نظرة عامة على العمليات</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">غير محلولة</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold">{report.total - (report.byStatus['resolved'] || 0) - (report.byStatus['closed'] || 0)}</span>
+                          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: `${report.total ? ((report.total - (report.byStatus['resolved'] || 0) - (report.byStatus['closed'] || 0)) / report.total * 100) : 0}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">معلّقة</span>
+                        <span className="text-sm font-bold">{(report.byStatus['new'] || 0) + (report.byStatus['waiting_on_customer'] || 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">متأخرة</span>
+                        <span className="text-sm font-bold text-destructive">{report.overdueCount ?? 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5">
+                        <span className="text-xs text-muted-foreground">تجاوزات SLA</span>
+                        <span className="text-sm font-bold text-destructive">{report.slaBreaches}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Agent Performance */}
+                <motion.div custom={15} variants={fadeUp} initial="hidden" animate="show">
+                  <Card className="border-t-4 border-t-info">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold">أداء الفريق</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">متوسط زمن الحل</span>
+                        <span className="text-sm font-bold">{report.avgResolutionHours}h</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">متوسط أول رد</span>
+                        <span className="text-sm font-bold">{report.avgFirstResponseHours ?? 0}h</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                        <span className="text-xs text-muted-foreground">تم حلها</span>
+                        <span className="text-sm font-bold text-success">{report.byStatus['resolved'] || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1.5">
+                        <span className="text-xs text-muted-foreground">مغلقة</span>
+                        <span className="text-sm font-bold">{report.byStatus['closed'] || 0}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Customer Experience */}
+                <motion.div custom={16} variants={fadeUp} initial="hidden" animate="show">
+                  <Card className="border-t-4 border-t-success">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold">تجربة العميل</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center mb-4">
+                        <p className="text-xs text-muted-foreground mb-1">التزام SLA الإجمالي</p>
+                        <div className="relative w-24 h-24 mx-auto">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--success))" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(report.slaCompliancePercent / 100) * 264} 264`} />
+                          </svg>
+                          <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">{report.slaCompliancePercent}%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">ضمن SLA</span>
+                          <span className="font-bold text-success">{report.slaMet}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">تجاوزت SLA</span>
+                          <span className="font-bold text-destructive">{report.slaBreaches}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+
               {/* Printable Table */}
-              <motion.div custom={14} variants={fadeUp} initial="hidden" animate="show">
+              <motion.div custom={17} variants={fadeUp} initial="hidden" animate="show">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm">جدول التذاكر التفصيلي</CardTitle>

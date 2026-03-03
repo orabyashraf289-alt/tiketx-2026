@@ -147,6 +147,59 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_base_articles: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          helpful_count: number
+          id: string
+          is_published: boolean
+          service_id: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content: string
+          created_at?: string
+          helpful_count?: number
+          id?: string
+          is_published?: boolean
+          service_id?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          helpful_count?: number
+          id?: string
+          is_published?: boolean
+          service_id?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_articles_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null

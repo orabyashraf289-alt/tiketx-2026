@@ -36,6 +36,7 @@ const mainItems = [
   { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
   { title: 'صندوق التذاكر', url: '/tickets', icon: Inbox },
   { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
+  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
 ];
 
 const adminItems = [
