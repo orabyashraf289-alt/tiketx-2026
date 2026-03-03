@@ -2,3 +2,9 @@ project_id = "yoamlepdjzsjwppxhuov"
 
 [functions.ticket-ai-chat]
 verify_jwt = false
+
+[functions.send-email-notification]
+verify_jwt = false
+
+[functions.receive-external-ticket]
+verify_jwt = false

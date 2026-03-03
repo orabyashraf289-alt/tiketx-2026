@@ -24,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { motion } from 'framer-motion';
 import { AiChatPanel } from '@/components/AiChatPanel';
 import { CSATWidget } from '@/components/CSATWidget';
+import { TicketPDFExport } from '@/components/TicketPDFExport';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -347,6 +348,7 @@ export default function TicketDetailPage() {
                           {fileUploadMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Paperclip className="h-3 w-3" />}
                           إرفاق ملف
                         </Button>
+                        <TicketPDFExport ticket={ticket} comments={comments} attachments={attachments} />
                         {!isAgentOrAdmin && (ticket.status === 'resolved' || ticket.status === 'closed') && (
                           <Button variant="outline" size="sm" className="gap-1 text-xs rounded-xl" onClick={handleReopen} disabled={statusMutation.isPending}>
                             <RotateCcw className="h-3 w-3" />

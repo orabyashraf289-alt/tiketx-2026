@@ -21,6 +21,7 @@ import AdminApprovalStages from './pages/AdminApprovalStages';
 import KnowledgeBase from './pages/KnowledgeBase';
 import ProfilePage from './pages/ProfilePage';
 import AgentPerformance from './pages/AgentPerformance';
+import AdminExternalAPI from './pages/AdminExternalAPI';
 import NotFound from './pages/NotFound';
 import { Loader2 } from 'lucide-react';
 
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
+              <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
