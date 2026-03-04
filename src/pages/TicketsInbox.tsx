@@ -8,7 +8,8 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List } from 'lucide-react';
+import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
+import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,8 @@ export default function TicketsInbox() {
   useRealtimeTickets();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'table' | 'kanban'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -170,6 +172,16 @@ export default function TicketsInbox() {
           <Inbox className="h-12 w-12 mb-3 opacity-30" />
           <p className="font-medium">لا توجد تذاكر</p>
         </motion.div>
+      );
+    }
+    if (viewMode === 'table') {
+      return (
+        <TicketTableView
+          tickets={list}
+          onTicketClick={(id) => navigate(`/tickets/${id}`)}
+          page={currentPage}
+          onPageChange={setCurrentPage}
+        />
       );
     }
     return (
@@ -295,8 +307,11 @@ export default function TicketsInbox() {
               {/* View toggle */}
               {isAgentOrAdmin && (
                 <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-                  <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+                  <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
                     <List className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => { setViewMode('table'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+                    <TableProperties className="h-4 w-4" />
                   </button>
                   <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
                     <LayoutGrid className="h-4 w-4" />
