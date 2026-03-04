@@ -47,12 +47,13 @@ Deno.serve(async (req) => {
       // Get ticket info for notification
       const { data: ticket } = await supabase
         .from("tickets")
-        .select("ticket_number, requester_id")
+        .select("ticket_number, requester_id, title")
         .eq("id", approval.ticket_id)
         .single();
 
-      // Notify escalation target
+      // Notify escalation target (in-app + email)
       if (escalationTo && ticket) {
+        // In-app notification
         await supabase.from("notifications").insert({
           user_id: escalationTo,
           ticket_id: approval.ticket_id,
@@ -60,6 +61,31 @@ Deno.serve(async (req) => {
           message: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} إليك بسبب تأخر الاعتماد`,
           type: "approval_escalated",
         });
+
+        // Send email notification
+        const { data: escalationProfile } = await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", escalationTo)
+          .single();
+
+        if (escalationProfile?.email) {
+          try {
+            await supabase.functions.invoke("send-email-notification", {
+              body: {
+                ticket_id: approval.ticket_id,
+                event_type: "approval_escalated",
+                recipient_email: escalationProfile.email,
+                recipient_name: escalationProfile.full_name,
+                ticket_number: ticket.ticket_number,
+                ticket_title: ticket.title,
+                details: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} إليك بسبب تأخر الاعتماد. يرجى مراجعتها واتخاذ الإجراء المناسب.`,
+              },
+            });
+          } catch (emailErr) {
+            console.error("Failed to send escalation email:", emailErr);
+          }
+        }
       }
 
       // Notify requester
@@ -71,6 +97,31 @@ Deno.serve(async (req) => {
           message: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} بسبب تأخر الاعتماد`,
           type: "approval_escalated",
         });
+
+        // Email to requester
+        const { data: requesterProfile } = await supabase
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", ticket.requester_id)
+          .single();
+
+        if (requesterProfile?.email) {
+          try {
+            await supabase.functions.invoke("send-email-notification", {
+              body: {
+                ticket_id: approval.ticket_id,
+                event_type: "approval_escalated",
+                recipient_email: requesterProfile.email,
+                recipient_name: requesterProfile.full_name,
+                ticket_number: ticket.ticket_number,
+                ticket_title: ticket.title,
+                details: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} بسبب تأخر الاعتماد.`,
+              },
+            });
+          } catch (emailErr) {
+            console.error("Failed to send requester email:", emailErr);
+          }
+        }
       }
 
       escalatedCount++;
