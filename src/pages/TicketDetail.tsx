@@ -481,12 +481,56 @@ export default function TicketDetailPage() {
                 </motion.div>
               </div>
 
-              {/* Sidebar Info */}
+              {/* Sidebar - Properties Panel */}
               <div className="space-y-4">
+                {/* Service Catalog Info */}
                 <motion.div variants={fadeScale}>
                   <Card className="rounded-2xl border-border/50 shadow-card">
-                    <CardHeader><CardTitle className="text-sm">معلومات التذكرة</CardTitle></CardHeader>
-                    <CardContent className="space-y-4 text-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-primary" />
+                        كتالوج الخدمة
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                      <div className="rounded-xl bg-muted/50 p-3 space-y-2.5">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">النظام</p>
+                          <p className="font-medium text-foreground">
+                            {ticket.services?.systems?.name || <span className="text-muted-foreground">—</span>}
+                          </p>
+                        </div>
+                        <Separator className="bg-border/50" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">الموديول</p>
+                          <p className="font-medium text-foreground">
+                            {ticket.services?.name || <span className="text-muted-foreground">—</span>}
+                          </p>
+                        </div>
+                        <Separator className="bg-border/50" />
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">الشاشة</p>
+                          <p className="font-medium text-foreground">
+                            {ticket.service_categories?.name || <span className="text-muted-foreground">—</span>}
+                          </p>
+                        </div>
+                      </div>
+                      {ticket.source_system && ticket.source_system !== 'PORTAL' && (
+                        <div className="rounded-xl bg-muted/50 p-3">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">المصدر</p>
+                          <p className="font-medium">{ticket.source_system}</p>
+                          {ticket.external_reference && <p className="text-xs text-muted-foreground mt-0.5">المرجع: {ticket.external_reference}</p>}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Ticket Meta Info */}
+                <motion.div variants={fadeScale}>
+                  <Card className="rounded-2xl border-border/50 shadow-card">
+                    <CardHeader className="pb-2"><CardTitle className="text-sm">معلومات التذكرة</CardTitle></CardHeader>
+                    <CardContent className="space-y-3 text-sm">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div>
@@ -515,34 +559,6 @@ export default function TicketDetailPage() {
                           <p className="font-medium">{ticket.departments?.name || '-'}</p>
                         </div>
                       </div>
-                      {ticket.services && (
-                        <div className="flex items-center gap-2">
-                          <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">الخدمة</p>
-                            <p className="font-medium">{ticket.services.systems?.name} → {ticket.services.name}</p>
-                          </div>
-                        </div>
-                      )}
-                      {ticket.service_categories && (
-                        <div className="flex items-center gap-2">
-                          <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">التصنيف</p>
-                            <p className="font-medium">{ticket.service_categories.name}</p>
-                          </div>
-                        </div>
-                      )}
-                      {ticket.source_system && ticket.source_system !== 'PORTAL' && (
-                        <div className="flex items-center gap-2">
-                          <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">المصدر</p>
-                            <p className="font-medium">{ticket.source_system}</p>
-                            {ticket.external_reference && <p className="text-xs text-muted-foreground">المرجع: {ticket.external_reference}</p>}
-                          </div>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </motion.div>
