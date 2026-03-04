@@ -27,13 +27,29 @@ import ProfilePage from './pages/ProfilePage';
 import AgentPerformance from './pages/AgentPerformance';
 import AdminExternalAPI from './pages/AdminExternalAPI';
 import AdminSettings from './pages/AdminSettings';
+import CustomerPortal from './pages/CustomerPortal';
 import NotFound from './pages/NotFound';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
 import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, redirectRequester }: { children: React.ReactNode; redirectRequester?: boolean }) {
+  const { user, loading, role } = useAuth();
+  useRealtimeNotificationSound();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+  if (redirectRequester && role === 'requester') return <Navigate to="/portal" replace />;
+  return <>{children}<CustomerChatbot /></>;
+}
+
+function RequesterRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   useRealtimeNotificationSound();
   if (loading) {
@@ -44,7 +60,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  return <>{children}<CustomerChatbot /></>;
+  return <>{children}</>;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
@@ -72,9 +88,9 @@ const App = () => (
               <Routes>
                 <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                <Route path="/tickets" element={<ProtectedRoute><TicketsInbox /></ProtectedRoute>} />
-                <Route path="/tickets/new" element={<ProtectedRoute><NewTicket /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
+                <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
                 <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
                 <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
