@@ -47,6 +47,13 @@ const mainItems = [
   { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
 ];
 
+const requesterItems = [
+  { title: 'لوحة التحكم', url: '/portal', icon: LayoutDashboard },
+  { title: 'التذاكر', url: '/portal', icon: Inbox },
+  { title: 'تذكرة جديدة', url: '/portal/new', icon: Plus },
+  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
+];
+
 const adminItems = [
   { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
   { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
@@ -95,7 +102,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {(role === 'requester' ? requesterItems : mainItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTickets, fetchComments, addComment, createTicket, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, addAttachment, statusLabels, priorityLabels, Ticket, TicketComment, TicketPriority } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -77,8 +80,17 @@ export default function CustomerPortal() {
   const { user, profile, signOut } = useAuth();
   const { system_name, logo_url } = useSystemSettings();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const [view, setView] = useState<PortalView>('list');
+  const [view, setView] = useState<PortalView>(location.pathname === '/portal/new' ? 'new-ticket' : 'list');
+
+  // Sync view with route changes
+  useEffect(() => {
+    if (location.pathname === '/portal/new') {
+      setView('new-ticket');
+    }
+  }, [location.pathname]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusTab, setStatusTab] = useState('all');
@@ -298,11 +310,13 @@ export default function CustomerPortal() {
   const openNewTicket = () => {
     resetWizard();
     setView('new-ticket');
+    navigate('/portal/new');
   };
 
   const goBackToList = () => {
     setSelectedTicket(null);
     setView('list');
+    navigate('/portal');
   };
 
   const myTickets = tickets.filter(t => {
@@ -315,41 +329,18 @@ export default function CustomerPortal() {
   const resolvedCount = tickets.filter(t => ['closed', 'resolved'].includes(t.status)).length;
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-card/90 backdrop-blur-lg">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {logo_url ? (
-              <img src={logo_url} alt={system_name} className="h-8 w-8 object-contain rounded-lg" />
-            ) : (
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <Home className="h-4 w-4 text-primary-foreground" />
-              </div>
-            )}
-            <div>
-              <h1 className="text-sm font-bold text-foreground leading-tight">{system_name}</h1>
-              <p className="text-[10px] text-muted-foreground">بوابة العملاء</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 flex items-center border-b bg-card px-4 gap-3 shrink-0">
+            <SidebarTrigger />
+            <div className="flex-1" />
             <NotificationsPopover />
-            <div className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                  {profile?.full_name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs font-medium text-foreground hidden sm:inline">{profile?.full_name}</span>
-            </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => signOut()}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+          <main className="flex-1 p-4 md:p-6 overflow-auto">
+            <div className="max-w-5xl mx-auto">
         <AnimatePresence mode="wait">
           {view === 'detail' && selectedTicket && (
             <TicketDetailView
@@ -788,10 +779,13 @@ export default function CustomerPortal() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+            </div>
+          </main>
+        </div>
+      </div>
 
       <CustomerChatbot />
-    </div>
+    </SidebarProvider>
   );
 }
 
