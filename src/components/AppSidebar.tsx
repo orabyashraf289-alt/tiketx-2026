@@ -48,8 +48,8 @@ const mainItems = [
 ];
 
 const requesterItems = [
-  { title: 'لوحة التحكم', url: '/portal', icon: LayoutDashboard },
-  { title: 'التذاكر', url: '/portal', icon: Inbox },
+  { title: 'لوحة المتابعة', url: '/portal', icon: LayoutDashboard },
+  { title: 'تذاكري', url: '/portal/tickets', icon: Inbox },
   { title: 'تذكرة جديدة', url: '/portal/new', icon: Plus },
   { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
 ];

@@ -24,6 +24,7 @@ import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
+import { CustomerDashboard } from '@/components/CustomerDashboard';
 import { WizardProgress } from '@/components/ticket-wizard/WizardProgress';
 import { FileDropZone } from '@/components/ticket-wizard/FileDropZone';
 import { TicketPreview } from '@/components/ticket-wizard/TicketPreview';
@@ -74,7 +75,7 @@ const systemStyles: Record<string, { icon: string; gradient: string }> = {
   'EDUMALLS': { icon: '🎓', gradient: 'from-pink-500/10 to-pink-600/5 border-pink-500/20' },
 };
 
-type PortalView = 'list' | 'detail' | 'new-ticket';
+type PortalView = 'dashboard' | 'list' | 'detail' | 'new-ticket';
 
 export default function CustomerPortal() {
   const { user, profile, signOut } = useAuth();
@@ -83,13 +84,17 @@ export default function CustomerPortal() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [view, setView] = useState<PortalView>(location.pathname === '/portal/new' ? 'new-ticket' : 'list');
+  const getViewFromPath = (path: string): PortalView => {
+    if (path === '/portal/new') return 'new-ticket';
+    if (path === '/portal/tickets') return 'list';
+    return 'dashboard';
+  };
+
+  const [view, setView] = useState<PortalView>(getViewFromPath(location.pathname));
 
   // Sync view with route changes
   useEffect(() => {
-    if (location.pathname === '/portal/new') {
-      setView('new-ticket');
-    }
+    setView(getViewFromPath(location.pathname));
   }, [location.pathname]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -316,6 +321,12 @@ export default function CustomerPortal() {
   const goBackToList = () => {
     setSelectedTicket(null);
     setView('list');
+    navigate('/portal/tickets');
+  };
+
+  const goBackToDashboard = () => {
+    setSelectedTicket(null);
+    setView('dashboard');
     navigate('/portal');
   };
 
@@ -342,6 +353,12 @@ export default function CustomerPortal() {
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <div className="max-w-5xl mx-auto">
         <AnimatePresence mode="wait">
+          {view === 'dashboard' && (
+            <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <CustomerDashboard onTicketClick={openTicketDetail} />
+            </motion.div>
+          )}
+
           {view === 'detail' && selectedTicket && (
             <TicketDetailView
               key="detail"
