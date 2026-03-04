@@ -90,6 +90,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
                 <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                 <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                 <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
                 <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
