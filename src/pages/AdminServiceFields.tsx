@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError } from '@/lib/errorHandler';
 import { Plus, Trash2, Loader2, FormInput, Type, Hash, List, AlignLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -79,7 +80,7 @@ export default function AdminServiceFields() {
       setOptions('');
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 

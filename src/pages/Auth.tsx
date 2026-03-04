@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ShieldCheck, Zap, BarChart3, CheckCircle2, Lock, Mail, ArrowLeft, Layers, Clock, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError } from '@/lib/errorHandler';
 import logoImg from '@/assets/logo.png';
 import { motion } from 'framer-motion';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
@@ -39,7 +40,7 @@ export default function AuthPage() {
       await signIn(loginEmail, loginPassword);
       toast({ title: 'تم تسجيل الدخول بنجاح' });
     } catch (err: any) {
-      toast({ title: 'خطأ في تسجيل الدخول', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ في تسجيل الدخول', description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export default function AuthPage() {
       setForgotSent(true);
       toast({ title: 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني' });
     } catch (err: any) {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setForgotLoading(false);
     }

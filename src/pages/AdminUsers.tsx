@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError } from '@/lib/errorHandler';
 import { Loader2, Users, UserPlus, Settings2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -72,7 +73,7 @@ export default function AdminUsers() {
       toast({ title: 'تم تحديث الدور' });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
@@ -104,7 +105,7 @@ export default function AdminUsers() {
       setNewRole('requester');
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ في إنشاء المستخدم', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ في إنشاء المستخدم', description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setCreating(false);
     }

@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError } from '@/lib/errorHandler';
 import { Clock, Check, X, User, GripVertical, AlertTriangle, Forward } from 'lucide-react';
 import { formatDistanceToNow, isPast } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -62,7 +63,7 @@ export function ApprovalKanban() {
       toast({ title: 'تم تحديث الاعتماد' });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
