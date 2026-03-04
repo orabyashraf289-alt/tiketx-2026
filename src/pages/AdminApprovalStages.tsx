@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, ApprovalStageType, AppRole, roleLabels } from '@/lib/api';
+import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, ApprovalStageType, AppRole, roleLabels } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, ShieldCheck, ArrowDown, GitBranch } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, ShieldCheck, ArrowDown, GitBranch, User, Clock, AlertTriangle, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -42,6 +42,10 @@ export default function AdminApprovalStages() {
   const [stageOrder, setStageOrder] = useState(1);
   const [stageType, setStageType] = useState<ApprovalStageType>('sequential');
   const [approverRole, setApproverRole] = useState<AppRole>('agent');
+  const [approverId, setApproverId] = useState<string>('none');
+  const [serviceId, setServiceId] = useState<string>('none');
+  const [deadlineHours, setDeadlineHours] = useState<string>('');
+  const [escalationTo, setEscalationTo] = useState<string>('none');
 
   const { data: stages = [], isLoading } = useQuery({
     queryKey: ['approval-stages'],
@@ -53,6 +57,16 @@ export default function AdminApprovalStages() {
     queryFn: fetchDepartments,
   });
 
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents'],
+    queryFn: fetchAgents,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => fetchServices(),
+  });
+
   const createMut = useMutation({
     mutationFn: () => createApprovalStage({
       department_id: departmentId,
@@ -60,6 +74,10 @@ export default function AdminApprovalStages() {
       stage_order: stageOrder,
       stage_type: stageType,
       approver_role: approverRole,
+      approver_id: approverId !== 'none' ? approverId : null,
+      service_id: serviceId !== 'none' ? serviceId : null,
+      deadline_hours: deadlineHours ? Number(deadlineHours) : null,
+      escalation_to: escalationTo !== 'none' ? escalationTo : null,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
@@ -76,6 +94,10 @@ export default function AdminApprovalStages() {
       stage_order: stageOrder,
       stage_type: stageType,
       approver_role: approverRole,
+      approver_id: approverId !== 'none' ? approverId : null,
+      service_id: serviceId !== 'none' ? serviceId : null,
+      deadline_hours: deadlineHours ? Number(deadlineHours) : null,
+      escalation_to: escalationTo !== 'none' ? escalationTo : null,
     } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
@@ -98,6 +120,10 @@ export default function AdminApprovalStages() {
     setStageOrder(1);
     setStageType('sequential');
     setApproverRole('agent');
+    setApproverId('none');
+    setServiceId('none');
+    setDeadlineHours('');
+    setEscalationTo('none');
     setEditId(null);
     setOpen(false);
   };
@@ -109,6 +135,10 @@ export default function AdminApprovalStages() {
     setStageOrder(stage.stage_order);
     setStageType(stage.stage_type);
     setApproverRole(stage.approver_role);
+    setApproverId(stage.approver_id || 'none');
+    setServiceId(stage.service_id || 'none');
+    setDeadlineHours(stage.deadline_hours?.toString() || '');
+    setEscalationTo(stage.escalation_to || 'none');
     setOpen(true);
   };
 
@@ -141,7 +171,7 @@ export default function AdminApprovalStages() {
                   <Plus className="h-4 w-4" /> مرحلة جديدة
                 </Button>
               </DialogTrigger>
-              <DialogContent dir="rtl">
+              <DialogContent dir="rtl" className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editId ? 'تعديل المرحلة' : 'إنشاء مرحلة اعتماد'}</DialogTitle>
                 </DialogHeader>
@@ -185,6 +215,49 @@ export default function AdminApprovalStages() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* New: Specific Approver */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> معتمد محدد (اختياري)</Label>
+                    <Select value={approverId} onValueChange={setApproverId}>
+                      <SelectTrigger className="rounded-xl"><SelectValue placeholder="أي شخص بالدور المحدد" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">أي شخص بالدور المحدد</SelectItem>
+                        {agents.map(a => <SelectItem key={a.user_id} value={a.user_id}>{a.profiles?.full_name} ({a.profiles?.email})</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* New: Link to Service */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5"><Server className="h-3.5 w-3.5" /> ربط بخدمة (اختياري)</Label>
+                    <Select value={serviceId} onValueChange={setServiceId}>
+                      <SelectTrigger className="rounded-xl"><SelectValue placeholder="جميع الخدمات" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">جميع الخدمات</SelectItem>
+                        {services.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* New: Deadline & Escalation */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> مهلة (ساعات)</Label>
+                      <Input type="number" min={1} value={deadlineHours} onChange={e => setDeadlineHours(e.target.value)} placeholder="بدون مهلة" className="rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> تصعيد إلى</Label>
+                      <Select value={escalationTo} onValueChange={setEscalationTo}>
+                        <SelectTrigger className="rounded-xl"><SelectValue placeholder="بدون تصعيد" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">بدون تصعيد</SelectItem>
+                          {agents.map(a => <SelectItem key={a.user_id} value={a.user_id}>{a.profiles?.full_name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <Button
                     className="w-full gradient-accent text-accent-foreground rounded-xl"
                     disabled={!stageName.trim() || !departmentId || createMut.isPending || updateMut.isPending}
@@ -245,12 +318,36 @@ export default function AdminApprovalStages() {
                                   </div>
                                   <div>
                                     <p className="text-sm font-medium">{stage.stage_name}</p>
-                                    <div className="flex gap-2 mt-0.5">
+                                    <div className="flex flex-wrap gap-1.5 mt-0.5">
                                       <Badge variant="outline" className="text-[10px] rounded-lg">
                                         {stage.stage_type === 'parallel' ? <GitBranch className="h-2.5 w-2.5 ml-1" /> : <ArrowDown className="h-2.5 w-2.5 ml-1" />}
                                         {stageTypeLabels[stage.stage_type]}
                                       </Badge>
                                       <Badge variant="outline" className="text-[10px] rounded-lg">{roleLabels[stage.approver_role]}</Badge>
+                                      {stage.approver_profile?.full_name && (
+                                        <Badge variant="secondary" className="text-[10px] rounded-lg gap-0.5">
+                                          <User className="h-2.5 w-2.5" />
+                                          {stage.approver_profile.full_name}
+                                        </Badge>
+                                      )}
+                                      {stage.services?.name && (
+                                        <Badge variant="secondary" className="text-[10px] rounded-lg gap-0.5">
+                                          <Server className="h-2.5 w-2.5" />
+                                          {stage.services.name}
+                                        </Badge>
+                                      )}
+                                      {stage.deadline_hours && (
+                                        <Badge variant="outline" className="text-[10px] rounded-lg gap-0.5 text-warning border-warning/30">
+                                          <Clock className="h-2.5 w-2.5" />
+                                          {stage.deadline_hours} ساعة
+                                        </Badge>
+                                      )}
+                                      {stage.escalation_profile?.full_name && (
+                                        <Badge variant="outline" className="text-[10px] rounded-lg gap-0.5 text-destructive border-destructive/30">
+                                          <AlertTriangle className="h-2.5 w-2.5" />
+                                          تصعيد: {stage.escalation_profile.full_name}
+                                        </Badge>
+                                      )}
                                     </div>
                                   </div>
                                 </div>

@@ -19,8 +19,11 @@ export type Database = {
           approver_id: string | null
           approver_role: Database["public"]["Enums"]["app_role"]
           created_at: string
+          deadline_hours: number | null
           department_id: string
+          escalation_to: string | null
           id: string
+          service_id: string | null
           stage_name: string
           stage_order: number
           stage_type: Database["public"]["Enums"]["approval_stage_type"]
@@ -29,8 +32,11 @@ export type Database = {
           approver_id?: string | null
           approver_role?: Database["public"]["Enums"]["app_role"]
           created_at?: string
+          deadline_hours?: number | null
           department_id: string
+          escalation_to?: string | null
           id?: string
+          service_id?: string | null
           stage_name: string
           stage_order?: number
           stage_type?: Database["public"]["Enums"]["approval_stage_type"]
@@ -39,8 +45,11 @@ export type Database = {
           approver_id?: string | null
           approver_role?: Database["public"]["Enums"]["app_role"]
           created_at?: string
+          deadline_hours?: number | null
           department_id?: string
+          escalation_to?: string | null
           id?: string
+          service_id?: string | null
           stage_name?: string
           stage_order?: number
           stage_type?: Database["public"]["Enums"]["approval_stage_type"]
@@ -51,6 +60,20 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_stages_escalation_to_fkey"
+            columns: ["escalation_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_stages_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -480,8 +503,12 @@ export type Database = {
         Row: {
           approver_id: string | null
           created_at: string
+          deadline_at: string | null
           decided_at: string | null
+          delegated_at: string | null
+          delegated_to: string | null
           id: string
+          is_escalated: boolean | null
           notes: string | null
           stage_id: string
           status: Database["public"]["Enums"]["approval_status"]
@@ -490,8 +517,12 @@ export type Database = {
         Insert: {
           approver_id?: string | null
           created_at?: string
+          deadline_at?: string | null
           decided_at?: string | null
+          delegated_at?: string | null
+          delegated_to?: string | null
           id?: string
+          is_escalated?: boolean | null
           notes?: string | null
           stage_id: string
           status?: Database["public"]["Enums"]["approval_status"]
@@ -500,8 +531,12 @@ export type Database = {
         Update: {
           approver_id?: string | null
           created_at?: string
+          deadline_at?: string | null
           decided_at?: string | null
+          delegated_at?: string | null
+          delegated_to?: string | null
           id?: string
+          is_escalated?: boolean | null
           notes?: string | null
           stage_id?: string
           status?: Database["public"]["Enums"]["approval_status"]
@@ -511,6 +546,13 @@ export type Database = {
           {
             foreignKeyName: "ticket_approvals_approver_id_fkey"
             columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_approvals_delegated_to_fkey"
+            columns: ["delegated_to"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
