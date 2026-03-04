@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Users, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const roles: AppRole[] = ['requester', 'agent', 'admin'];
+const roles: AppRole[] = ['requester', 'agent', 'developer', 'admin'];
 
 const pageVariants = {
   hidden: { opacity: 0 },

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 export type TicketStatus = 'new' | 'open' | 'in_progress' | 'waiting_on_customer' | 'resolved' | 'closed' | 'reopened';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type NoteType = 'public' | 'private';
-export type AppRole = 'admin' | 'agent' | 'requester';
+export type AppRole = 'admin' | 'agent' | 'requester' | 'developer';
 export type SourceSystem = 'PORTAL' | 'ERP' | 'LMS' | 'CPAY';
 
 export interface Ticket {
@@ -156,7 +156,8 @@ export const sourceSystemLabels: Record<SourceSystem, string> = {
 export const roleLabels: Record<AppRole, string> = {
   admin: 'مشرف',
   agent: 'دعم فني',
-  requester: 'مستخدم',
+  requester: 'عميل',
+  developer: 'مطور',
 };
 
 // API functions
@@ -181,7 +182,7 @@ export async function fetchTicketById(id: string) {
   return (data as unknown) as Ticket;
 }
 
-export async function createTicket(ticket: { title: string; description: string; priority: TicketPriority; department_id: string; requester_id: string; service_id?: string; category_id?: string; source_system?: SourceSystem; external_reference?: string; external_payload?: any }) {
+export async function createTicket(ticket: { title: string; description: string; priority: TicketPriority; department_id?: string | null; requester_id: string; service_id?: string; category_id?: string; source_system?: SourceSystem; external_reference?: string; external_payload?: any }) {
   const { data, error } = await supabase.from('tickets').insert(ticket).select().single();
   if (error) throw error;
   return data;
@@ -250,7 +251,7 @@ export async function fetchAgents() {
   const { data, error } = await supabase
     .from('user_roles')
     .select('user_id, role')
-    .in('role', ['agent', 'admin']);
+    .in('role', ['agent', 'admin', 'developer']);
   if (error) throw error;
   
   // Fetch profiles for these agents
