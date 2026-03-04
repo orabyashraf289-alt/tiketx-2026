@@ -28,6 +28,7 @@ import AgentPerformance from './pages/AgentPerformance';
 import AdminExternalAPI from './pages/AdminExternalAPI';
 import AdminSettings from './pages/AdminSettings';
 import NotFound from './pages/NotFound';
+import { CustomerChatbot } from '@/components/CustomerChatbot';
 import { Loader2 } from 'lucide-react';
 
 const queryClient = new QueryClient();
@@ -43,7 +44,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  return <>{children}</>;
+  return <>{children}<CustomerChatbot /></>;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {

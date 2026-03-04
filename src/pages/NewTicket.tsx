@@ -106,18 +106,35 @@ export default function NewTicket() {
     return true;
   }, [step, title, description, serviceFields, customFieldValues]);
 
-  // AI suggestion
+  // AI suggestion for service
   const requestAiSuggestion = async () => {
     if (!title.trim()) return;
     setAiLoading(true);
     setAiSuggestion(null);
     try {
-      const { data, error } = await supabase.functions.invoke('suggest-service', {
-        body: { title: title.trim(), description: description.trim() },
-      });
-      if (error) throw error;
-      if (data?.suggestion) {
-        setAiSuggestion(data.suggestion);
+      // Fetch both suggestions in parallel
+      const [suggestRes, classifyRes] = await Promise.all([
+        supabase.functions.invoke('suggest-service', {
+          body: { title: title.trim(), description: description.trim() },
+        }),
+        supabase.functions.invoke('classify-ticket', {
+          body: { title: title.trim(), description: description.trim() },
+        }),
+      ]);
+
+      if (suggestRes.data?.suggestion) {
+        setAiSuggestion(suggestRes.data.suggestion);
+      }
+
+      // Auto-apply classification (priority)
+      if (classifyRes.data?.classification) {
+        const cls = classifyRes.data.classification;
+        if (cls.priority) setPriority(cls.priority);
+        if (cls.category_id) setCategoryId(cls.category_id);
+        toast({
+          title: 'تصنيف ذكي ✨',
+          description: `${cls.reason || 'تم تحديد الأولوية والتصنيف تلقائياً'}`,
+        });
       }
     } catch (e) {
       console.error('AI suggestion failed:', e);
