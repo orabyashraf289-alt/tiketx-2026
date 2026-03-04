@@ -965,6 +965,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      send_email_notification_via_edge: {
+        Args: {
+          _details?: string
+          _event_type: string
+          _recipient_email: string
+          _recipient_name: string
+          _ticket_id: string
+          _ticket_number: number
+          _ticket_title: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "agent" | "requester" | "developer"
