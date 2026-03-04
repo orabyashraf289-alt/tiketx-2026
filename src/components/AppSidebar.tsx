@@ -58,6 +58,7 @@ const adminItems = [
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
   { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
   { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
+  { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
