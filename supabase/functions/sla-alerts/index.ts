@@ -1,0 +1,148 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    const now = new Date();
+    // Warning threshold: 1 hour before deadline
+    const warningThreshold = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+
+    // Find tickets approaching SLA first response deadline
+    const { data: responseAtRisk, error: err1 } = await supabase
+      .from("tickets")
+      .select("id, ticket_number, title, requester_id, assigned_agent_id, sla_first_response_due_at")
+      .is("first_response_at", null)
+      .not("sla_first_response_due_at", "is", null)
+      .gt("sla_first_response_due_at", now.toISOString())
+      .lte("sla_first_response_due_at", warningThreshold)
+      .in("status", ["new", "open", "in_progress"]);
+
+    if (err1) throw err1;
+
+    // Find tickets approaching SLA resolution deadline
+    const { data: resolutionAtRisk, error: err2 } = await supabase
+      .from("tickets")
+      .select("id, ticket_number, title, requester_id, assigned_agent_id, sla_resolution_due_at")
+      .is("resolved_at", null)
+      .not("sla_resolution_due_at", "is", null)
+      .gt("sla_resolution_due_at", now.toISOString())
+      .lte("sla_resolution_due_at", warningThreshold)
+      .in("status", ["new", "open", "in_progress", "waiting_on_customer"]);
+
+    if (err2) throw err2;
+
+    let notifiedCount = 0;
+
+    // Helper to send notification + email
+    async function notifyUser(userId: string, ticketId: string, title: string, message: string, ticketNumber: number, ticketTitle: string) {
+      // Check if notification already sent recently (avoid duplicates)
+      const { data: existing } = await supabase
+        .from("notifications")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("ticket_id", ticketId)
+        .eq("type", "sla_warning")
+        .gte("created_at", new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString())
+        .limit(1);
+
+      if (existing && existing.length > 0) return; // Already notified
+
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        ticket_id: ticketId,
+        title,
+        message,
+        type: "sla_warning",
+      });
+
+      // Get email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", userId)
+        .single();
+
+      if (profile?.email) {
+        try {
+          await supabase.functions.invoke("send-email-notification", {
+            body: {
+              ticket_id: ticketId,
+              event_type: "sla_warning",
+              recipient_email: profile.email,
+              recipient_name: profile.full_name,
+              ticket_number: ticketNumber,
+              ticket_title: ticketTitle,
+              details: message,
+            },
+          });
+        } catch (e) {
+          console.error("Email failed:", e);
+        }
+      }
+      notifiedCount++;
+    }
+
+    // Process first response warnings
+    for (const ticket of responseAtRisk || []) {
+      const msg = `⚠️ التذكرة #${ticket.ticket_number} على وشك تجاوز مهلة الاستجابة الأولى (SLA)`;
+      if (ticket.assigned_agent_id) {
+        await notifyUser(ticket.assigned_agent_id, ticket.id, "تنبيه SLA - استجابة أولى ⏰", msg, ticket.ticket_number, ticket.title);
+      }
+      // Notify all admins
+      const { data: admins } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      for (const admin of admins || []) {
+        if (admin.user_id !== ticket.assigned_agent_id) {
+          await notifyUser(admin.user_id, ticket.id, "تنبيه SLA - استجابة أولى ⏰", msg, ticket.ticket_number, ticket.title);
+        }
+      }
+    }
+
+    // Process resolution warnings
+    for (const ticket of resolutionAtRisk || []) {
+      const msg = `⚠️ التذكرة #${ticket.ticket_number} على وشك تجاوز مهلة الحل (SLA)`;
+      if (ticket.assigned_agent_id) {
+        await notifyUser(ticket.assigned_agent_id, ticket.id, "تنبيه SLA - مهلة الحل ⏰", msg, ticket.ticket_number, ticket.title);
+      }
+      const { data: admins } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      for (const admin of admins || []) {
+        if (admin.user_id !== ticket.assigned_agent_id) {
+          await notifyUser(admin.user_id, ticket.id, "تنبيه SLA - مهلة الحل ⏰", msg, ticket.ticket_number, ticket.title);
+        }
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        response_at_risk: responseAtRisk?.length || 0,
+        resolution_at_risk: resolutionAtRisk?.length || 0,
+        notifications_sent: notifiedCount,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
