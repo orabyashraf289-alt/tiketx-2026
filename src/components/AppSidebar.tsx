@@ -102,7 +102,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {(role === 'requester' ? requesterItems : mainItems).map((item) => (
+              {(role === 'requester' || role === 'developer' ? requesterItems : mainItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

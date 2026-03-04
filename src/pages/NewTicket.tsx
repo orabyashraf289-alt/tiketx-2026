@@ -206,7 +206,7 @@ export default function NewTicket() {
     mutation.mutate();
   };
 
-  const roleLabel = role === 'admin' ? 'مشرف' : role === 'agent' ? 'دعم فني' : 'مستخدم';
+  const roleLabel = role === 'admin' ? 'مشرف' : role === 'agent' ? 'دعم فني' : role === 'developer' ? 'مطور' : 'عميل';
 
   return (
     <SidebarProvider>
