@@ -74,13 +74,13 @@ export default function TicketDetailPage() {
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs', id],
     queryFn: () => fetchAuditLogs(id!),
-    enabled: !!id && (role === 'agent' || role === 'admin'),
+    enabled: !!id && (role === 'agent' || role === 'admin' || role === 'developer'),
   });
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
     queryFn: fetchAgents,
-    enabled: role === 'agent' || role === 'admin',
+    enabled: role === 'agent' || role === 'admin' || role === 'developer',
   });
 
   const { data: attachments = [] } = useQuery({
@@ -92,7 +92,7 @@ export default function TicketDetailPage() {
   const { data: services = [] } = useQuery({
     queryKey: ['services'],
     queryFn: () => fetchServices(),
-    enabled: role === 'agent' || role === 'admin',
+    enabled: role === 'agent' || role === 'admin' || role === 'developer',
   });
 
   const { data: fieldValues = [] } = useQuery({
@@ -299,7 +299,7 @@ export default function TicketDetailPage() {
 
   if (!ticket) return null;
 
-  const isAgentOrAdmin = role === 'agent' || role === 'admin';
+  const isAgentOrAdmin = role === 'agent' || role === 'admin' || role === 'developer';
 
   return (
     <SidebarProvider>

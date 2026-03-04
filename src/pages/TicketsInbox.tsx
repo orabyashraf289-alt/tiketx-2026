@@ -85,7 +85,7 @@ export default function TicketsInbox() {
     queryFn: () => fetchServices(),
   });
 
-  const isAgentOrAdmin = role === 'agent' || role === 'admin';
+  const isAgentOrAdmin = role === 'agent' || role === 'admin' || role === 'developer';
 
   const applyFilters = (list: typeof tickets) => {
     return list.filter((t) => {
