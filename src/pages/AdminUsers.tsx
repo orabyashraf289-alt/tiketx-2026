@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAllUsers, updateUserRole, AppRole, roleLabels } from '@/lib/api';
+import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, AppRole, roleLabels } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Users, UserPlus } from 'lucide-react';
+import { Loader2, Users, UserPlus, Settings2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const roles: AppRole[] = ['requester', 'agent', 'developer', 'admin'];
@@ -30,6 +32,8 @@ export default function AdminUsers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [accessOpen, setAccessOpen] = useState(false);
+  const [selectedDev, setSelectedDev] = useState<any>(null);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -39,6 +43,26 @@ export default function AdminUsers() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
     queryFn: fetchAllUsers,
+  });
+
+  const { data: systems = [] } = useQuery({
+    queryKey: ['systems'],
+    queryFn: fetchSystems,
+  });
+
+  const { data: services = [] } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => fetchServices(),
+  });
+
+  const { data: devAccess = [], refetch: refetchAccess } = useQuery({
+    queryKey: ['developer-access-all'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('developer_access')
+        .select('*, systems(name, code), services(name)');
+      return data || [];
+    },
   });
 
   const roleMut = useMutation({
@@ -65,7 +89,6 @@ export default function AdminUsers() {
 
     setCreating(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke('create-user', {
         body: { email: newEmail.trim(), password: newPassword, full_name: newName.trim(), role: newRole },
       });
@@ -85,6 +108,39 @@ export default function AdminUsers() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const openAccessDialog = (user: any) => {
+    setSelectedDev(user);
+    setAccessOpen(true);
+  };
+
+  const devAccessForUser = (userId: string) => devAccess.filter((a: any) => a.developer_id === userId);
+
+  const toggleSystemAccess = async (devId: string, systemId: string) => {
+    const existing = devAccess.find((a: any) => a.developer_id === devId && a.system_id === systemId && !a.service_id);
+    if (existing) {
+      await supabase.from('developer_access').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('developer_access').insert({ developer_id: devId, system_id: systemId });
+    }
+    refetchAccess();
+  };
+
+  const toggleServiceAccess = async (devId: string, serviceId: string) => {
+    const existing = devAccess.find((a: any) => a.developer_id === devId && a.service_id === serviceId);
+    if (existing) {
+      await supabase.from('developer_access').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('developer_access').insert({ developer_id: devId, service_id: serviceId });
+    }
+    refetchAccess();
+  };
+
+  const clearAllAccess = async (devId: string) => {
+    await supabase.from('developer_access').delete().eq('developer_id', devId);
+    refetchAccess();
+    toast({ title: 'تم مسح جميع القيود - المطور يصل لكل الأنظمة الآن' });
   };
 
   return (
@@ -165,21 +221,43 @@ export default function AdminUsers() {
                           <div>
                             <p className="font-semibold text-foreground">{u.full_name || 'بدون اسم'}</p>
                             <p className="text-sm text-muted-foreground">{u.email}</p>
+                            {u.role === 'developer' && devAccessForUser(u.id).length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {devAccessForUser(u.id).map((a: any) => (
+                                  <Badge key={a.id} variant="outline" className="text-[10px] px-1.5 py-0">
+                                    {a.systems?.name || a.services?.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <Select
-                          value={u.role}
-                          onValueChange={(v) => roleMut.mutate({ userId: u.id, role: v as AppRole })}
-                        >
-                          <SelectTrigger className="w-32 rounded-xl">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {roles.map(r => (
-                              <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          {u.role === 'developer' && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-xl h-9 w-9"
+                              onClick={() => openAccessDialog(u)}
+                              title="إدارة الصلاحيات"
+                            >
+                              <Settings2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Select
+                            value={u.role}
+                            onValueChange={(v) => roleMut.mutate({ userId: u.id, role: v as AppRole })}
+                          >
+                            <SelectTrigger className="w-28 rounded-xl">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {roles.map(r => (
+                                <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -187,6 +265,70 @@ export default function AdminUsers() {
               </motion.div>
             )}
           </main>
+
+          {/* Developer Access Dialog */}
+          <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
+            <DialogContent dir="rtl" className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Settings2 className="h-5 w-5 text-primary" />
+                  صلاحيات المطور: {selectedDev?.full_name}
+                </DialogTitle>
+              </DialogHeader>
+              {selectedDev && (
+                <div className="space-y-4 mt-2 max-h-[60vh] overflow-auto">
+                  <p className="text-xs text-muted-foreground">
+                    اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.
+                  </p>
+
+                  {devAccessForUser(selectedDev.id).length > 0 && (
+                    <Button variant="outline" size="sm" className="text-xs gap-1 rounded-xl" onClick={() => clearAllAccess(selectedDev.id)}>
+                      <X className="h-3 w-3" />
+                      مسح جميع القيود
+                    </Button>
+                  )}
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">الأنظمة</Label>
+                    {systems.map(sys => {
+                      const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.system_id === sys.id && !a.service_id);
+                      return (
+                        <div key={sys.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleSystemAccess(selectedDev.id, sys.id)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">{sys.name}</p>
+                            <p className="text-xs text-muted-foreground">{sys.code}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold">الخدمات</Label>
+                    {services.map(svc => {
+                      const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.service_id === svc.id);
+                      return (
+                        <div key={svc.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleServiceAccess(selectedDev.id, svc.id)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">{svc.name}</p>
+                            <p className="text-xs text-muted-foreground">{svc.systems?.name || ''}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </SidebarProvider>

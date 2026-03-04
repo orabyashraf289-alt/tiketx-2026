@@ -28,6 +28,7 @@ import AgentPerformance from './pages/AgentPerformance';
 import AdminExternalAPI from './pages/AdminExternalAPI';
 import AdminSettings from './pages/AdminSettings';
 import CustomerPortal from './pages/CustomerPortal';
+import DeveloperDashboard from './pages/DeveloperDashboard';
 import NotFound from './pages/NotFound';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
 import { Loader2 } from 'lucide-react';
@@ -46,6 +47,7 @@ function ProtectedRoute({ children, redirectRequester }: { children: React.React
   }
   if (!user) return <Navigate to="/auth" replace />;
   if (redirectRequester && role === 'requester') return <Navigate to="/portal" replace />;
+  if (redirectRequester && role === 'developer') return <Navigate to="/developer" replace />;
   return <>{children}<CustomerChatbot /></>;
 }
 
@@ -94,6 +96,7 @@ const App = () => (
                 <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                 <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
                 <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
+                <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
                 <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
                 <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />

@@ -55,7 +55,7 @@ const requesterItems = [
 ];
 
 const developerItems = [
-  { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
+  { title: 'لوحة المطور', url: '/developer', icon: LayoutDashboard },
   { title: 'التذاكر', url: '/tickets', icon: Inbox },
   { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
   { title: 'لوحة الاعتمادات', url: '/admin/approval-kanban', icon: Columns },
