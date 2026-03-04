@@ -16,6 +16,7 @@ import {
   HelpCircle,
   MessageSquare,
   Mail,
+  Columns,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,6 +51,7 @@ const adminItems = [
   { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
   { title: 'مراحل الاعتماد', url: '/admin/approval-stages', icon: ShieldCheck },
   { title: 'تقرير الاعتمادات', url: '/admin/approval-reports', icon: BarChart3 },
+  { title: 'لوحة الاعتمادات', url: '/admin/approval-kanban', icon: Columns },
   { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
   { title: 'المستخدمين', url: '/admin/users', icon: Users },
   { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
