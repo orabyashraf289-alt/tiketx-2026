@@ -98,8 +98,8 @@ export default function AdminSettings() {
       toast.error('يرجى اختيار ملف صورة');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('حجم الملف يجب أن لا يتجاوز 2 ميجابايت');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('حجم الملف يجب أن لا يتجاوز 10 ميجابايت');
       return;
     }
 
@@ -229,7 +229,7 @@ export default function AdminSettings() {
                   <Image className="h-5 w-5 text-primary" />
                   الشعار
                 </CardTitle>
-                <CardDescription>ارفع صورة الشعار أو أدخل رابط مباشر (يفضل PNG شفاف، أقصى حجم 2MB)</CardDescription>
+                <CardDescription>ارفع صورة الشعار أو أدخل رابط مباشر (يفضل PNG شفاف، أقصى حجم 10MB)</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Upload area */}
