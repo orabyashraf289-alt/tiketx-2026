@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType, statusLabels, priorityLabels } from '@/lib/api';
@@ -106,6 +106,43 @@ export default function TicketDetailPage() {
     queryFn: () => fetchServiceFields(ticket?.service_id || undefined),
     enabled: !!ticket?.service_id,
   });
+
+  // Realtime: comments on this ticket
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`ticket-comments-${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['comments', id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, queryClient]);
+
+  // Realtime: ticket updates
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`ticket-detail-${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets', filter: `id=eq.${id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+        queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, queryClient]);
+
+  // Realtime: attachments
+  useEffect(() => {
+    if (!id) return;
+    const channel = supabase
+      .channel(`ticket-attachments-${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_attachments', filter: `ticket_id=eq.${id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['attachments', id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, queryClient]);
 
   const commentMutation = useMutation({
     mutationFn: () => addComment({
