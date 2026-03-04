@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.receive-external-ticket]
 verify_jwt = false
+
+[functions.escalate-approvals]
+verify_jwt = false

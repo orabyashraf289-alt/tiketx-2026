@@ -19,6 +19,7 @@ import AdminReports from './pages/AdminReports';
 import AdminServiceCatalog from './pages/AdminServiceCatalog';
 import AdminServiceFields from './pages/AdminServiceFields';
 import AdminApprovalStages from './pages/AdminApprovalStages';
+import AdminApprovalReports from './pages/AdminApprovalReports';
 import KnowledgeBase from './pages/KnowledgeBase';
 import ProfilePage from './pages/ProfilePage';
 import AgentPerformance from './pages/AgentPerformance';
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
               <Route path="/admin/service-fields" element={<ProtectedRoute><AdminServiceFields /></ProtectedRoute>} />
               <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
+              <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
               <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
