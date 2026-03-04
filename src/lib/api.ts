@@ -603,8 +603,14 @@ export interface ApprovalStage {
   stage_type: ApprovalStageType;
   approver_role: AppRole;
   approver_id: string | null;
+  service_id: string | null;
+  deadline_hours: number | null;
+  escalation_to: string | null;
   created_at: string;
   departments?: { name: string } | null;
+  services?: { name: string } | null;
+  approver_profile?: { full_name: string } | null;
+  escalation_profile?: { full_name: string } | null;
 }
 
 export interface TicketApproval {
@@ -615,20 +621,30 @@ export interface TicketApproval {
   status: ApprovalStatus;
   notes: string | null;
   decided_at: string | null;
+  delegated_to: string | null;
+  delegated_at: string | null;
+  deadline_at: string | null;
+  is_escalated: boolean;
   created_at: string;
   approval_stages?: { stage_name: string; stage_order: number; stage_type: ApprovalStageType; approver_role: AppRole } | null;
   approver?: { full_name: string } | null;
+  delegated_profile?: { full_name: string } | null;
 }
 
 export async function fetchApprovalStages(departmentId?: string) {
-  let query = supabase.from('approval_stages').select('*, departments(name)').order('stage_order');
+  let query = supabase.from('approval_stages').select('*, departments(name), services(name), approver_profile:profiles!approval_stages_approver_id_fkey(full_name), escalation_profile:profiles!approval_stages_escalation_to_fkey(full_name)').order('stage_order');
   if (departmentId) query = query.eq('department_id', departmentId);
   const { data, error } = await query;
   if (error) throw error;
   return (data as unknown) as ApprovalStage[];
 }
 
-export async function createApprovalStage(stage: { department_id: string; stage_name: string; stage_order: number; stage_type: ApprovalStageType; approver_role: AppRole; approver_id?: string }) {
+export async function createApprovalStage(stage: {
+  department_id: string; stage_name: string; stage_order: number;
+  stage_type: ApprovalStageType; approver_role: AppRole;
+  approver_id?: string | null; service_id?: string | null;
+  deadline_hours?: number | null; escalation_to?: string | null;
+}) {
   const { data, error } = await supabase.from('approval_stages').insert(stage).select().single();
   if (error) throw error;
   return data;
@@ -648,7 +664,7 @@ export async function deleteApprovalStage(id: string) {
 export async function fetchTicketApprovals(ticketId: string) {
   const { data, error } = await supabase
     .from('ticket_approvals')
-    .select('*, approval_stages(stage_name, stage_order, stage_type, approver_role), approver:profiles!ticket_approvals_approver_id_fkey(full_name)')
+    .select('*, approval_stages(stage_name, stage_order, stage_type, approver_role), approver:profiles!ticket_approvals_approver_id_fkey(full_name), delegated_profile:profiles!ticket_approvals_delegated_to_fkey(full_name)')
     .eq('ticket_id', ticketId)
     .order('created_at');
   if (error) throw error;
@@ -659,6 +675,17 @@ export async function updateTicketApproval(id: string, updates: { status: Approv
   const { data, error } = await supabase
     .from('ticket_approvals')
     .update({ ...updates, decided_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function delegateApproval(id: string, delegatedTo: string, delegatedBy: string) {
+  const { data, error } = await supabase
+    .from('ticket_approvals')
+    .update({ delegated_to: delegatedTo, delegated_at: new Date().toISOString(), approver_id: delegatedBy })
     .eq('id', id)
     .select()
     .single();
