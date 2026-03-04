@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, ApprovalStageType, AppRole, roleLabels } from '@/lib/api';
+import { sanitizeError } from '@/lib/errorHandler';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +85,7 @@ export default function AdminApprovalStages() {
       toast({ title: 'تم إنشاء مرحلة الاعتماد' });
       resetForm();
     },
-    onError: (err: any) => toast({ title: 'خطأ', description: err.message, variant: 'destructive' }),
+    onError: (err: any) => toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' }),
   });
 
   const updateMut = useMutation({

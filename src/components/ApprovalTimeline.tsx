@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { Check, X, Clock, Loader2, ShieldCheck, ChevronDown, ChevronUp, Forward, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeError } from '@/lib/errorHandler';
 import { format, isPast, differenceInHours } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -58,7 +59,7 @@ export function ApprovalTimeline({ ticketId, ticketStatus }: ApprovalTimelinePro
       toast({ title: 'تم تحديث الاعتماد' });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
@@ -72,7 +73,7 @@ export function ApprovalTimeline({ ticketId, ticketStatus }: ApprovalTimelinePro
       toast({ title: 'تم تفويض الاعتماد' });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 

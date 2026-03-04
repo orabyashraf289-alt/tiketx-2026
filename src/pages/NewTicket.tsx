@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, TicketPriority } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeError } from '@/lib/errorHandler';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -193,7 +194,7 @@ export default function NewTicket() {
       navigate('/tickets');
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 

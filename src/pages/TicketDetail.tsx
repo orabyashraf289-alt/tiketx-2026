@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType, statusLabels, priorityLabels } from '@/lib/api';
 import { ApprovalTimeline } from '@/components/ApprovalTimeline';
+import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -225,7 +226,7 @@ export default function TicketDetailPage() {
       toast({ title: 'تم رفع الملف' });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ في رفع الملف', description: err.message, variant: 'destructive' });
+      toast({ title: 'خطأ في رفع الملف', description: sanitizeError(err), variant: 'destructive' });
     },
   });
 

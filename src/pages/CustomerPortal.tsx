@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeError } from '@/lib/errorHandler';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTickets, fetchComments, addComment, createTicket, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, addAttachment, statusLabels, priorityLabels, Ticket, TicketComment, TicketPriority, fetchTicketRating, submitTicketRating } from '@/lib/api';
@@ -289,7 +290,7 @@ export default function CustomerPortal() {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       toast.success('تم إنشاء التذكرة بنجاح 🎉');
     },
-    onError: (err: any) => toast.error(err.message || 'حدث خطأ أثناء إنشاء التذكرة'),
+    onError: (err: any) => toast.error(sanitizeError(err)),
   });
 
   const handleSubmit = () => {
@@ -884,7 +885,7 @@ function TicketDetailView({
       queryClient.invalidateQueries({ queryKey: ['comments', ticket.id] });
       toast.success('تم إرفاق الملف بنجاح');
     } catch (err: any) {
-      toast.error(err.message || 'فشل رفع الملف');
+      toast.error(sanitizeError(err));
     } finally {
       setUploadingFile(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
