@@ -698,3 +698,38 @@ export const approvalStatusLabels: Record<ApprovalStatus, string> = {
   approved: 'معتمد',
   rejected: 'مرفوض',
 };
+
+// Ticket Ratings
+export interface TicketRating {
+  id: string;
+  ticket_id: string;
+  user_id: string;
+  rating: number;
+  feedback: string | null;
+  created_at: string;
+}
+
+export async function fetchTicketRating(ticketId: string) {
+  const { data, error } = await supabase
+    .from('ticket_ratings')
+    .select('*')
+    .eq('ticket_id', ticketId)
+    .maybeSingle();
+  if (error) throw error;
+  return data as TicketRating | null;
+}
+
+export async function submitTicketRating(rating: { ticket_id: string; user_id: string; rating: number; feedback?: string }) {
+  const { data, error } = await supabase.from('ticket_ratings').insert(rating).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchMyRatings(userId: string) {
+  const { data, error } = await supabase
+    .from('ticket_ratings')
+    .select('*')
+    .eq('user_id', userId);
+  if (error) throw error;
+  return (data || []) as TicketRating[];
+}
