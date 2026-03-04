@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.suggest-service]
 verify_jwt = false
+
+[functions.weekly-developer-report]
+verify_jwt = false
