@@ -14,3 +14,15 @@ verify_jwt = false
 
 [functions.sla-alerts]
 verify_jwt = false
+
+[functions.customer-ai-chat]
+verify_jwt = false
+
+[functions.classify-ticket]
+verify_jwt = false
+
+[functions.suggest-solutions]
+verify_jwt = false
+
+[functions.suggest-service]
+verify_jwt = false

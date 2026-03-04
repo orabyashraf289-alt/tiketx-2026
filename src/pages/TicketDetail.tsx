@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import { AiChatPanel } from '@/components/AiChatPanel';
+import { AiSuggestions } from '@/components/AiSuggestions';
 import { CSATWidget } from '@/components/CSATWidget';
 import { TicketPDFExport } from '@/components/TicketPDFExport';
 
@@ -359,6 +360,13 @@ export default function TicketDetailPage() {
                     </CardContent>
                   </Card>
                 </motion.div>
+
+                {/* AI Suggestions for agents */}
+                {isAgentOrAdmin && (
+                  <motion.div variants={fadeUp}>
+                    <AiSuggestions ticketId={ticket.id} />
+                  </motion.div>
+                )}
 
                 {/* Comments */}
                 <motion.div variants={fadeUp}>
