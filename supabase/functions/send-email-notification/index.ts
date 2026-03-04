@@ -28,6 +28,7 @@ serve(async (req) => {
       sla_warning: `⚠️ تنبيه SLA - التذكرة #${ticket_number}`,
       resolved: `✅ تم حل التذكرة #${ticket_number}`,
       created: `تذكرة جديدة #${ticket_number}`,
+      approval_escalated: `⚠️ تصعيد اعتماد - التذكرة #${ticket_number}`,
     };
 
     const subject = subjectMap[event_type] || `تحديث التذكرة #${ticket_number}`;
