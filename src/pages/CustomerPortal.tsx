@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -73,6 +73,52 @@ export default function CustomerPortal() {
     queryFn: () => fetchComments(selectedTicket!.id),
     enabled: !!selectedTicket,
   });
+
+  // Realtime: comments on selected ticket
+  useEffect(() => {
+    if (!selectedTicket) return;
+    const channel = supabase
+      .channel(`portal-comments-${selectedTicket.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['comments', selectedTicket.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedTicket?.id, queryClient]);
+
+  // Realtime: ticket status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('portal-tickets-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, (payload) => {
+        queryClient.invalidateQueries({ queryKey: ['tickets'] });
+        // Show toast for status changes on user's tickets
+        if (payload.eventType === 'UPDATE' && payload.old && payload.new) {
+          const oldStatus = (payload.old as any).status;
+          const newStatus = (payload.new as any).status;
+          if (oldStatus !== newStatus) {
+            const ticketNum = (payload.new as any).ticket_number;
+            toast.info(`تم تغيير حالة التذكرة #${ticketNum} إلى ${statusLabels[newStatus as keyof typeof statusLabels] || newStatus}`);
+          }
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
+  // Realtime: notifications
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('portal-notifications-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+        const notif = payload.new as any;
+        toast(notif.title, { description: notif.message });
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, queryClient]);
 
   const commentMutation = useMutation({
     mutationFn: () => addComment({ ticket_id: selectedTicket!.id, author_id: user!.id, content: newComment, note_type: 'public' }),
@@ -341,6 +387,13 @@ function TicketDetailView({
   sending: boolean;
   onBack: () => void;
 }) {
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Auto-scroll to bottom when new comments arrive
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  }, [comments.length]);
+
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
       <Button variant="ghost" size="sm" className="gap-1.5 mb-4 text-muted-foreground" onClick={onBack}>
@@ -440,6 +493,7 @@ function TicketDetailView({
                     </motion.div>
                   );
                 })}
+                <div ref={chatEndRef} />
               </div>
             )}
           </ScrollArea>
