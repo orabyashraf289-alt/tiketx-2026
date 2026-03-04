@@ -10,18 +10,51 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub;
+
     const { messages, ticketId } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Fetch ticket context
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    // Use service role for data fetching
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const sb = createClient(supabaseUrl, supabaseKey);
 
     let ticketContext = "";
     if (ticketId) {
+      // Verify user has access to the ticket
+      const { data: accessCheck } = await sb
+        .from("tickets")
+        .select("id")
+        .eq("id", ticketId)
+        .or(`requester_id.eq.${userId},assigned_agent_id.eq.${userId}`)
+        .single();
+
+      if (!accessCheck) {
+        // Check if admin/agent
+        const { data: roleData } = await sb.from("user_roles").select("role").eq("user_id", userId).single();
+        if (!roleData || !["admin", "agent"].includes(roleData.role)) {
+          return new Response(JSON.stringify({ error: "Access denied" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      }
+
       const { data: ticket } = await sb
         .from("tickets")
         .select("title, description, priority, status, code, created_at, services(name, systems(name)), departments(name)")

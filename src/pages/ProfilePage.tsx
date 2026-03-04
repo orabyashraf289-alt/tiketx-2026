@@ -75,8 +75,9 @@ export default function ProfilePage() {
       const path = `avatars/${user.id}.${ext}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from('ticket-attachments').getPublicUrl(path);
-      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('id', user.id);
+      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(path, 60 * 60 * 24 * 365);
+      const avatarUrl = signedData?.signedUrl || path;
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', user.id);
       if (updateError) throw updateError;
       toast({ title: 'تم تحديث الصورة الشخصية ✅' });
       window.location.reload();

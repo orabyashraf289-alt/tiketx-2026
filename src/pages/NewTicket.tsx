@@ -176,12 +176,13 @@ export default function NewTicket() {
         const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
         if (uploadError) continue;
-        const { data: { publicUrl } } = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+        const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
+        const fileUrl = signedData?.signedUrl || filePath;
         await addAttachment({
           ticket_id: ticket.id,
           uploaded_by: user!.id,
           file_name: file.name,
-          file_url: publicUrl,
+          file_url: fileUrl,
           file_size: file.size,
         });
       }

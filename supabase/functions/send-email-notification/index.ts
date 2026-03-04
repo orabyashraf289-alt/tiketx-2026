@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = "notifications@resend.dev"; // Free tier uses onboarding@resend.dev or notifications@resend.dev
+const FROM_EMAIL = "notifications@resend.dev";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,6 +15,43 @@ serve(async (req) => {
   }
 
   try {
+    // Auth check - allow service role (from DB triggers) or authenticated users with admin/agent role
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const token = authHeader.replace("Bearer ", "");
+
+    // If it's the anon key (called from DB trigger via http_post), allow it
+    const isAnonKeyCall = token === supabaseAnonKey;
+    
+    if (!isAnonKeyCall) {
+      // Validate the JWT
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      // Only admins/agents can trigger email notifications directly
+      const sb = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: roleData } = await sb.from("user_roles").select("role").eq("user_id", claimsData.claims.sub).single();
+      if (!roleData || !["admin", "agent"].includes(roleData.role)) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const { ticket_id, event_type, recipient_email, recipient_name, ticket_number, ticket_title, details } = await req.json();
 
     if (!ticket_id || !event_type || !recipient_email) {
@@ -50,7 +87,6 @@ serve(async (req) => {
 
     const eventLabel = eventLabelMap[event_type] || event_type;
 
-    // Build HTML email
     const htmlBody = `
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -95,7 +131,6 @@ serve(async (req) => {
 
     let emailSent = false;
 
-    // Send via Resend API
     if (RESEND_API_KEY) {
       const resendRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -123,10 +158,7 @@ serve(async (req) => {
       console.warn("⚠️ RESEND_API_KEY not configured, skipping email send");
     }
 
-    // Store notification record in DB
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: profile } = await supabase
       .from("profiles")
