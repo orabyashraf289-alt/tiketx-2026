@@ -271,12 +271,13 @@ export default function CustomerPortal() {
         const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
         if (uploadError) continue;
-        const { data: { publicUrl } } = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+        const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
+        const fileUrl = signedData?.signedUrl || filePath;
         await addAttachment({
           ticket_id: ticket.id,
           uploaded_by: user!.id,
           file_name: file.name,
-          file_url: publicUrl,
+          file_url: fileUrl,
           file_size: file.size,
         });
       }
@@ -870,13 +871,14 @@ function TicketDetailView({
       const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
+      const fileUrl = signedData?.signedUrl || filePath;
       
-      await addAttachment({ ticket_id: ticket.id, uploaded_by: user.id, file_name: file.name, file_url: publicUrl, file_size: file.size });
+      await addAttachment({ ticket_id: ticket.id, uploaded_by: user.id, file_name: file.name, file_url: fileUrl, file_size: file.size });
 
       // Add a comment referencing the file
       const isImage = file.type.startsWith('image/');
-      const content = isImage ? `📷 [صورة مرفقة: ${file.name}](${publicUrl})` : `📎 [ملف مرفق: ${file.name}](${publicUrl})`;
+      const content = isImage ? `📷 [صورة مرفقة: ${file.name}](${fileUrl})` : `📎 [ملف مرفق: ${file.name}](${fileUrl})`;
       await addComment({ ticket_id: ticket.id, author_id: user.id, content, note_type: 'public' });
       
       queryClient.invalidateQueries({ queryKey: ['comments', ticket.id] });
