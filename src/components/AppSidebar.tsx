@@ -49,6 +49,7 @@ const adminItems = [
   { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
   { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
   { title: 'مراحل الاعتماد', url: '/admin/approval-stages', icon: ShieldCheck },
+  { title: 'تقرير الاعتمادات', url: '/admin/approval-reports', icon: BarChart3 },
   { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
   { title: 'المستخدمين', url: '/admin/users', icon: Users },
   { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
