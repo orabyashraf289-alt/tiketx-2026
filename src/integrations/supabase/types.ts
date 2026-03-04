@@ -150,6 +150,52 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_access: {
+        Row: {
+          created_at: string
+          developer_id: string
+          id: string
+          service_id: string | null
+          system_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          developer_id: string
+          id?: string
+          service_id?: string | null
+          system_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          developer_id?: string
+          id?: string
+          service_id?: string | null
+          system_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developer_access_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "developer_access_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "developer_access_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       devices: {
         Row: {
           created_at: string
@@ -904,6 +950,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      developer_can_access_ticket: {
+        Args: { _developer_id: string; _ticket_id: string }
+        Returns: boolean
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
