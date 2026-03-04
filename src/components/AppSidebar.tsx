@@ -54,6 +54,14 @@ const requesterItems = [
   { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
 ];
 
+const developerItems = [
+  { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
+  { title: 'التذاكر', url: '/tickets', icon: Inbox },
+  { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
+  { title: 'لوحة الاعتمادات', url: '/admin/approval-kanban', icon: Columns },
+  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
+];
+
 const adminItems = [
   { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
   { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
@@ -102,7 +110,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {(role === 'requester' || role === 'developer' ? requesterItems : mainItems).map((item) => (
+              {(role === 'requester' ? requesterItems : role === 'developer' ? developerItems : mainItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

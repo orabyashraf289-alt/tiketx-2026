@@ -112,7 +112,7 @@ export default function Dashboard() {
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
   }, [report]);
 
-  const isAdmin = role === 'admin' || role === 'agent';
+  const isAdmin = role === 'admin' || role === 'agent' || role === 'developer';
 
   return (
     <SidebarProvider>
