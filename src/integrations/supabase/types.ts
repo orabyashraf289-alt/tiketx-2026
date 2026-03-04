@@ -120,6 +120,13 @@ export type Database = {
             referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       departments: {
@@ -667,6 +674,13 @@ export type Database = {
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_comments_ticket_id_fkey"
             columns: ["ticket_id"]
