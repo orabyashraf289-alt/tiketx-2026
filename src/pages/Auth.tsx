@@ -8,6 +8,7 @@ import { Loader2, ShieldCheck, Zap, BarChart3, CheckCircle2, Lock, Mail, ArrowLe
 import { useToast } from '@/hooks/use-toast';
 import logoImg from '@/assets/logo.png';
 import { motion } from 'framer-motion';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
 const features = [
   { icon: Layers, title: 'إدارة مركزية', desc: 'نقطة واحدة لجميع الطلبات مع تصنيف تلقائي' },
@@ -19,6 +20,10 @@ const features = [
 export default function AuthPage() {
   const { signIn } = useAuth();
   const { toast } = useToast();
+  const sysSettings = useSystemSettings();
+  const sysName = sysSettings.system_name || 'TicketFlow';
+  const sysSub = sysSettings.system_subtitle || 'SMART HELPDESK';
+  const logoSrc = sysSettings.logo_url || logoImg;
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -90,11 +95,11 @@ export default function AuthPage() {
               className="flex items-center gap-4 mb-10"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl shadow-xl ring-2 ring-white/10" style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(217,72%,58%))' }}>
-                <img src={logoImg} alt="TicketFlow" className="h-8 w-8 object-contain" />
+                <img src={logoSrc} alt={sysName} className="h-8 w-8 object-contain" />
               </div>
               <div>
-                <h1 className="text-2xl font-extrabold text-white">TicketFlow</h1>
-                <p className="text-xs text-white/50 font-medium tracking-widest mt-0.5">SMART HELPDESK</p>
+                <h1 className="text-2xl font-extrabold text-white">{sysName}</h1>
+                <p className="text-xs text-white/50 font-medium tracking-widest mt-0.5">{sysSub}</p>
               </div>
             </motion.div>
 
@@ -186,9 +191,9 @@ export default function AuthPage() {
             className="text-center mb-8 lg:hidden"
           >
             <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-xl shadow-lg" style={{ background: 'linear-gradient(135deg, hsl(217,72%,50%), hsl(222,60%,42%))' }}>
-              <img src={logoImg} alt="TicketFlow" className="h-7 w-7 object-contain" />
+              <img src={logoSrc} alt={sysName} className="h-7 w-7 object-contain" />
             </div>
-            <h1 className="text-lg font-bold text-foreground mt-3">TicketFlow</h1>
+            <h1 className="text-lg font-bold text-foreground mt-3">{sysName}</h1>
             <p className="text-muted-foreground mt-1 text-xs">منصة إدارة الطلبات الذكية</p>
           </motion.div>
 
@@ -306,7 +311,7 @@ export default function AuthPage() {
           </motion.div>
 
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="text-center text-muted-foreground text-[11px] mt-6">
-            © {new Date().getFullYear()} TicketFlow — جميع الحقوق محفوظة
+            © {new Date().getFullYear()} {sysName} — جميع الحقوق محفوظة
           </motion.p>
         </motion.div>
       </div>
