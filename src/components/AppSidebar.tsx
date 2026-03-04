@@ -21,6 +21,7 @@ import {
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 import {
   Sidebar,
   SidebarContent,
@@ -65,18 +66,23 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
+  const sysSettings = useSystemSettings();
+
+  const logoSrc = sysSettings.logo_url || logoImg;
+  const sysName = sysSettings.system_name || 'TicketFlow';
+  const sysSub = sysSettings.system_subtitle || 'HELPDESK';
 
   return (
     <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary shrink-0">
-            <img src={logoImg} alt="TicketFlow" className="h-6 w-6 object-contain" />
+            <img src={logoSrc} alt={sysName} className="h-6 w-6 object-contain" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">TicketFlow</h2>
-              <p className="text-[10px] text-sidebar-foreground/50 font-medium">HELPDESK</p>
+              <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">{sysName}</h2>
+              <p className="text-[10px] text-sidebar-foreground/50 font-medium">{sysSub}</p>
             </div>
           )}
         </div>

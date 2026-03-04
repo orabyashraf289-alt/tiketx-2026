@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Settings, Palette, Type, Image, Save, RotateCcw } from 'lucide-react';
+import { Settings, Palette, Type, Image, Save, RotateCcw, Upload, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
 
-interface SystemSettings {
+interface SettingsForm {
   system_name: string;
   system_subtitle: string;
   primary_color: string;
@@ -18,7 +19,7 @@ interface SystemSettings {
   logo_url: string;
 }
 
-const defaultSettings: SystemSettings = {
+const defaultSettings: SettingsForm = {
   system_name: 'TicketFlow',
   system_subtitle: 'HELPDESK',
   primary_color: '217 72% 50%',
@@ -70,24 +71,57 @@ function hexToHsl(hex: string): string {
 }
 
 export default function AdminSettings() {
-  const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
+  const systemSettings = useSystemSettings();
+  const [settings, setSettings] = useState<SettingsForm>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    const { data } = await supabase.from('system_settings').select('key, value');
-    if (data) {
-      const s = { ...defaultSettings };
-      data.forEach((row: any) => {
-        if (row.key in s) (s as any)[row.key] = row.value || (defaultSettings as any)[row.key];
+    if (!systemSettings.loading) {
+      setSettings({
+        system_name: systemSettings.system_name,
+        system_subtitle: systemSettings.system_subtitle,
+        primary_color: systemSettings.primary_color,
+        accent_color: systemSettings.accent_color,
+        logo_url: systemSettings.logo_url,
       });
-      setSettings(s);
+      setLoading(false);
     }
-    setLoading(false);
+  }, [systemSettings.loading]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('يرجى اختيار ملف صورة');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('حجم الملف يجب أن لا يتجاوز 2 ميجابايت');
+      return;
+    }
+
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const filePath = `logo-${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from('system-assets').upload(filePath, file, { upsert: true });
+    if (error) {
+      toast.error('فشل رفع الشعار');
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('system-assets').getPublicUrl(filePath);
+    setSettings(prev => ({ ...prev, logo_url: urlData.publicUrl }));
+    toast.success('تم رفع الشعار بنجاح');
+    setUploading(false);
+  };
+
+  const handleRemoveLogo = () => {
+    setSettings(prev => ({ ...prev, logo_url: '' }));
   };
 
   const handleSave = async () => {
@@ -100,15 +134,7 @@ export default function AdminSettings() {
           .update({ value: value || null, updated_at: new Date().toISOString() })
           .eq('key', key);
       }
-
-      // Apply theme colors live
-      const root = document.documentElement;
-      root.style.setProperty('--primary', settings.primary_color);
-      root.style.setProperty('--accent', settings.accent_color);
-      root.style.setProperty('--ring', settings.primary_color);
-      root.style.setProperty('--sidebar-primary', settings.primary_color);
-      root.style.setProperty('--sidebar-ring', settings.primary_color);
-
+      await systemSettings.refetch();
       toast.success('تم حفظ الإعدادات بنجاح');
     } catch {
       toast.error('حدث خطأ أثناء الحفظ');
@@ -203,11 +229,36 @@ export default function AdminSettings() {
                   <Image className="h-5 w-5 text-primary" />
                   الشعار
                 </CardTitle>
-                <CardDescription>رابط صورة الشعار (يفضل PNG شفاف)</CardDescription>
+                <CardDescription>ارفع صورة الشعار أو أدخل رابط مباشر (يفضل PNG شفاف، أقصى حجم 2MB)</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>رابط الشعار (URL)</Label>
+                {/* Upload area */}
+                <div className="flex flex-col gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoUpload}
+                  />
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="flex-1"
+                    >
+                      <Upload className="h-4 w-4 ml-2" />
+                      {uploading ? 'جاري الرفع...' : 'رفع شعار'}
+                    </Button>
+                    {settings.logo_url && (
+                      <Button variant="outline" size="icon" onClick={handleRemoveLogo} className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">أو أدخل رابط مباشر:</div>
                   <Input
                     value={settings.logo_url}
                     onChange={e => setSettings(prev => ({ ...prev, logo_url: e.target.value }))}
@@ -215,10 +266,11 @@ export default function AdminSettings() {
                     dir="ltr"
                   />
                 </div>
+
                 {settings.logo_url && (
                   <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
                     <span className="text-sm text-muted-foreground">معاينة:</span>
-                    <img src={settings.logo_url} alt="Logo preview" className="h-12 w-12 object-contain rounded" />
+                    <img src={settings.logo_url} alt="Logo preview" className="h-16 w-16 object-contain rounded" />
                   </div>
                 )}
               </CardContent>
@@ -234,7 +286,6 @@ export default function AdminSettings() {
                 <CardDescription>اختر من القوالب الجاهزة أو خصص الألوان يدوياً</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Presets */}
                 <div>
                   <Label className="mb-3 block">قوالب جاهزة</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -248,17 +299,13 @@ export default function AdminSettings() {
                             : 'border-border hover:border-primary/40'
                         }`}
                       >
-                        <div
-                          className="h-8 w-8 rounded-full shrink-0 shadow-sm"
-                          style={{ background: `hsl(${theme.primary})` }}
-                        />
+                        <div className="h-8 w-8 rounded-full shrink-0 shadow-sm" style={{ background: `hsl(${theme.primary})` }} />
                         <span className="text-sm font-medium text-foreground">{theme.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Custom Colors */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>اللون الأساسي (Primary)</Label>
@@ -309,7 +356,6 @@ export default function AdminSettings() {
                   </div>
                 </div>
 
-                {/* Live Preview */}
                 <div className="p-4 bg-muted rounded-lg space-y-3">
                   <Label className="text-muted-foreground">معاينة مباشرة</Label>
                   <div className="flex flex-wrap gap-3">
