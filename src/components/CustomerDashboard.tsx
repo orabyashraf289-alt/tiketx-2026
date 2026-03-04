@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, statusLabels, priorityLabels, Ticket } from '@/lib/api';
+import { fetchTickets, statusLabels, priorityLabels, Ticket, fetchMyRatings } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { format, subDays, isWithinInterval, startOfDay, endOfDay, differenceInHo
 import { ar } from 'date-fns/locale';
 import {
   CalendarIcon, Ticket as TicketIcon, Clock, CheckCircle2, AlertTriangle, TrendingUp,
-  BarChart3, Timer, Loader2, ArrowUpRight, ArrowDownRight, Minus
+  BarChart3, Timer, Loader2, ArrowUpRight, ArrowDownRight, Minus, Star
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
@@ -41,6 +42,7 @@ interface CustomerDashboardProps {
 }
 
 export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
+  const { user } = useAuth();
   const [dateFrom, setDateFrom] = useState<Date | undefined>(subDays(new Date(), 30));
   const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
@@ -48,6 +50,17 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
     queryKey: ['tickets'],
     queryFn: fetchTickets,
   });
+
+  const { data: myRatings = [] } = useQuery({
+    queryKey: ['my-ratings', user?.id],
+    queryFn: () => fetchMyRatings(user!.id),
+    enabled: !!user,
+  });
+
+  const avgRating = useMemo(() => {
+    if (myRatings.length === 0) return 0;
+    return Math.round(myRatings.reduce((sum, r) => sum + r.rating, 0) / myRatings.length * 10) / 10;
+  }, [myRatings]);
 
   const filtered = useMemo(() => {
     if (!dateFrom && !dateTo) return tickets;
@@ -333,6 +346,49 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* CSAT Widget */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Star className="h-4 w-4 text-amber-500" />
+            تقييم رضا العملاء (CSAT)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-4xl font-bold text-foreground">{avgRating || '—'}</p>
+              <div className="flex items-center justify-center gap-0.5 mt-1">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <Star key={s} className={cn("h-4 w-4", s <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">من 5</p>
+            </div>
+            <div className="flex-1 space-y-1.5">
+              {[5, 4, 3, 2, 1].map(star => {
+                const count = myRatings.filter(r => r.rating === star).length;
+                const pct = myRatings.length > 0 ? (count / myRatings.length) * 100 : 0;
+                return (
+                  <div key={star} className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground w-3">{star}</span>
+                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground w-5 text-left">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-foreground">{myRatings.length}</p>
+              <p className="text-[11px] text-muted-foreground">تقييم</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTickets, fetchComments, addComment, createTicket, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, addAttachment, statusLabels, priorityLabels, Ticket, TicketComment, TicketPriority } from '@/lib/api';
+import { fetchTickets, fetchComments, addComment, createTicket, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, addAttachment, statusLabels, priorityLabels, Ticket, TicketComment, TicketPriority, fetchTicketRating, submitTicketRating } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -18,7 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Inbox, Loader2, Send, ArrowRight, LogOut, User, Clock, MessageSquare, ChevronRight, Home, FileText, Layers, Paperclip, Eye, Sparkles, Building2, Monitor, ArrowLeft, Mail, X } from 'lucide-react';
+import { Plus, Search, Inbox, Loader2, Send, ArrowRight, LogOut, User, Clock, MessageSquare, ChevronRight, Home, FileText, Layers, Paperclip, Eye, Sparkles, Building2, Monitor, ArrowLeft, Mail, X, Star, Image } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -818,11 +818,78 @@ function TicketDetailView({
   sending: boolean;
   onBack: () => void;
 }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevCommentsCount = useRef(comments.length);
+
+  // Sound notification for new messages
+  useEffect(() => {
+    if (comments.length > prevCommentsCount.current && prevCommentsCount.current > 0) {
+      const lastComment = comments[comments.length - 1];
+      if (lastComment && lastComment.author_id !== user?.id) {
+        playMessageSound();
+      }
+    }
+    prevCommentsCount.current = comments.length;
+  }, [comments.length, user?.id]);
 
   useEffect(() => {
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [comments.length]);
+
+  // Rating state
+  const [ratingStars, setRatingStars] = useState(0);
+  const [ratingHover, setRatingHover] = useState(0);
+  const [ratingFeedback, setRatingFeedback] = useState('');
+
+  const { data: existingRating } = useQuery({
+    queryKey: ['ticket-rating', ticket.id],
+    queryFn: () => fetchTicketRating(ticket.id),
+  });
+
+  const ratingMutation = useMutation({
+    mutationFn: () => submitTicketRating({ ticket_id: ticket.id, user_id: user!.id, rating: ratingStars, feedback: ratingFeedback || undefined }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket-rating', ticket.id] });
+      queryClient.invalidateQueries({ queryKey: ['my-ratings'] });
+      toast.success('شكراً لتقييمك! 🌟');
+    },
+    onError: () => toast.error('حدث خطأ أثناء إرسال التقييم'),
+  });
+
+  // File attachment in chat
+  const [uploadingFile, setUploadingFile] = useState(false);
+
+  const handleFileInChat = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingFile(true);
+    try {
+      const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('ticket-attachments').getPublicUrl(filePath);
+      
+      await addAttachment({ ticket_id: ticket.id, uploaded_by: user.id, file_name: file.name, file_url: publicUrl, file_size: file.size });
+
+      // Add a comment referencing the file
+      const isImage = file.type.startsWith('image/');
+      const content = isImage ? `📷 [صورة مرفقة: ${file.name}](${publicUrl})` : `📎 [ملف مرفق: ${file.name}](${publicUrl})`;
+      await addComment({ ticket_id: ticket.id, author_id: user.id, content, note_type: 'public' });
+      
+      queryClient.invalidateQueries({ queryKey: ['comments', ticket.id] });
+      toast.success('تم إرفاق الملف بنجاح');
+    } catch (err: any) {
+      toast.error(err.message || 'فشل رفع الملف');
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const isResolved = ['resolved', 'closed'].includes(ticket.status);
 
   return (
     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.3 }}>
@@ -832,7 +899,7 @@ function TicketDetailView({
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-1 border-border/50 h-fit">
+        <Card className="lg:col-span-1 border-border/50 h-fit space-y-0">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-muted-foreground">تفاصيل التذكرة</CardTitle>
           </CardHeader>
@@ -880,6 +947,67 @@ function TicketDetailView({
               </div>
             )}
           </CardContent>
+
+          {/* Rating Section */}
+          {isResolved && (
+            <div className="border-t p-4">
+              {existingRating ? (
+                <div className="text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">تقييمك لهذه التذكرة</p>
+                  <div className="flex items-center justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} className={`h-5 w-5 ${s <= existingRating.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`} />
+                    ))}
+                  </div>
+                  {existingRating.feedback && (
+                    <p className="text-xs text-muted-foreground italic">"{existingRating.feedback}"</p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-center">كيف تقيّم تجربتك مع هذه التذكرة؟</p>
+                  <div className="flex items-center justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onMouseEnter={() => setRatingHover(s)}
+                        onMouseLeave={() => setRatingHover(0)}
+                        onClick={() => setRatingStars(s)}
+                        className="p-0.5 transition-transform hover:scale-110"
+                      >
+                        <Star className={`h-6 w-6 transition-colors ${
+                          s <= (ratingHover || ratingStars)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-muted-foreground/30'
+                        }`} />
+                      </button>
+                    ))}
+                  </div>
+                  {ratingStars > 0 && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-2">
+                      <Textarea
+                        placeholder="ملاحظاتك (اختياري)..."
+                        value={ratingFeedback}
+                        onChange={e => setRatingFeedback(e.target.value)}
+                        className="min-h-[60px] text-sm"
+                        maxLength={500}
+                      />
+                      <Button
+                        size="sm"
+                        className="w-full gap-1.5"
+                        onClick={() => ratingMutation.mutate()}
+                        disabled={ratingMutation.isPending}
+                      >
+                        {ratingMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Star className="h-3.5 w-3.5" />}
+                        إرسال التقييم
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </Card>
 
         <Card className="lg:col-span-2 border-border/50 flex flex-col" style={{ minHeight: '60vh' }}>
@@ -902,6 +1030,10 @@ function TicketDetailView({
               <div className="space-y-3">
                 {comments.map(c => {
                   const isMe = c.author_id === ticket.requester_id;
+                  const isAttachment = c.content.startsWith('📷') || c.content.startsWith('📎');
+                  const urlMatch = c.content.match(/\]\((https?:\/\/[^\)]+)\)/);
+                  const isImage = c.content.startsWith('📷') && urlMatch;
+
                   return (
                     <motion.div
                       key={c.id}
@@ -913,7 +1045,19 @@ function TicketDetailView({
                         {!isMe && (
                           <p className="text-[10px] font-medium mb-1 opacity-70">{c.author?.full_name || 'الدعم الفني'}</p>
                         )}
-                        <p className="text-sm leading-relaxed">{c.content}</p>
+                        {isImage && urlMatch ? (
+                          <div className="space-y-1.5">
+                            <img src={urlMatch[1]} alt="مرفق" className="rounded-lg max-h-48 w-auto cursor-pointer" onClick={() => window.open(urlMatch[1], '_blank')} />
+                            <p className="text-[10px] opacity-70">{c.content.match(/\[([^\]]+)\]/)?.[1]}</p>
+                          </div>
+                        ) : isAttachment && urlMatch ? (
+                          <a href={urlMatch[1]} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 underline text-sm">
+                            <Paperclip className="h-3.5 w-3.5" />
+                            {c.content.match(/\[([^\]]+)\]/)?.[1]}
+                          </a>
+                        ) : (
+                          <p className="text-sm leading-relaxed">{c.content}</p>
+                        )}
                         <p className={`text-[9px] mt-1 ${isMe ? 'opacity-70' : 'text-muted-foreground'}`}>
                           {format(new Date(c.created_at), 'HH:mm - dd/MM', { locale: ar })}
                         </p>
@@ -926,6 +1070,23 @@ function TicketDetailView({
             )}
           </ScrollArea>
           <div className="p-3 border-t flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+              onChange={handleFileInChat}
+            />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-xl shrink-0"
+              disabled={uploadingFile}
+              onClick={() => fileInputRef.current?.click()}
+              title="إرفاق ملف"
+            >
+              {uploadingFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+            </Button>
             <Input
               placeholder="اكتب رسالتك..."
               value={newComment}
@@ -941,4 +1102,24 @@ function TicketDetailView({
       </div>
     </motion.div>
   );
+}
+
+// Play a short notification sound using Web Audio API
+function playMessageSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {
+    // Audio not supported
+  }
 }
