@@ -31,3 +31,7 @@ project_id = "yoamlepdjzsjwppxhuov"
     verify_jwt = false
   [functions.run-automation]
     verify_jwt = false
+  [functions.suggest-reply]
+    verify_jwt = false
+  [functions.create-user]
+    verify_jwt = false

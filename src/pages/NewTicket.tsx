@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { WizardProgress } from '@/components/ticket-wizard/WizardProgress';
 import { FileDropZone } from '@/components/ticket-wizard/FileDropZone';
 import { TicketPreview } from '@/components/ticket-wizard/TicketPreview';
+import { TicketTemplatesPicker } from '@/components/TicketTemplates';
 
 const priorities: { value: TicketPriority; label: string; color: string }[] = [
   { value: 'low', label: 'منخفضة', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
@@ -275,6 +276,9 @@ export default function NewTicket() {
                       {/* Step 0: Title & Description */}
                       {step === 0 && (
                         <div className="space-y-5">
+                          {/* Ticket Templates */}
+                          <TicketTemplatesPicker onSelect={(t) => { setTitle(t.title); setDescription(t.description); setPriority(t.priority); }} />
+                          
                           <div className="space-y-2">
                             <Label htmlFor="title">عنوان التذكرة *</Label>
                             <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="وصف مختصر للمشكلة" maxLength={200} />

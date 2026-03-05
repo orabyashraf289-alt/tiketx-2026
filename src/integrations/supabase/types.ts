@@ -950,6 +950,80 @@ export type Database = {
           },
         ]
       }
+      ticket_templates: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          is_shared: boolean
+          name: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          service_id: string | null
+          system_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          created_by: string
+          description?: string
+          id?: string
+          is_shared?: boolean
+          name: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          service_id?: string | null
+          system_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          is_shared?: boolean
+          name?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          service_id?: string | null
+          system_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_templates_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_templates_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_time_entries: {
         Row: {
           created_at: string
