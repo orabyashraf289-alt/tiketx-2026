@@ -38,6 +38,7 @@ const CustomerPortal = lazy(() => import('./pages/CustomerPortal'));
 const DeveloperDashboard = lazy(() => import('./pages/DeveloperDashboard'));
 const CSATAnalytics = lazy(() => import('./pages/CSATAnalytics'));
 const SLACompliance = lazy(() => import('./pages/SLACompliance'));
+const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -115,6 +116,7 @@ const App = () => (
                   <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
                   <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
                   <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
+                  <Route path="/admin/executive" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
