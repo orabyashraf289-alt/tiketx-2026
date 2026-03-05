@@ -27,6 +27,8 @@ import { AiChatPanel } from '@/components/AiChatPanel';
 import { AiSuggestions } from '@/components/AiSuggestions';
 import { CSATWidget } from '@/components/CSATWidget';
 import { TicketPDFExport } from '@/components/TicketPDFExport';
+import { CannedResponsesPicker } from '@/components/CannedResponses';
+import { TimeTracker } from '@/components/TimeTracker';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -115,6 +117,11 @@ export default function TicketDetailPage() {
       .channel(`ticket-comments-${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${id}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['comments', id] });
+        // Auto-scroll to bottom
+        setTimeout(() => {
+          const el = document.getElementById('comments-scroll');
+          if (el) el.scrollTop = el.scrollHeight;
+        }, 300);
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -427,56 +434,80 @@ export default function TicketDetailPage() {
                       </CardHeader>
                       <CardContent>
                         <TabsContent value="comments" className="mt-0">
-                          <div className="space-y-4 mb-6">
+                          {/* Chat-style messages */}
+                          <div className="space-y-3 mb-6 max-h-[400px] overflow-auto" id="comments-scroll">
                             {comments.length === 0 ? (
-                              <p className="text-sm text-muted-foreground text-center py-8">لا توجد تعليقات بعد</p>
+                              <p className="text-sm text-muted-foreground text-center py-8">لا توجد رسائل بعد — ابدأ المحادثة</p>
                             ) : (
-                              comments.map((c, i) => (
-                                <motion.div
-                                  key={c.id}
-                                  initial={{ opacity: 0, y: 10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: i * 0.05, duration: 0.3 }}
-                                  className={`rounded-xl p-4 ${c.note_type === 'private' ? 'bg-warning/5 border border-warning/20' : 'bg-muted/50'}`}
-                                >
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-semibold">{c.author?.full_name}</span>
-                                      {c.note_type === 'private' && (
-                                        <span className="text-[10px] bg-warning/20 text-warning px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                                          <Lock className="h-2.5 w-2.5" />
-                                          ملاحظة خاصة
-                                        </span>
-                                      )}
+                              comments.map((c, i) => {
+                                const isMe = c.author_id === user?.id;
+                                return (
+                                  <motion.div
+                                    key={c.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.03, duration: 0.3 }}
+                                    className={`flex ${isMe ? 'justify-start' : 'justify-end'}`}
+                                  >
+                                    <div className={`max-w-[80%] rounded-2xl p-3 ${
+                                      c.note_type === 'private'
+                                        ? 'bg-warning/5 border border-warning/20'
+                                        : isMe
+                                          ? 'bg-primary/10 border border-primary/10'
+                                          : 'bg-muted/50'
+                                    }`}>
+                                      <div className="flex items-center justify-between gap-3 mb-1">
+                                        <span className="text-xs font-semibold">{c.author?.full_name}</span>
+                                        <div className="flex items-center gap-1">
+                                          {c.note_type === 'private' && (
+                                            <span className="text-[9px] bg-warning/20 text-warning px-1 py-0.5 rounded flex items-center gap-0.5">
+                                              <Lock className="h-2 w-2" />
+                                              خاصة
+                                            </span>
+                                          )}
+                                          <span className="text-[10px] text-muted-foreground">
+                                            {format(new Date(c.created_at), 'HH:mm', { locale: ar })}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <p className="text-sm whitespace-pre-wrap">{c.content}</p>
                                     </div>
-                                    <span className="text-xs text-muted-foreground">
-                                      {format(new Date(c.created_at), 'd MMM, HH:mm', { locale: ar })}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm whitespace-pre-wrap">{c.content}</p>
-                                </motion.div>
-                              ))
+                                  </motion.div>
+                                );
+                              })
                             )}
                           </div>
 
+                          {/* Reply Input */}
                           <div className="space-y-3 border-t pt-4">
                             <Textarea
-                              placeholder="اكتب تعليقك هنا..."
+                              placeholder="اكتب رسالتك هنا..."
                               value={reply}
                               onChange={e => setReply(e.target.value)}
                               className="min-h-[80px] resize-none rounded-xl"
                               maxLength={2000}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey && reply.trim()) {
+                                  e.preventDefault();
+                                  commentMutation.mutate();
+                                }
+                              }}
                             />
-                            <div className="flex items-center justify-between">
-                              {isAgentOrAdmin && (
-                                <div className="flex items-center gap-2">
-                                  <Switch id="private" checked={isPrivate} onCheckedChange={setIsPrivate} />
-                                  <Label htmlFor="private" className="text-xs flex items-center gap-1">
-                                    {isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                                    {isPrivate ? 'ملاحظة خاصة' : 'تعليق عام'}
-                                  </Label>
-                                </div>
-                              )}
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex items-center gap-2">
+                                {isAgentOrAdmin && (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <Switch id="private" checked={isPrivate} onCheckedChange={setIsPrivate} />
+                                      <Label htmlFor="private" className="text-xs flex items-center gap-1">
+                                        {isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
+                                        {isPrivate ? 'خاصة' : 'عام'}
+                                      </Label>
+                                    </div>
+                                    <CannedResponsesPicker onSelect={(content) => setReply(prev => prev ? prev + '\n' + content : content)} />
+                                  </>
+                                )}
+                              </div>
                               <Button
                                 className="gradient-accent text-accent-foreground gap-2 rounded-xl shadow-lg shadow-primary/20"
                                 disabled={!reply.trim() || commentMutation.isPending}
@@ -617,6 +648,13 @@ export default function TicketDetailPage() {
 
                 {/* CSAT Rating */}
                 <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
+
+                {/* Time Tracker - for agents/admins */}
+                {isAgentOrAdmin && (
+                  <motion.div variants={fadeScale}>
+                    <TimeTracker ticketId={ticket.id} />
+                  </motion.div>
+                )}
 
                 {/* Actions for agents/admins */}
                 {isAgentOrAdmin && (
