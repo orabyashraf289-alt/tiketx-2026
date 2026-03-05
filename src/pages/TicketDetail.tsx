@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { motion } from 'framer-motion';
 import { AiChatPanel } from '@/components/AiChatPanel';
 import { AiSuggestions } from '@/components/AiSuggestions';
+import { AiReplySuggestions } from '@/components/AiReplySuggestions';
 import { CSATWidget } from '@/components/CSATWidget';
 import { TicketPDFExport } from '@/components/TicketPDFExport';
 import { CannedResponsesPicker } from '@/components/CannedResponses';
@@ -517,6 +518,9 @@ export default function TicketDetailPage() {
                                   </>
                                 )}
                               </div>
+                              {isAgentOrAdmin && (
+                                <AiReplySuggestions ticketId={ticket.id} onSelectReply={(text) => setReply(text)} />
+                              )}
                               <Button
                                 className="gradient-accent text-accent-foreground gap-2 rounded-xl shadow-lg shadow-primary/20"
                                 disabled={!reply.trim() || commentMutation.isPending}
