@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Settings, Palette, Type, Image, Save, RotateCcw, Upload, Trash2 } from 'lucide-react';
+import { CannedResponsesManager } from '@/components/CannedResponses';
 import { motion } from 'framer-motion';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 
@@ -372,6 +373,15 @@ export default function AdminSettings() {
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+
+          {/* Canned Responses Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <CannedResponsesManager />
           </motion.div>
         </main>
       </div>
