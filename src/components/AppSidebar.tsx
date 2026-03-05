@@ -90,6 +90,7 @@ const adminItems = [
   { title: 'سجل التدقيق', url: '/admin/audit-log', icon: FileSearch },
   { title: 'الأمان والحوكمة', url: '/admin/security', icon: ShieldCheckIcon },
   { title: 'الأمان والإشعارات', url: '/admin/security-settings', icon: Send },
+  { title: 'إدارة البريد الإلكتروني', url: '/admin/email', icon: Mail },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 
