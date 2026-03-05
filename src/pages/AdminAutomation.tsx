@@ -43,13 +43,16 @@ const OPERATORS = [
 const ACTION_TYPES = [
   { value: 'change_priority', label: 'تغيير الأولوية' },
   { value: 'change_status', label: 'تغيير الحالة' },
+  { value: 'assign_agent', label: 'تعيين وكيل' },
+  { value: 'assign_department', label: 'تعيين قسم' },
   { value: 'send_notification', label: 'إرسال إشعار' },
+  { value: 'send_email', label: 'إرسال بريد إلكتروني' },
   { value: 'webhook', label: 'تشغيل Webhook' },
   { value: 'send_slack', label: 'إرسال لـ Slack' },
 ];
 
 interface Condition { field: string; operator: string; value: string; }
-interface Action { type: string; value?: string; message?: string; channel?: string; title?: string; }
+interface Action { type: string; value?: string; message?: string; channel?: string; title?: string; recipient_email?: string; }
 
 export default function AdminAutomation() {
   const qc = useQueryClient();
@@ -224,14 +227,29 @@ export default function AdminAutomation() {
                               </Button>
                             )}
                           </div>
-                          {(act.type === 'change_priority' || act.type === 'change_status') && (
+                          {(act.type === 'change_priority') && (
                             <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
-                              placeholder={act.type === 'change_priority' ? 'low | medium | high | urgent' : 'new | open | in_progress | ...'} className="text-xs" />
+                              placeholder="low | medium | high | urgent" className="text-xs" />
+                          )}
+                          {(act.type === 'change_status') && (
+                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
+                              placeholder="new | open | in_progress | resolved | closed" className="text-xs" />
+                          )}
+                          {(act.type === 'assign_agent' || act.type === 'assign_department') && (
+                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
+                              placeholder={act.type === 'assign_agent' ? 'معرف الوكيل (UUID)' : 'معرف القسم (UUID)'} dir="ltr" className="text-xs" />
                           )}
                           {act.type === 'send_notification' && (
                             <div className="space-y-2">
                               <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder="عنوان الإشعار" className="text-xs" />
                               <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder="نص الإشعار" className="text-xs" rows={2} />
+                            </div>
+                          )}
+                          {act.type === 'send_email' && (
+                            <div className="space-y-2">
+                              <Input value={act.recipient_email || ''} onChange={e => updateAction(i, 'recipient_email', e.target.value)} placeholder="البريد الإلكتروني للمستلم (اختياري - افتراضي: مقدم الطلب)" dir="ltr" className="text-xs" />
+                              <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder="عنوان البريد" className="text-xs" />
+                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder="نص البريد" className="text-xs" rows={2} />
                             </div>
                           )}
                           {act.type === 'send_slack' && (

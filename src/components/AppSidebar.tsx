@@ -14,13 +14,13 @@ import {
   Globe,
   Settings,
   HelpCircle,
-  MessageSquare,
   Mail,
   Columns,
   Star,
   ShieldAlert,
   Webhook,
   Zap,
+  MessageSquare,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -83,6 +83,7 @@ const adminItems = [
   { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
   { title: 'Webhooks', url: '/admin/webhooks', icon: Webhook },
   { title: 'سير العمل التلقائي', url: '/admin/automation', icon: Zap },
+  { title: 'تكامل Slack', url: '/admin/slack', icon: MessageSquare },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 
