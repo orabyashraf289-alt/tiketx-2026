@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType, statusLabels, priorityLabels } from '@/lib/api';
+import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType } from '@/lib/api';
 import { ApprovalTimeline } from '@/components/ApprovalTimeline';
 import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, User, Clock, Tag, MessageCircle, Send, Loader2, History, Lock, Globe, RotateCcw, Paperclip, FileText } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -32,6 +32,8 @@ import { CannedResponsesPicker } from '@/components/CannedResponses';
 import { TimeTracker } from '@/components/TimeTracker';
 import { SentimentAnalysis } from '@/components/SentimentBadge';
 import { TicketSummary } from '@/components/TicketSummary';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -57,6 +59,9 @@ export default function TicketDetailPage() {
   const { user, role } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, lang, isRTL } = useLanguage();
+  const { statusLabels, priorityLabels } = useLocalizedLabels();
+  const dateLocale = lang === 'ar' ? ar : enUS;
 
   const [reply, setReply] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -165,7 +170,7 @@ export default function TicketDetailPage() {
     onSuccess: () => {
       setReply('');
       queryClient.invalidateQueries({ queryKey: ['comments', id] });
-      toast({ title: 'تم إضافة التعليق' });
+      toast({ title: t.tickets.commentAdded });
     },
   });
 
@@ -181,7 +186,7 @@ export default function TicketDetailPage() {
       await addAuditLog({
         ticket_id: id!,
         user_id: user!.id,
-        action: 'تغيير الحالة',
+        action: t.tickets.statusChangeAction,
         old_value: statusLabels[oldStatus],
         new_value: statusLabels[newStatus],
       });
@@ -194,7 +199,7 @@ export default function TicketDetailPage() {
       setShowResolveDialog(false);
       setResolutionSummary('');
       setPendingStatus(null);
-      toast({ title: 'تم تحديث الحالة' });
+      toast({ title: t.tickets.statusUpdated });
     },
   });
 
@@ -216,8 +221,8 @@ export default function TicketDetailPage() {
 
   const fileUploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      if (file.size > MAX_FILE_SIZE) throw new Error('حجم الملف يتجاوز 10 ميجابايت');
-      if (!ALLOWED_TYPES.includes(file.type)) throw new Error('نوع الملف غير مسموح به. الأنواع المسموحة: صور، PDF، Word، Excel، نصوص');
+      if (file.size > MAX_FILE_SIZE) throw new Error(t.tickets.fileSizeExceeded);
+      if (!ALLOWED_TYPES.includes(file.type)) throw new Error(t.tickets.fileTypeNotAllowed);
       const filePath = `${id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
@@ -233,10 +238,10 @@ export default function TicketDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attachments', id] });
-      toast({ title: 'تم رفع الملف' });
+      toast({ title: t.tickets.fileUploaded });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ في رفع الملف', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.tickets.fileUploadError, description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
@@ -247,14 +252,14 @@ export default function TicketDetailPage() {
       await addAuditLog({
         ticket_id: id!,
         user_id: user!.id,
-        action: 'تعيين معالج',
+        action: t.tickets.assignAction,
         new_value: agentName,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', id] });
       queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
-      toast({ title: 'تم تعيين المعالج' });
+      toast({ title: t.tickets.agentAssigned });
     },
   });
 
@@ -265,7 +270,7 @@ export default function TicketDetailPage() {
       await addAuditLog({
         ticket_id: id!,
         user_id: user!.id,
-        action: 'تغيير الأولوية',
+        action: t.tickets.priorityChangeAction,
         old_value: priorityLabels[oldPriority],
         new_value: priorityLabels[newPriority],
       });
@@ -274,7 +279,7 @@ export default function TicketDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['ticket', id] });
       queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
-      toast({ title: 'تم تحديث الأولوية' });
+      toast({ title: t.tickets.priorityUpdated });
     },
   });
 
@@ -285,14 +290,14 @@ export default function TicketDetailPage() {
       await addAuditLog({
         ticket_id: id!,
         user_id: user!.id,
-        action: 'تغيير الخدمة',
+        action: t.tickets.serviceChangeAction,
         new_value: svc?.name || serviceId,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', id] });
       queryClient.invalidateQueries({ queryKey: ['audit-logs', id] });
-      toast({ title: 'تم تحديث الخدمة' });
+      toast({ title: t.tickets.serviceUpdated });
     },
   });
 
@@ -328,7 +333,7 @@ export default function TicketDetailPage() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-bold truncate text-foreground">تذكرة {ticket.code || `#${ticket.ticket_number}`}</h1>
+            <h1 className="text-lg font-bold truncate text-foreground">{t.tickets.ticketLabel} {ticket.code || `#${ticket.ticket_number}`}</h1>
           </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
@@ -368,14 +373,14 @@ export default function TicketDetailPage() {
                           animate={{ opacity: 1, y: 0 }}
                           className="mt-4 p-4 rounded-xl bg-success/10 border border-success/20"
                         >
-                          <p className="text-xs font-semibold text-success mb-1">ملخص الحل</p>
+                          <p className="text-xs font-semibold text-success mb-1">{t.tickets.resolutionSummary}</p>
                           <p className="text-sm">{ticket.resolution_summary}</p>
                         </motion.div>
                       )}
 
                       {attachments.length > 0 && (
                         <div className="mt-4 space-y-2">
-                          <p className="text-xs font-semibold text-muted-foreground">المرفقات</p>
+                          <p className="text-xs font-semibold text-muted-foreground">{t.tickets.detail.attachments}</p>
                           <div className="flex flex-wrap gap-2">
                             {attachments.map(att => (
                               <motion.a
@@ -403,13 +408,13 @@ export default function TicketDetailPage() {
                         }} />
                         <Button variant="outline" size="sm" className="gap-1 text-xs rounded-xl" onClick={() => fileInputRef.current?.click()} disabled={fileUploadMutation.isPending}>
                           {fileUploadMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Paperclip className="h-3 w-3" />}
-                          إرفاق ملف
+                           {t.tickets.attachFile}
                         </Button>
                         <TicketPDFExport ticket={ticket} comments={comments} attachments={attachments} />
                         {!isAgentOrAdmin && (ticket.status === 'resolved' || ticket.status === 'closed') && (
                           <Button variant="outline" size="sm" className="gap-1 text-xs rounded-xl" onClick={handleReopen} disabled={statusMutation.isPending}>
-                            <RotateCcw className="h-3 w-3" />
-                            إعادة فتح
+                             <RotateCcw className="h-3 w-3" />
+                             {t.tickets.reopen}
                           </Button>
                         )}
                       </div>
@@ -432,12 +437,12 @@ export default function TicketDetailPage() {
                         <TabsList className="rounded-xl">
                           <TabsTrigger value="comments" className="gap-1 rounded-lg">
                             <MessageCircle className="h-3.5 w-3.5" />
-                            المحادثة ({comments.length})
+                            {t.tickets.conversation} ({comments.length})
                           </TabsTrigger>
                           {isAgentOrAdmin && (
                             <TabsTrigger value="audit" className="gap-1 rounded-lg">
                               <History className="h-3.5 w-3.5" />
-                              سجل التغييرات
+                              {t.tickets.auditLog}
                             </TabsTrigger>
                           )}
                         </TabsList>
@@ -447,7 +452,7 @@ export default function TicketDetailPage() {
                           {/* Chat-style messages */}
                           <div className="space-y-3 mb-6 max-h-[400px] overflow-auto" id="comments-scroll">
                             {comments.length === 0 ? (
-                              <p className="text-sm text-muted-foreground text-center py-8">لا توجد رسائل بعد — ابدأ المحادثة</p>
+                              <p className="text-sm text-muted-foreground text-center py-8">{t.tickets.noMessages}</p>
                             ) : (
                               comments.map((c, i) => {
                                 const isMe = c.author_id === user?.id;
@@ -472,11 +477,11 @@ export default function TicketDetailPage() {
                                           {c.note_type === 'private' && (
                                             <span className="text-[9px] bg-warning/20 text-warning px-1 py-0.5 rounded flex items-center gap-0.5">
                                               <Lock className="h-2 w-2" />
-                                              خاصة
+                                              {t.tickets.private}
                                             </span>
                                           )}
                                           <span className="text-[10px] text-muted-foreground">
-                                            {format(new Date(c.created_at), 'HH:mm', { locale: ar })}
+                                            {format(new Date(c.created_at), 'HH:mm', { locale: dateLocale })}
                                           </span>
                                         </div>
                                       </div>
@@ -491,7 +496,7 @@ export default function TicketDetailPage() {
                           {/* Reply Input */}
                           <div className="space-y-3 border-t pt-4">
                             <Textarea
-                              placeholder="اكتب رسالتك هنا..."
+                              placeholder={t.tickets.writeMessage}
                               value={reply}
                               onChange={e => setReply(e.target.value)}
                               className="min-h-[80px] resize-none rounded-xl"
@@ -511,7 +516,7 @@ export default function TicketDetailPage() {
                                       <Switch id="private" checked={isPrivate} onCheckedChange={setIsPrivate} />
                                       <Label htmlFor="private" className="text-xs flex items-center gap-1">
                                         {isPrivate ? <Lock className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                                        {isPrivate ? 'خاصة' : 'عام'}
+                                        {isPrivate ? t.tickets.private : t.tickets.public}
                                       </Label>
                                     </div>
                                     <CannedResponsesPicker onSelect={(content) => setReply(prev => prev ? prev + '\n' + content : content)} />
@@ -527,7 +532,7 @@ export default function TicketDetailPage() {
                                 onClick={() => commentMutation.mutate()}
                               >
                                 {commentMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                                إرسال
+                                {t.tickets.send}
                               </Button>
                             </div>
                           </div>
@@ -536,7 +541,7 @@ export default function TicketDetailPage() {
                         {isAgentOrAdmin && (
                           <TabsContent value="audit" className="mt-0">
                             {auditLogs.length === 0 ? (
-                              <p className="text-sm text-muted-foreground text-center py-8">لا يوجد سجل تغييرات</p>
+                              <p className="text-sm text-muted-foreground text-center py-8">{t.tickets.noAuditLog}</p>
                             ) : (
                               <div className="space-y-3">
                                 {auditLogs.map((log, i) => (
@@ -551,13 +556,13 @@ export default function TicketDetailPage() {
                                     <div>
                                       <p>
                                         <span className="font-medium">{log.user?.full_name}</span>
-                                        {' '}قام بـ{' '}
+                                        {' '}{t.tickets.performed}{' '}
                                         <span className="font-medium">{log.action}</span>
-                                        {log.old_value && <> من <span className="text-muted-foreground">{log.old_value}</span></>}
-                                        {log.new_value && <> إلى <span className="font-medium text-primary">{log.new_value}</span></>}
+                                        {log.old_value && <> {t.tickets.fromLabel} <span className="text-muted-foreground">{log.old_value}</span></>}
+                                        {log.new_value && <> {t.tickets.toLabel} <span className="font-medium text-primary">{log.new_value}</span></>}
                                       </p>
                                       <p className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: ar })}
+                                        {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: dateLocale })}
                                       </p>
                                     </div>
                                   </motion.div>
@@ -580,27 +585,27 @@ export default function TicketDetailPage() {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Tag className="h-4 w-4 text-primary" />
-                        كتالوج الخدمة
+                        {t.tickets.serviceCatalog}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
                       <div className="rounded-xl bg-muted/50 p-3 space-y-2.5">
                         <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">النظام</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">{t.tickets.systemLabel}</p>
                           <p className="font-medium text-foreground">
                             {ticket.services?.systems?.name || <span className="text-muted-foreground">—</span>}
                           </p>
                         </div>
                         <Separator className="bg-border/50" />
                         <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">الموديول</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">{t.tickets.moduleLabel}</p>
                           <p className="font-medium text-foreground">
                             {ticket.services?.name || <span className="text-muted-foreground">—</span>}
                           </p>
                         </div>
                         <Separator className="bg-border/50" />
                         <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">الشاشة</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">{t.tickets.screenLabel}</p>
                           <p className="font-medium text-foreground">
                             {ticket.service_categories?.name || <span className="text-muted-foreground">—</span>}
                           </p>
@@ -608,9 +613,9 @@ export default function TicketDetailPage() {
                       </div>
                       {ticket.source_system && ticket.source_system !== 'PORTAL' && (
                         <div className="rounded-xl bg-muted/50 p-3">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">المصدر</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">{t.tickets.sourceLabel}</p>
                           <p className="font-medium">{ticket.source_system}</p>
-                          {ticket.external_reference && <p className="text-xs text-muted-foreground mt-0.5">المرجع: {ticket.external_reference}</p>}
+                          {ticket.external_reference && <p className="text-xs text-muted-foreground mt-0.5">{t.tickets.referenceLabel}: {ticket.external_reference}</p>}
                         </div>
                       )}
                     </CardContent>
@@ -620,33 +625,33 @@ export default function TicketDetailPage() {
                 {/* Ticket Meta Info */}
                 <motion.div variants={fadeScale}>
                   <Card className="rounded-2xl border-border/50 shadow-card">
-                    <CardHeader className="pb-2"><CardTitle className="text-sm">معلومات التذكرة</CardTitle></CardHeader>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm">{t.tickets.ticketInfo}</CardTitle></CardHeader>
                     <CardContent className="space-y-3 text-sm">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div>
-                          <p className="text-xs text-muted-foreground">مقدم الطلب</p>
+                          <p className="text-xs text-muted-foreground">{t.tickets.requester}</p>
                           <p className="font-medium">{ticket.requester?.full_name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div>
-                          <p className="text-xs text-muted-foreground">المعالج</p>
-                          <p className="font-medium">{ticket.agent?.full_name || 'غير معيّن'}</p>
+                          <p className="text-xs text-muted-foreground">{t.tickets.handler}</p>
+                          <p className="font-medium">{ticket.agent?.full_name || t.tickets.notAssigned}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div>
-                          <p className="text-xs text-muted-foreground">تاريخ الإنشاء</p>
-                          <p className="font-medium">{format(new Date(ticket.created_at), 'd MMM yyyy, HH:mm', { locale: ar })}</p>
+                          <p className="text-xs text-muted-foreground">{t.tickets.createdAt}</p>
+                          <p className="font-medium">{format(new Date(ticket.created_at), 'd MMM yyyy, HH:mm', { locale: dateLocale })}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
                         <div>
-                          <p className="text-xs text-muted-foreground">القسم</p>
+                          <p className="text-xs text-muted-foreground">{t.tickets.department}</p>
                           <p className="font-medium">{ticket.departments?.name || '-'}</p>
                         </div>
                       </div>
@@ -681,10 +686,10 @@ export default function TicketDetailPage() {
                   <>
                     <motion.div variants={fadeScale}>
                       <Card className="rounded-2xl border-border/50 shadow-card">
-                        <CardHeader><CardTitle className="text-sm">إجراءات</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-sm">{t.tickets.actions}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
-                            <Label className="text-xs">تغيير الحالة</Label>
+                            <Label className="text-xs">{t.tickets.changeStatus}</Label>
                             <Select value={ticket.status} onValueChange={(v) => handleStatusChange(v as TicketStatus)}>
                               <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                               <SelectContent>
@@ -695,9 +700,9 @@ export default function TicketDetailPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">تعيين معالج</Label>
+                            <Label className="text-xs">{t.tickets.assignAgent}</Label>
                             <Select value={ticket.assigned_agent_id || ''} onValueChange={v => assignMutation.mutate(v)}>
-                              <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر معالج" /></SelectTrigger>
+                              <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.tickets.selectAgent} /></SelectTrigger>
                               <SelectContent>
                                 {agents.map((a: any) => (
                                   <SelectItem key={a.user_id} value={a.user_id}>
@@ -708,7 +713,7 @@ export default function TicketDetailPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">تغيير الأولوية</Label>
+                            <Label className="text-xs">{t.tickets.changePriority}</Label>
                             <Select value={ticket.priority} onValueChange={(v) => priorityMutation.mutate(v as TicketPriority)}>
                               <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                               <SelectContent>
@@ -719,9 +724,9 @@ export default function TicketDetailPage() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-xs">تغيير الخدمة</Label>
+                            <Label className="text-xs">{t.tickets.changeService}</Label>
                             <Select value={ticket.service_id || ''} onValueChange={v => serviceMutation.mutate(v)}>
-                              <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
+                              <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.tickets.selectService} /></SelectTrigger>
                               <SelectContent>
                                 {services.map(s => (
                                   <SelectItem key={s.id} value={s.id}>
@@ -738,7 +743,7 @@ export default function TicketDetailPage() {
                     {serviceFields.length > 0 && (
                       <motion.div variants={fadeScale}>
                         <Card className="rounded-2xl border-border/50 shadow-card">
-                          <CardHeader><CardTitle className="text-sm">حقول مخصصة</CardTitle></CardHeader>
+                          <CardHeader><CardTitle className="text-sm">{t.tickets.customFields}</CardTitle></CardHeader>
                           <CardContent className="space-y-3 text-sm">
                             {serviceFields.map(f => {
                               const val = fieldValues.find(v => v.field_id === f.id);
@@ -766,17 +771,17 @@ export default function TicketDetailPage() {
 
       {/* Resolution Summary Dialog */}
       <Dialog open={showResolveDialog} onOpenChange={setShowResolveDialog}>
-        <DialogContent dir="rtl">
+        <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
           <DialogHeader>
-            <DialogTitle>{pendingStatus === 'resolved' ? 'حل التذكرة' : 'إغلاق التذكرة'}</DialogTitle>
+            <DialogTitle>{pendingStatus === 'resolved' ? t.tickets.resolveTicket : t.tickets.closeTicket}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <Label>ملخص الحل</Label>
+              <Label>{t.tickets.resolutionSummaryLabel}</Label>
               <Textarea
                 value={resolutionSummary}
                 onChange={e => setResolutionSummary(e.target.value)}
-                placeholder="اكتب ملخص الحل أو سبب الإغلاق..."
+                placeholder={t.tickets.resolutionPlaceholder}
                 className="min-h-[100px] rounded-xl"
               />
             </div>
@@ -790,7 +795,7 @@ export default function TicketDetailPage() {
               }}
             >
               {statusMutation.isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-              تأكيد
+              {t.common.confirm}
             </Button>
           </div>
         </DialogContent>
