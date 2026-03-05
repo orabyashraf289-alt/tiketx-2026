@@ -7,98 +7,137 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+async function verifyAdmin(req: Request) {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) throw new Error("غير مصرح");
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") || serviceRoleKey);
+  const { data: { user: caller }, error: authError } = await anonClient.auth.getUser(
+    authHeader.replace("Bearer ", "")
+  );
+  if (authError || !caller) throw new Error("غير مصرح");
+
+  const adminClient = createClient(supabaseUrl, serviceRoleKey);
+  const { data: roleData } = await adminClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", caller.id)
+    .single();
+
+  if (!roleData || roleData.role !== "admin") throw new Error("صلاحيات غير كافية");
+
+  return { caller, adminClient, supabaseUrl, serviceRoleKey };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify caller is admin
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "غير مصرح" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { caller, adminClient } = await verifyAdmin(req);
+    const body = await req.json();
+    const action = body.action || "create";
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    // =================== CREATE USER ===================
+    if (action === "create") {
+      const { email, password, full_name, role, job_title } = body;
+      if (!email || !password || !full_name) {
+        return new Response(JSON.stringify({ error: "البريد وكلمة المرور والاسم مطلوبة" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    // Verify the caller is admin using their token
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") || serviceRoleKey);
-    const { data: { user: caller }, error: authError } = await anonClient.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-    if (authError || !caller) {
-      return new Response(JSON.stringify({ error: "غير مصرح" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check admin role
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .single();
-
-    if (!roleData || roleData.role !== "admin") {
-      return new Response(JSON.stringify({ error: "صلاحيات غير كافية" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { email, password, full_name, role } = await req.json();
-
-    if (!email || !password || !full_name) {
-      return new Response(
-        JSON.stringify({ error: "البريد وكلمة المرور والاسم مطلوبة" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Create user with service role (bypasses disable_signup)
-    const { data: newUser, error: createError } =
-      await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
+      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+        email, password, email_confirm: true,
         user_metadata: { full_name },
       });
+      if (createError) {
+        return new Response(JSON.stringify({ error: createError.message }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (role && role !== "requester" && newUser.user) {
+        await adminClient.from("user_roles").update({ role }).eq("user_id", newUser.user.id);
+      }
+
+      if (job_title && newUser.user) {
+        await adminClient.from("profiles").update({ job_title }).eq("id", newUser.user.id);
+      }
+
+      return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Update role if not requester (default)
-    if (role && role !== "requester" && newUser.user) {
-      await adminClient
-        .from("user_roles")
-        .update({ role })
-        .eq("user_id", newUser.user.id);
+    // =================== UPDATE USER ===================
+    if (action === "update") {
+      const { user_id, full_name, email, job_title, department_id, is_active } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id مطلوب" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Update profile
+      const profileUpdates: Record<string, any> = {};
+      if (full_name !== undefined) profileUpdates.full_name = full_name;
+      if (job_title !== undefined) profileUpdates.job_title = job_title;
+      if (department_id !== undefined) profileUpdates.department_id = department_id || null;
+      if (is_active !== undefined) profileUpdates.is_active = is_active;
+
+      if (Object.keys(profileUpdates).length > 0) {
+        const { error } = await adminClient.from("profiles").update(profileUpdates).eq("id", user_id);
+        if (error) throw new Error(error.message);
+      }
+
+      // Update email in auth if changed
+      if (email) {
+        const { error } = await adminClient.auth.admin.updateUserById(user_id, { email });
+        if (error) throw new Error(error.message);
+        await adminClient.from("profiles").update({ email }).eq("id", user_id);
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(
-      JSON.stringify({ success: true, user_id: newUser.user?.id }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // =================== DELETE USER ===================
+    if (action === "delete") {
+      const { user_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id مطلوب" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-    );
+
+      if (user_id === caller.id) {
+        return new Response(JSON.stringify({ error: "لا يمكنك حذف حسابك" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error } = await adminClient.auth.admin.deleteUser(user_id);
+      if (error) throw new Error(error.message);
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "إجراء غير معروف" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const msg = (err as Error).message;
+    const status = msg === "غير مصرح" ? 401 : msg === "صلاحيات غير كافية" ? 403 : 500;
+    return new Response(JSON.stringify({ error: msg }), {
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
