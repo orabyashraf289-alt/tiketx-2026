@@ -29,6 +29,8 @@ import { CustomerDashboard } from '@/components/CustomerDashboard';
 import { WizardProgress } from '@/components/ticket-wizard/WizardProgress';
 import { FileDropZone } from '@/components/ticket-wizard/FileDropZone';
 import { TicketPreview } from '@/components/ticket-wizard/TicketPreview';
+import { TicketProgressTracker } from '@/components/TicketProgressTracker';
+import { SmartSearch } from '@/components/SmartSearch';
 
 const statusColors: Record<string, string> = {
   new: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
@@ -723,10 +725,7 @@ export default function CustomerPortal() {
 
               {/* Actions */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="relative flex-1">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="بحث في تذاكري..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
-                </div>
+                <SmartSearch onTicketClick={openTicketDetail} className="flex-1" />
                 <Button className="gap-2 rounded-xl shadow-lg shadow-primary/20" onClick={openNewTicket}>
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">تذكرة جديدة</span>
@@ -785,6 +784,7 @@ export default function CustomerPortal() {
                                     </span>
                                   )}
                                 </div>
+                                <TicketProgressTracker status={ticket.status} compact className="mt-2" />
                               </div>
                               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors rotate-180" />
                             </CardContent>
@@ -900,6 +900,11 @@ function TicketDetailView({
         <ArrowRight className="h-4 w-4" />
         العودة للتذاكر
       </Button>
+
+      {/* Progress Tracker */}
+      <Card className="border-border/50 p-4 mb-4">
+        <TicketProgressTracker status={ticket.status} />
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-1 border-border/50 h-fit space-y-0">
