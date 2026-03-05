@@ -67,6 +67,7 @@ const developerItems = [
 ];
 
 const adminItems = [
+  { title: 'Dashboard تنفيذي', url: '/admin/executive', icon: BarChart3 },
   { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
   { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
   { title: 'مراحل الاعتماد', url: '/admin/approval-stages', icon: ShieldCheck },
