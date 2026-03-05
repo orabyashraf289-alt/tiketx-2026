@@ -43,6 +43,7 @@ const AdminSlackIntegration = lazy(() => import('./pages/AdminSlackIntegration')
 const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog'));
 const AdminSecurityDashboard = lazy(() => import('./pages/AdminSecurityDashboard'));
 const AdminSecuritySettings = lazy(() => import('./pages/AdminSecuritySettings'));
+const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -125,6 +126,7 @@ const App = () => (
                   <Route path="/admin/audit-log" element={<ProtectedRoute><AdminAuditLog /></ProtectedRoute>} />
                   <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
                   <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
+                  <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

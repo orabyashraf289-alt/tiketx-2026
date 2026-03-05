@@ -35,34 +35,10 @@ Deno.serve(async (req) => {
       .single();
     if (!roleData || roleData.role !== "admin") throw new Error("صلاحيات غير كافية");
 
-    const { subject, body, target } = await req.json();
+    const { subject, body, target, test_email } = await req.json();
     if (!subject || !body) {
       return new Response(JSON.stringify({ error: "الموضوع والمحتوى مطلوبان" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Get target users
-    let query = adminClient.from("profiles").select("email, full_name").eq("is_active", true);
-    
-    if (target && target !== "all") {
-      const { data: targetUsers } = await adminClient
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", target);
-      const userIds = (targetUsers || []).map((u: any) => u.user_id);
-      if (userIds.length === 0) {
-        return new Response(JSON.stringify({ sent_count: 0, message: "لا يوجد مستخدمين في هذه الفئة" }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      query = query.in("id", userIds);
-    }
-
-    const { data: users } = await query;
-    if (!users || users.length === 0) {
-      return new Response(JSON.stringify({ sent_count: 0 }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -72,9 +48,55 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get sender config from system_settings
+    let senderName = "TicketFlow";
+    let senderAddress = "notify@ticketflow.a.com";
+    const { data: senderSettings } = await adminClient
+      .from("system_settings")
+      .select("key, value")
+      .in("key", ["email_sender_name", "email_sender_address"]);
+    if (senderSettings) {
+      senderSettings.forEach((s: any) => {
+        if (s.key === "email_sender_name" && s.value) senderName = s.value;
+        if (s.key === "email_sender_address" && s.value) senderAddress = s.value;
+      });
+    }
+
+    // Build user list
+    let users: any[] = [];
+
+    if (target === "test" && test_email) {
+      users = [{ email: test_email, full_name: "مستخدم اختبار" }];
+    } else {
+      let query = adminClient.from("profiles").select("email, full_name").eq("is_active", true);
+
+      if (target && target !== "all") {
+        const { data: targetUsers } = await adminClient
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", target);
+        const userIds = (targetUsers || []).map((u: any) => u.user_id);
+        if (userIds.length === 0) {
+          return new Response(JSON.stringify({ sent_count: 0, message: "لا يوجد مستخدمين في هذه الفئة" }), {
+            status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        query = query.in("id", userIds);
+      }
+
+      const { data: fetchedUsers } = await query;
+      users = fetchedUsers || [];
+    }
+
+    if (users.length === 0) {
+      return new Response(JSON.stringify({ sent_count: 0 }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let sentCount = 0;
     const batchSize = 10;
-    
+
     for (let i = 0; i < users.length; i += batchSize) {
       const batch = users.slice(i, i + batchSize);
       const promises = batch.map(async (user: any) => {
@@ -100,14 +122,14 @@ body{font-family:'Tajawal',sans-serif;background:#f5f5f5;margin:0;padding:40px 2
 <p class="greeting">مرحباً ${user.full_name || 'عزيزي المستخدم'}،</p>
 <div class="content">${body.replace(/\n/g, '<br>')}</div>
 </div>
-<div class="footer">هذا الإشعار مُرسل من نظام TicketFlow</div>
+<div class="footer">هذا الإشعار مُرسل من نظام ${senderName}</div>
 </div></body></html>`;
 
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
             body: JSON.stringify({
-              from: "TicketFlow <notify@ticketflow.a.com>",
+              from: `${senderName} <${senderAddress}>`,
               to: [user.email],
               subject: `📢 ${subject}`,
               html: htmlContent,
