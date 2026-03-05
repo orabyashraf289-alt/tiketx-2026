@@ -21,6 +21,8 @@ import {
   Webhook,
   Zap,
   MessageSquare,
+  FileSearch,
+  ShieldCheck as ShieldCheckIcon,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -84,6 +86,8 @@ const adminItems = [
   { title: 'Webhooks', url: '/admin/webhooks', icon: Webhook },
   { title: 'سير العمل التلقائي', url: '/admin/automation', icon: Zap },
   { title: 'تكامل Slack', url: '/admin/slack', icon: MessageSquare },
+  { title: 'سجل التدقيق', url: '/admin/audit-log', icon: FileSearch },
+  { title: 'الأمان والحوكمة', url: '/admin/security', icon: ShieldCheckIcon },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 
