@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -7,48 +8,53 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useRealtimeNotificationSound } from '@/hooks/useRealtimeNotificationSound';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { SystemSettingsProvider } from '@/hooks/useSystemSettings';
-import Index from './pages/Index';
-import AuthPage from './pages/Auth';
-import ResetPassword from './pages/ResetPassword';
-import NewTicket from './pages/NewTicket';
-import TicketsInbox from './pages/TicketsInbox';
-import TicketDetail from './pages/TicketDetail';
-import AdminDepartments from './pages/AdminDepartments';
-import AdminUsers from './pages/AdminUsers';
-import AdminSLA from './pages/AdminSLA';
-import AdminReports from './pages/AdminReports';
-import AdminServiceCatalog from './pages/AdminServiceCatalog';
-import AdminServiceFields from './pages/AdminServiceFields';
-import AdminApprovalStages from './pages/AdminApprovalStages';
-import AdminApprovalReports from './pages/AdminApprovalReports';
-import AdminApprovalKanban from './pages/AdminApprovalKanban';
-import KnowledgeBase from './pages/KnowledgeBase';
-import ProfilePage from './pages/ProfilePage';
-import AgentPerformance from './pages/AgentPerformance';
-import AdminExternalAPI from './pages/AdminExternalAPI';
-import AdminWebhooks from './pages/AdminWebhooks';
-import AdminAutomation from './pages/AdminAutomation';
-import AdminSettings from './pages/AdminSettings';
-import CustomerPortal from './pages/CustomerPortal';
-import DeveloperDashboard from './pages/DeveloperDashboard';
-import CSATAnalytics from './pages/CSATAnalytics';
-import SLACompliance from './pages/SLACompliance';
-import NotFound from './pages/NotFound';
+import { PageLoader } from '@/components/PageLoader';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
-import { Loader2 } from 'lucide-react';
 
-const queryClient = new QueryClient();
+// Lazy-loaded pages
+const Index = lazy(() => import('./pages/Index'));
+const AuthPage = lazy(() => import('./pages/Auth'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const NewTicket = lazy(() => import('./pages/NewTicket'));
+const TicketsInbox = lazy(() => import('./pages/TicketsInbox'));
+const TicketDetail = lazy(() => import('./pages/TicketDetail'));
+const AdminDepartments = lazy(() => import('./pages/AdminDepartments'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminSLA = lazy(() => import('./pages/AdminSLA'));
+const AdminReports = lazy(() => import('./pages/AdminReports'));
+const AdminServiceCatalog = lazy(() => import('./pages/AdminServiceCatalog'));
+const AdminServiceFields = lazy(() => import('./pages/AdminServiceFields'));
+const AdminApprovalStages = lazy(() => import('./pages/AdminApprovalStages'));
+const AdminApprovalReports = lazy(() => import('./pages/AdminApprovalReports'));
+const AdminApprovalKanban = lazy(() => import('./pages/AdminApprovalKanban'));
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const AgentPerformance = lazy(() => import('./pages/AgentPerformance'));
+const AdminExternalAPI = lazy(() => import('./pages/AdminExternalAPI'));
+const AdminWebhooks = lazy(() => import('./pages/AdminWebhooks'));
+const AdminAutomation = lazy(() => import('./pages/AdminAutomation'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
+const CustomerPortal = lazy(() => import('./pages/CustomerPortal'));
+const DeveloperDashboard = lazy(() => import('./pages/DeveloperDashboard'));
+const CSATAnalytics = lazy(() => import('./pages/CSATAnalytics'));
+const SLACompliance = lazy(() => import('./pages/SLACompliance'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2, // 2 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function ProtectedRoute({ children, redirectRequester }: { children: React.ReactNode; redirectRequester?: boolean }) {
   const { user, loading, role } = useAuth();
   useRealtimeNotificationSound();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   if (redirectRequester && role === 'requester') return <Navigate to="/portal" replace />;
   if (redirectRequester && role === 'developer') return <Navigate to="/developer" replace />;
@@ -58,26 +64,14 @@ function ProtectedRoute({ children, redirectRequester }: { children: React.React
 function RequesterRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   useRealtimeNotificationSound();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
   if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
@@ -91,37 +85,39 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <Routes>
-                <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
-                <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
-                <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
-                <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
-                <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
-                <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
-                <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-                <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
-                <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
-                <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
-                <Route path="/admin/service-fields" element={<ProtectedRoute><AdminServiceFields /></ProtectedRoute>} />
-                <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
-                <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
-                <Route path="/admin/approval-kanban" element={<ProtectedRoute><AdminApprovalKanban /></ProtectedRoute>} />
-                <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
-                <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
-                <Route path="/admin/webhooks" element={<ProtectedRoute><AdminWebhooks /></ProtectedRoute>} />
-                <Route path="/admin/automation" element={<ProtectedRoute><AdminAutomation /></ProtectedRoute>} />
-                <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-                <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
-                <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
+                  <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                  <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                  <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                  <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
+                  <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
+                  <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
+                  <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+                  <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+                  <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
+                  <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
+                  <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
+                  <Route path="/admin/service-fields" element={<ProtectedRoute><AdminServiceFields /></ProtectedRoute>} />
+                  <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
+                  <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
+                  <Route path="/admin/approval-kanban" element={<ProtectedRoute><AdminApprovalKanban /></ProtectedRoute>} />
+                  <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
+                  <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
+                  <Route path="/admin/webhooks" element={<ProtectedRoute><AdminWebhooks /></ProtectedRoute>} />
+                  <Route path="/admin/automation" element={<ProtectedRoute><AdminAutomation /></ProtectedRoute>} />
+                  <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+                  <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
+                  <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
