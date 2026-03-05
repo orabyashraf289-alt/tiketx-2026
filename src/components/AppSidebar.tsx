@@ -1,111 +1,89 @@
 import {
-  LayoutDashboard,
-  Inbox,
-  Plus,
-  LogOut,
-  Building2,
-  Users,
-  Timer,
-  BarChart3,
-  BookOpen,
-  FormInput,
-  ShieldCheck,
-  Award,
-  Globe,
-  Settings,
-  HelpCircle,
-  Mail,
-  Columns,
-  Star,
-  ShieldAlert,
-  Webhook,
-  Zap,
-  MessageSquare,
-  FileSearch,
-  ShieldCheck as ShieldCheckIcon,
-  Send,
+  LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
+  FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
+  Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useLanguage } from '@/i18n';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  useSidebar,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { roleLabels } from '@/lib/api';
 import logoImg from '@/assets/logo-icon.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-const mainItems = [
-  { title: 'لوحة التحكم', url: '/', icon: LayoutDashboard },
-  { title: 'التذاكر', url: '/tickets', icon: Inbox },
-  { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
-  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
-];
-
-const requesterItems = [
-  { title: 'لوحة المتابعة', url: '/portal', icon: LayoutDashboard },
-  { title: 'تذاكري', url: '/portal/tickets', icon: Inbox },
-  { title: 'تذكرة جديدة', url: '/portal/new', icon: Plus },
-  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
-];
-
-const developerItems = [
-  { title: 'لوحة المطور', url: '/developer', icon: LayoutDashboard },
-  { title: 'التذاكر', url: '/tickets', icon: Inbox },
-  { title: 'تذكرة جديدة', url: '/tickets/new', icon: Plus },
-  { title: 'لوحة الاعتمادات', url: '/admin/approval-kanban', icon: Columns },
-  { title: 'قاعدة المعرفة', url: '/knowledge-base', icon: BookOpen },
-];
-
-const adminItems = [
-  { title: 'Dashboard تنفيذي', url: '/admin/executive', icon: BarChart3 },
-  { title: 'كتالوج الخدمات', url: '/admin/services', icon: BookOpen },
-  { title: 'حقول الخدمات', url: '/admin/service-fields', icon: FormInput },
-  { title: 'مراحل الاعتماد', url: '/admin/approval-stages', icon: ShieldCheck },
-  { title: 'تقرير الاعتمادات', url: '/admin/approval-reports', icon: BarChart3 },
-  { title: 'لوحة الاعتمادات', url: '/admin/approval-kanban', icon: Columns },
-  { title: 'الأقسام', url: '/admin/departments', icon: Building2 },
-  { title: 'المستخدمين', url: '/admin/users', icon: Users },
-  { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
-  { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
-  { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
-  { title: 'تحليلات CSAT', url: '/admin/csat-analytics', icon: Star },
-  { title: 'تقرير SLA', url: '/admin/sla-compliance', icon: ShieldAlert },
-  { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
-  { title: 'Webhooks', url: '/admin/webhooks', icon: Webhook },
-  { title: 'سير العمل التلقائي', url: '/admin/automation', icon: Zap },
-  { title: 'تكامل Slack', url: '/admin/slack', icon: MessageSquare },
-  { title: 'سجل التدقيق', url: '/admin/audit-log', icon: FileSearch },
-  { title: 'الأمان والحوكمة', url: '/admin/security', icon: ShieldCheckIcon },
-  { title: 'الأمان والإشعارات', url: '/admin/security-settings', icon: Send },
-  { title: 'إدارة البريد الإلكتروني', url: '/admin/email', icon: Mail },
-  { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
-];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
   const sysSettings = useSystemSettings();
+  const { t, lang } = useLanguage();
 
   const logoSrc = sysSettings.logo_url || logoImg;
   const sysName = sysSettings.system_name || 'TicketFlow';
   const sysSub = sysSettings.system_subtitle || 'HELPDESK';
 
+  const roleLabels: Record<string, string> = {
+    admin: t.roles.admin,
+    agent: t.roles.agent,
+    requester: t.roles.requester,
+    developer: t.roles.developer,
+  };
+
+  const mainItems = [
+    { title: t.sidebar.dashboard, url: '/', icon: LayoutDashboard },
+    { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
+    { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
+  ];
+
+  const requesterItems = [
+    { title: t.sidebar.followUpBoard, url: '/portal', icon: LayoutDashboard },
+    { title: t.sidebar.myTickets, url: '/portal/tickets', icon: Inbox },
+    { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
+    { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
+  ];
+
+  const developerItems = [
+    { title: t.sidebar.developerBoard, url: '/developer', icon: LayoutDashboard },
+    { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
+    { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
+    { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
+  ];
+
+  const adminItems = [
+    { title: t.sidebar.executiveDashboard, url: '/admin/executive', icon: BarChart3 },
+    { title: t.sidebar.serviceCatalog, url: '/admin/services', icon: BookOpen },
+    { title: t.sidebar.serviceFields, url: '/admin/service-fields', icon: FormInput },
+    { title: t.sidebar.approvalStages, url: '/admin/approval-stages', icon: ShieldCheck },
+    { title: t.sidebar.approvalReports, url: '/admin/approval-reports', icon: BarChart3 },
+    { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
+    { title: t.sidebar.departments, url: '/admin/departments', icon: Building2 },
+    { title: t.sidebar.users, url: '/admin/users', icon: Users },
+    { title: t.sidebar.agentPerformance, url: '/admin/agent-performance', icon: Award },
+    { title: t.sidebar.slaSettings, url: '/admin/sla', icon: Timer },
+    { title: t.sidebar.reports, url: '/admin/reports', icon: BarChart3 },
+    { title: t.sidebar.csatAnalytics, url: '/admin/csat-analytics', icon: Star },
+    { title: t.sidebar.slaCompliance, url: '/admin/sla-compliance', icon: ShieldAlert },
+    { title: t.sidebar.externalApi, url: '/admin/external-api', icon: Globe },
+    { title: t.sidebar.webhooks, url: '/admin/webhooks', icon: Webhook },
+    { title: t.sidebar.automation, url: '/admin/automation', icon: Zap },
+    { title: t.sidebar.slackIntegration, url: '/admin/slack', icon: MessageSquare },
+    { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
+    { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
+    { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
+    { title: t.sidebar.emailManagement, url: '/admin/email', icon: Mail },
+    { title: t.sidebar.systemSettings, url: '/admin/settings', icon: Settings },
+  ];
+
   return (
-    <Sidebar collapsible="icon" side="right">
+    <Sidebar collapsible="icon" side={lang === 'ar' ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 shrink-0 overflow-hidden">
@@ -123,12 +101,12 @@ export function AppSidebar() {
       <SidebarContent className="px-2">
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider font-semibold px-3">
-            القائمة
+            {t.sidebar.menu}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {(role === 'requester' ? requesterItems : role === 'developer' ? developerItems : mainItems).map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -149,12 +127,12 @@ export function AppSidebar() {
         {role === 'admin' && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider font-semibold px-3">
-              الإدارة
+              {t.sidebar.administration}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
@@ -184,7 +162,10 @@ export function AppSidebar() {
                 <p className="text-xs font-semibold text-sidebar-accent-foreground truncate">{profile.full_name}</p>
                 <p className="text-[10px] text-sidebar-foreground/50">{role ? roleLabels[role] : ''}</p>
               </div>
-              <ThemeToggle size="icon" />
+              <div className="flex items-center gap-1">
+                <LanguageSwitcher />
+                <ThemeToggle size="icon" />
+              </div>
             </div>
             <Button
               variant="ghost"
@@ -192,13 +173,14 @@ export function AppSidebar() {
               className="w-full text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => signOut()}
             >
-              <LogOut className="h-3 w-3 ml-1" />
-              تسجيل خروج
+              <LogOut className="h-3 w-3 ltr:mr-1 rtl:ml-1" />
+              {t.common.signOut}
             </Button>
           </div>
         )}
         {collapsed && (
           <div className="flex flex-col items-center gap-2">
+            <LanguageSwitcher />
             <ThemeToggle size="icon" />
             <Tooltip>
               <TooltipTrigger asChild>
@@ -206,7 +188,7 @@ export function AppSidebar() {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left">تسجيل خروج</TooltipContent>
+              <TooltipContent side={lang === 'ar' ? 'left' : 'right'}>{t.common.signOut}</TooltipContent>
             </Tooltip>
           </div>
         )}

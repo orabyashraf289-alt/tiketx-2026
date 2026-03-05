@@ -27,7 +27,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { messages } = await req.json();
+    const { messages, language = 'ar' } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -49,15 +49,18 @@ serve(async (req) => {
       .eq("is_active", true)
       .limit(20);
 
+    const isArabic = language === 'ar';
+
     const kbContext = (articles || []).map((a: any, i: number) =>
-      `[مقال ${i + 1}] ${a.title}\nالتصنيف: ${a.category}\n${a.content.slice(0, 500)}`
+      `[${isArabic ? 'مقال' : 'Article'} ${i + 1}] ${a.title}\n${isArabic ? 'التصنيف' : 'Category'}: ${a.category}\n${a.content.slice(0, 500)}`
     ).join("\n---\n");
 
     const servicesContext = (services || []).map((s: any) =>
       `- ${s.name}: ${s.description || ""} (${(s as any).systems?.name || ""})`
     ).join("\n");
 
-    const systemPrompt = `أنت المساعد الذكي لنظام الدعم الفني. مهمتك:
+    const systemPrompt = isArabic
+      ? `أنت المساعد الذكي لنظام الدعم الفني. مهمتك:
 1. الإجابة على استفسارات العملاء بدقة واحترافية
 2. البحث في قاعدة المعرفة المتاحة لتقديم حلول
 3. إذا لم تجد إجابة مناسبة، اقترح على العميل فتح تذكرة جديدة
@@ -72,7 +75,23 @@ ${kbContext || "لا توجد مقالات حالياً"}
 ${servicesContext || "لا توجد خدمات"}
 
 إذا لم تجد إجابة في قاعدة المعرفة، قل للعميل:
-"لم أتمكن من إيجاد حل مباشر لمشكلتك. أنصحك بإنشاء تذكرة جديدة عبر قائمة 'تذكرة جديدة' وسيتم متابعتها من قبل فريق الدعم."`;
+"لم أتمكن من إيجاد حل مباشر لمشكلتك. أنصحك بإنشاء تذكرة جديدة عبر قائمة 'تذكرة جديدة' وسيتم متابعتها من قبل فريق الدعم."`
+      : `You are the smart assistant for the technical support system. Your tasks:
+1. Answer customer inquiries accurately and professionally
+2. Search the available knowledge base to provide solutions
+3. If no suitable answer is found, suggest the customer create a new ticket
+4. Be friendly and concise, always respond in English
+5. Provide clear numbered steps when needed
+6. Do not make up information — stick to what's in the knowledge base
+
+Available Knowledge Base:
+${kbContext || "No articles available"}
+
+Available Services:
+${servicesContext || "No services available"}
+
+If you cannot find an answer in the knowledge base, tell the customer:
+"I couldn't find a direct solution for your issue. I recommend creating a new ticket via the 'New Ticket' menu and our support team will follow up."`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

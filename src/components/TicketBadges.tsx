@@ -2,6 +2,7 @@ import { TicketStatus, TicketPriority } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, AlertTriangle, Clock, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '@/i18n';
 
 const statusStyles: Record<TicketStatus, string> = {
   new: 'bg-info/15 text-info border-info/30',
@@ -20,58 +21,66 @@ const priorityStyles: Record<TicketPriority, string> = {
   urgent: 'bg-destructive/15 text-destructive border-destructive/30',
 };
 
-const statusLabels: Record<TicketStatus, string> = {
-  new: 'جديدة',
-  open: 'مفتوحة',
-  in_progress: 'قيد المعالجة',
-  waiting_on_customer: 'بانتظار العميل',
-  resolved: 'تم الحل',
-  closed: 'مغلقة',
-  reopened: 'أُعيد فتحها',
-};
+function useStatusLabels(): Record<TicketStatus, string> {
+  const { t } = useLanguage();
+  return {
+    new: t.tickets.new,
+    open: t.tickets.open,
+    in_progress: t.tickets.inProgress,
+    waiting_on_customer: t.tickets.waitingOnCustomer,
+    resolved: t.tickets.resolved,
+    closed: t.tickets.closed,
+    reopened: t.tickets.reopened,
+  };
+}
 
-const priorityLabels: Record<TicketPriority, string> = {
-  low: 'منخفضة',
-  medium: 'متوسطة',
-  high: 'عالية',
-  urgent: 'عاجلة',
-};
+function usePriorityLabels(): Record<TicketPriority, string> {
+  const { t } = useLanguage();
+  return {
+    low: t.tickets.priority.low,
+    medium: t.tickets.priority.medium,
+    high: t.tickets.priority.high,
+    urgent: t.tickets.priority.urgent,
+  };
+}
 
 export function StatusBadge({ status }: { status: TicketStatus }) {
+  const labels = useStatusLabels();
   return (
     <Badge variant="outline" className={cn('text-xs font-medium', statusStyles[status])}>
-      {statusLabels[status]}
+      {labels[status]}
     </Badge>
   );
 }
 
 export function PriorityBadge({ priority }: { priority: TicketPriority }) {
+  const labels = usePriorityLabels();
   return (
     <Badge variant="outline" className={cn('text-xs font-medium', priorityStyles[priority])}>
-      {priorityLabels[priority]}
+      {labels[priority]}
     </Badge>
   );
 }
 
-// SLA Badge matching reference design
 type SLAStatus = 'achieved' | 'breached' | 'on_track' | 'at_risk';
 
 export function SLABadge({ slaResolutionDueAt, resolvedAt }: { slaResolutionDueAt: string | null; resolvedAt: string | null }) {
+  const { t } = useLanguage();
+
   if (!slaResolutionDueAt) return <span className="text-xs text-muted-foreground">—</span>;
-  
+
   const dueDate = new Date(slaResolutionDueAt);
   const now = new Date();
-  
+
   let status: SLAStatus;
   if (resolvedAt) {
     const resolved = new Date(resolvedAt);
     status = resolved <= dueDate ? 'achieved' : 'breached';
   } else {
     const timeLeft = dueDate.getTime() - now.getTime();
-    const totalTime = dueDate.getTime() - (dueDate.getTime() - 24 * 60 * 60 * 1000); // rough estimate
     if (timeLeft < 0) {
       status = 'breached';
-    } else if (timeLeft < 2 * 60 * 60 * 1000) { // less than 2 hours
+    } else if (timeLeft < 2 * 60 * 60 * 1000) {
       status = 'at_risk';
     } else {
       status = 'on_track';
@@ -79,14 +88,14 @@ export function SLABadge({ slaResolutionDueAt, resolvedAt }: { slaResolutionDueA
   }
 
   const config: Record<SLAStatus, { label: string; icon: typeof CheckCircle2; className: string }> = {
-    achieved: { label: 'ضمن SLA', icon: ShieldCheck, className: 'bg-success/15 text-success border-success/30' },
-    breached: { label: 'تجاوز SLA', icon: ShieldAlert, className: 'bg-destructive/15 text-destructive border-destructive/30' },
-    on_track: { label: 'في الموعد', icon: Clock, className: 'bg-info/15 text-info border-info/30' },
-    at_risk: { label: 'معرّض', icon: AlertTriangle, className: 'bg-warning/15 text-warning border-warning/30' },
+    achieved: { label: t.tickets.sla.achieved, icon: ShieldCheck, className: 'bg-success/15 text-success border-success/30' },
+    breached: { label: t.tickets.sla.breached, icon: ShieldAlert, className: 'bg-destructive/15 text-destructive border-destructive/30' },
+    on_track: { label: t.tickets.sla.onTrack, icon: Clock, className: 'bg-info/15 text-info border-info/30' },
+    at_risk: { label: t.tickets.sla.atRisk, icon: AlertTriangle, className: 'bg-warning/15 text-warning border-warning/30' },
   };
 
   const { label, icon: Icon, className } = config[status];
-  
+
   return (
     <Badge variant="outline" className={cn('text-[10px] font-semibold gap-1', className)}>
       <Icon className="h-3 w-3" />
