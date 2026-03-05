@@ -39,6 +39,7 @@ const DeveloperDashboard = lazy(() => import('./pages/DeveloperDashboard'));
 const CSATAnalytics = lazy(() => import('./pages/CSATAnalytics'));
 const SLACompliance = lazy(() => import('./pages/SLACompliance'));
 const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));
+const AdminSlackIntegration = lazy(() => import('./pages/AdminSlackIntegration'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -117,6 +118,7 @@ const App = () => (
                   <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
                   <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
                   <Route path="/admin/executive" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/slack" element={<ProtectedRoute><AdminSlackIntegration /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

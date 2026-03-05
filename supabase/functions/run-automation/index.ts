@@ -94,6 +94,29 @@ serve(async (req) => {
               actionsExecuted.push({ type: action.type, success: true, detail: action.value });
               break;
 
+            case "send_email": {
+              // Send email via edge function
+              const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-email-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseKey}`,
+                },
+                body: JSON.stringify({
+                  ticket_id: ticket.id,
+                  event_type: "automation",
+                  recipient_email: action.recipient_email || ticket.requester_email,
+                  recipient_name: action.recipient_name || "",
+                  ticket_number: ticket.ticket_number,
+                  ticket_title: ticket.title,
+                  details: action.message || `تم تنفيذ إجراء تلقائي على التذكرة #${ticket.ticket_number}`,
+                }),
+              });
+              const emailBody = await emailRes.text();
+              actionsExecuted.push({ type: action.type, success: emailRes.ok, detail: emailBody });
+              break;
+            }
+
             case "send_notification": {
               const recipientId = action.recipient_id || ticket.requester_id;
               await supabase.from("notifications").insert({
@@ -123,34 +146,25 @@ serve(async (req) => {
             }
 
             case "send_slack": {
-              // Check if Slack is configured
-              const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-              const SLACK_API_KEY = Deno.env.get("SLACK_API_KEY");
-
-              if (LOVABLE_API_KEY && SLACK_API_KEY) {
-                const GATEWAY_URL = "https://connector-gateway.lovable.dev/slack/api";
-                const slackRes = await fetch(`${GATEWAY_URL}/chat.postMessage`, {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                    "X-Connection-Api-Key": SLACK_API_KEY,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    channel: action.channel || "#general",
-                    text: action.message || `🎫 تذكرة #${ticket.ticket_number}: ${ticket.title}`,
-                    unfurl_links: false,
-                  }),
-                });
-                const slackBody = await slackRes.json();
-                actionsExecuted.push({
-                  type: action.type,
-                  success: slackRes.ok && slackBody.ok,
-                  detail: slackBody.ok ? "sent" : slackBody.error,
-                });
-              } else {
-                actionsExecuted.push({ type: action.type, success: false, detail: "Slack not configured" });
-              }
+              // Use dedicated Slack notification function
+              const slackRes = await fetch(`${supabaseUrl}/functions/v1/send-slack-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseKey}`,
+                },
+                body: JSON.stringify({
+                  channel: action.channel || "#general",
+                  message: action.message || `🎫 تذكرة #${ticket.ticket_number}: ${ticket.title}`,
+                  ticket,
+                }),
+              });
+              const slackBody = await slackRes.json();
+              actionsExecuted.push({
+                type: action.type,
+                success: slackRes.ok && slackBody.success,
+                detail: slackBody.success ? "sent" : slackBody.error,
+              });
               break;
             }
 
