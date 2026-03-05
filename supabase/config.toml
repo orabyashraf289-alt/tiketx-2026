@@ -23,3 +23,7 @@ project_id = "yoamlepdjzsjwppxhuov"
     verify_jwt = false
   [functions.weekly-developer-report]
     verify_jwt = false
+  [functions.analyze-sentiment]
+    verify_jwt = false
+  [functions.summarize-ticket]
+    verify_jwt = false

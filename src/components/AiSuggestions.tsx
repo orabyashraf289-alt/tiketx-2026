@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, Lightbulb, BookOpen, History, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -29,6 +29,8 @@ import { CSATWidget } from '@/components/CSATWidget';
 import { TicketPDFExport } from '@/components/TicketPDFExport';
 import { CannedResponsesPicker } from '@/components/CannedResponses';
 import { TimeTracker } from '@/components/TimeTracker';
+import { SentimentAnalysis } from '@/components/SentimentBadge';
+import { TicketSummary } from '@/components/TicketSummary';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -346,6 +348,13 @@ export default function TicketDetailPage() {
                         {ticket.departments?.name && (
                           <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">{ticket.departments.name}</span>
                         )}
+                        {isAgentOrAdmin && (
+                          <SentimentAnalysis
+                            title={ticket.title}
+                            description={ticket.description}
+                            comments={comments.filter(c => c.note_type === 'public').map(c => c.content)}
+                          />
+                        )}
                       </div>
                       <CardTitle className="text-xl">{ticket.title}</CardTitle>
                     </CardHeader>
@@ -648,6 +657,13 @@ export default function TicketDetailPage() {
 
                 {/* CSAT Rating */}
                 <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
+
+                {/* AI Ticket Summary - for agents/admins */}
+                {isAgentOrAdmin && (
+                  <motion.div variants={fadeScale}>
+                    <TicketSummary ticketId={ticket.id} />
+                  </motion.div>
+                )}
 
                 {/* Time Tracker - for agents/admins */}
                 {isAgentOrAdmin && (
