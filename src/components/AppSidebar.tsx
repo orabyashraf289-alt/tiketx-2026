@@ -81,7 +81,7 @@ const adminItems = [
   { title: 'تقرير SLA', url: '/admin/sla-compliance', icon: ShieldAlert },
   { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
   { title: 'Webhooks', url: '/admin/webhooks', icon: Webhook },
-  { title: 'الأتمتة', url: '/admin/automation', icon: Zap },
+  { title: 'سير العمل التلقائي', url: '/admin/automation', icon: Zap },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 

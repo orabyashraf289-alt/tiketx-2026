@@ -144,7 +144,7 @@ export default function AdminAutomation() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <Zap className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">محرك الأتمتة</h1>
+              <h1 className="text-lg font-bold">سير العمل التلقائي</h1>
             </div>
             <div className="flex items-center gap-2">
               <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) resetForm(); }}>
