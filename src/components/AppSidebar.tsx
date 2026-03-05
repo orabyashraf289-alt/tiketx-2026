@@ -23,6 +23,7 @@ import {
   MessageSquare,
   FileSearch,
   ShieldCheck as ShieldCheckIcon,
+  Send,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -88,6 +89,7 @@ const adminItems = [
   { title: 'تكامل Slack', url: '/admin/slack', icon: MessageSquare },
   { title: 'سجل التدقيق', url: '/admin/audit-log', icon: FileSearch },
   { title: 'الأمان والحوكمة', url: '/admin/security', icon: ShieldCheckIcon },
+  { title: 'الأمان والإشعارات', url: '/admin/security-settings', icon: Send },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 

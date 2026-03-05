@@ -1,15 +1,18 @@
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Users, AlertTriangle, Activity, Lock, Eye, UserX, KeyRound } from 'lucide-react';
-import { format, subDays, differenceInHours } from 'date-fns';
+import { ShieldCheck, Users, AlertTriangle, Activity, Lock, Eye, UserX, KeyRound, Download, Bell } from 'lucide-react';
+import { format, subDays, differenceInMinutes } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -92,13 +95,107 @@ export default function AdminSecurityDashboard() {
     { name: 'عميل', value: requesterCount, fill: COLORS[3] },
   ];
 
-  // Security alerts
-  const alerts: { type: 'warning' | 'info' | 'danger'; message: string }[] = [];
+  // Security alerts (real-time suspicious activity detection)
+  const alerts: { type: 'warning' | 'info' | 'danger'; message: string; time?: string }[] = [];
   if (adminCount > 3) alerts.push({ type: 'warning', message: `عدد كبير من المشرفين (${adminCount}) - يُنصح بتقليلهم` });
   if (inactiveUsers > 5) alerts.push({ type: 'info', message: `${inactiveUsers} حساب معطّل - يُنصح بمراجعتها` });
   const usersNoDept = users.filter((u: any) => !u.department_id && u.user_roles?.[0]?.role !== 'requester').length;
   if (usersNoDept > 0) alerts.push({ type: 'info', message: `${usersNoDept} موظف بدون قسم محدد` });
 
+  // Suspicious activity detection
+  const now = new Date();
+  const recentLogs = auditLogs.filter((l: any) => differenceInMinutes(now, new Date(l.created_at)) <= 60);
+  // High volume from single user in last hour
+  const userHourCounts: Record<string, { count: number; name: string }> = {};
+  recentLogs.forEach((l: any) => {
+    if (!userHourCounts[l.user_id]) userHourCounts[l.user_id] = { count: 0, name: l.profiles?.full_name || 'غير معروف' };
+    userHourCounts[l.user_id].count++;
+  });
+  Object.values(userHourCounts).forEach(u => {
+    if (u.count > 50) alerts.push({ type: 'danger', message: `نشاط مكثف: ${u.name} أجرى ${u.count} عملية في الساعة الأخيرة`, time: format(now, 'HH:mm') });
+  });
+  // Multiple status changes on same ticket
+  const ticketChanges: Record<string, number> = {};
+  recentLogs.filter((l: any) => l.event_type === 'status_changed').forEach((l: any) => {
+    ticketChanges[l.ticket_id] = (ticketChanges[l.ticket_id] || 0) + 1;
+  });
+  Object.entries(ticketChanges).forEach(([tid, count]) => {
+    if (count > 5) alerts.push({ type: 'warning', message: `تذكرة تغيّرت حالتها ${count} مرات في الساعة الأخيرة` });
+  });
+
+  // Realtime subscription for new audit events
+  const { toast } = useToast();
+  useEffect(() => {
+    const channel = supabase
+      .channel('security-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, (payload) => {
+        const evt = payload.new as any;
+        if (evt.event_type === 'assigned' || evt.event_type === 'status_changed') {
+          toast({ title: '🔔 نشاط جديد', description: `${evt.action}` });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // PDF Export
+  const exportSecurityPDF = () => {
+    const alertsHtml = alerts.map(a => `<div class="alert ${a.type}"><span class="icon">${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟠' : '🔵'}</span> ${a.message}</div>`).join('');
+    const topUsersHtml = topUsers.map((u, i) => `<tr><td>${i + 1}</td><td>${u.name}</td><td>${u.count}</td></tr>`).join('');
+    const roleHtml = roleDistData.map(r => `<tr><td>${r.name}</td><td>${r.value}</td></tr>`).join('');
+    const eventHtml = eventPieData.map(e => `<tr><td>${e.name}</td><td>${e.value}</td></tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير الأمان والحوكمة</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal',sans-serif;background:#fff;color:#1a2e28;padding:40px;font-size:13px}
+.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #2d8b6e;padding-bottom:20px;margin-bottom:30px}
+.header h1{font-size:24px;color:#2d8b6e}
+.header .meta{text-align:left;color:#666;font-size:11px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:30px}
+.kpi-card{background:#f0faf5;border:1px solid #d0e8dd;border-radius:10px;padding:16px;text-align:center}
+.kpi-card .value{font-size:28px;font-weight:800;color:#2d8b6e}
+.kpi-card .label{font-size:11px;color:#666;margin-top:4px}
+.section{margin-bottom:24px}
+.section h2{font-size:16px;color:#2d8b6e;margin-bottom:12px;border-bottom:1px solid #e0e0e0;padding-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:8px 12px;text-align:right;border-bottom:1px solid #eee}
+th{background:#f0faf5;font-weight:700;color:#2d8b6e}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:12px;display:flex;align-items:center;gap:8px}
+.alert.danger{background:#fff5f5;border:1px solid #fed7d7;color:#c53030}
+.alert.warning{background:#fffff0;border:1px solid #feebc8;color:#c05621}
+.alert.info{background:#ebf8ff;border:1px solid #bee3f8;color:#2b6cb0}
+.footer{margin-top:40px;text-align:center;color:#999;font-size:10px;border-top:1px solid #eee;padding-top:16px}
+@media print{body{padding:20px}}
+</style></head><body>
+<div class="header"><div><h1>🛡️ تقرير الأمان والحوكمة</h1><p style="color:#888;font-size:12px">آخر 30 يوم</p></div>
+<div class="meta"><p>تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA')}</p><p>TicketFlow System</p></div></div>
+
+<div class="kpi-grid">
+<div class="kpi-card"><div class="value">${totalUsers}</div><div class="label">إجمالي المستخدمين</div></div>
+<div class="kpi-card"><div class="value">${activeUsers}</div><div class="label">حسابات نشطة</div></div>
+<div class="kpi-card"><div class="value" style="color:#e53e3e">${inactiveUsers}</div><div class="label">حسابات معطّلة</div></div>
+<div class="kpi-card"><div class="value">${auditLogs.length}</div><div class="label">أحداث التدقيق</div></div>
+</div>
+
+${alerts.length > 0 ? `<div class="section"><h2>⚠️ التنبيهات الأمنية</h2>${alertsHtml}</div>` : ''}
+
+<div class="two-col">
+<div class="section"><h2>توزيع الأدوار</h2><table><thead><tr><th>الدور</th><th>العدد</th></tr></thead><tbody>${roleHtml}</tbody></table></div>
+<div class="section"><h2>توزيع الأحداث</h2><table><thead><tr><th>الحدث</th><th>العدد</th></tr></thead><tbody>${eventHtml}</tbody></table></div>
+</div>
+
+<div class="section"><h2>أكثر المستخدمين نشاطاً</h2><table><thead><tr><th>#</th><th>المستخدم</th><th>عدد الأحداث</th></tr></thead><tbody>${topUsersHtml}</tbody></table></div>
+
+<div class="footer">تم إنشاء هذا التقرير آلياً بواسطة نظام TicketFlow — ${new Date().toISOString()}</div>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500); }
+  };
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -111,9 +208,15 @@ export default function AdminSecurityDashboard() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <ShieldCheck className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold text-foreground">لوحة الأمان والحوكمة</h1>
+             <h1 className="text-lg font-bold text-foreground">لوحة الأمان والحوكمة</h1>
             </div>
-            <NotificationsPopover />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportSecurityPDF} className="gap-1.5">
+                <Download className="h-4 w-4" />
+                تصدير PDF
+              </Button>
+              <NotificationsPopover />
+            </div>
           </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">

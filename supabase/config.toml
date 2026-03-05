@@ -39,3 +39,5 @@ project_id = "yoamlepdjzsjwppxhuov"
     verify_jwt = false
   [functions.send-slack-notification]
     verify_jwt = false
+  [functions.broadcast-email]
+    verify_jwt = false
