@@ -56,7 +56,7 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
         <Input
           id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
           placeholder="name@company.com" required dir="ltr"
-          className="h-12 rounded-xl text-sm bg-muted/50 border-border/60 focus:bg-background transition-colors"
+          className="h-12 rounded-xl text-sm bg-white/[0.06] backdrop-blur-sm border-white/[0.12] focus:bg-white/[0.1] focus:border-white/[0.25] transition-all duration-300 text-foreground placeholder:text-muted-foreground/60"
         />
       </motion.div>
 
@@ -69,7 +69,7 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
           <Input
             id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
             placeholder="••••••••" required dir="ltr"
-            className="h-12 rounded-xl text-sm bg-muted/50 border-border/60 focus:bg-background transition-colors pl-11"
+            className="h-12 rounded-xl text-sm bg-white/[0.06] backdrop-blur-sm border-white/[0.12] focus:bg-white/[0.1] focus:border-white/[0.25] transition-all duration-300 pl-11 text-foreground placeholder:text-muted-foreground/60"
           />
           <button
             type="button"
@@ -91,7 +91,7 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
         <motion.div whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}>
           <Button
             type="submit" disabled={loading}
-            className="w-full h-12 rounded-xl font-bold text-sm shadow-lg shadow-primary/25 transition-all duration-300 gap-2 gradient-accent text-primary-foreground"
+            className="w-full h-12 rounded-xl font-bold text-sm shadow-lg shadow-primary/25 transition-all duration-300 gap-2 gradient-accent text-primary-foreground backdrop-blur-sm"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>تسجيل الدخول<ArrowLeft className="h-4 w-4" /></>)}
           </Button>
@@ -132,7 +132,7 @@ function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
         </motion.div>
         <h3 className="text-lg font-bold text-foreground">تم الإرسال بنجاح!</h3>
         <p className="text-sm text-muted-foreground mt-2 mb-6 leading-relaxed">تحقق من بريدك الإلكتروني لإعادة تعيين كلمة المرور</p>
-        <Button variant="outline" size="sm" onClick={onBack} className="rounded-xl">العودة لتسجيل الدخول</Button>
+        <Button variant="outline" size="sm" onClick={onBack} className="rounded-xl backdrop-blur-sm bg-white/[0.06] border-white/[0.12]">العودة لتسجيل الدخول</Button>
       </motion.div>
     );
   }
@@ -140,7 +140,7 @@ function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg gradient-accent">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg gradient-accent backdrop-blur-sm">
           <Mail className="h-6 w-6 text-primary-foreground" />
         </div>
         <h3 className="text-lg font-bold text-foreground">نسيت كلمة المرور</h3>
@@ -149,9 +149,9 @@ function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <Label className="text-muted-foreground text-xs">البريد الإلكتروني</Label>
-          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" required dir="ltr" className="h-12 rounded-xl text-sm bg-muted/50 border-border/60" />
+          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@company.com" required dir="ltr" className="h-12 rounded-xl text-sm bg-white/[0.06] backdrop-blur-sm border-white/[0.12] focus:bg-white/[0.1] focus:border-white/[0.25] transition-all duration-300" />
         </div>
-        <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl font-bold text-sm gradient-accent text-primary-foreground shadow-lg gap-2">
+        <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl font-bold text-sm gradient-accent text-primary-foreground shadow-lg gap-2 backdrop-blur-sm">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'إرسال رابط الاستعادة'}
         </Button>
       </form>
@@ -182,6 +182,33 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
         style={{ background: 'radial-gradient(circle, hsl(199 89% 48%) 0%, transparent 70%)' }}
       />
 
+      {/* Floating glass particles */}
+      {[...Array(5)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            width: 6 + i * 4,
+            height: 6 + i * 4,
+            background: `hsl(217 72% 70% / ${0.08 + i * 0.03})`,
+            backdropFilter: 'blur(4px)',
+            top: `${15 + i * 18}%`,
+            left: `${10 + i * 15}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0],
+            opacity: [0.3, 0.7, 0.3],
+          }}
+          transition={{
+            duration: 5 + i * 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: i * 0.8,
+          }}
+        />
+      ))}
+
       <div className="relative z-10 flex flex-col justify-center px-12 xl:px-20 w-full">
         <div className="max-w-lg">
           {/* Logo */}
@@ -191,8 +218,8 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-4 mb-12"
           >
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-2xl ring-1 ring-white/10 backdrop-blur-sm" style={{ background: 'linear-gradient(135deg, hsl(217 72% 50% / 0.9), hsl(217 72% 58% / 0.9))' }}>
-              <img src={logoSrc} alt={sysName} className="h-14 w-14 object-contain" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-2xl ring-1 ring-white/10 backdrop-blur-md" style={{ background: 'linear-gradient(135deg, hsl(217 72% 50% / 0.6), hsl(217 72% 58% / 0.4))' }}>
+              <img src={logoSrc} alt={sysName} className="h-14 w-14 object-contain drop-shadow-lg" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-white tracking-tight">{sysName}</h1>
@@ -231,7 +258,7 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
             </p>
           </motion.div>
 
-          {/* Feature cards */}
+          {/* Feature cards — glassmorphism */}
           <div className="grid grid-cols-2 gap-3 mb-12">
             {features.map((f, i) => (
               <motion.div
@@ -240,9 +267,22 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ y: -3, scale: 1.02 }}
-                className="group rounded-2xl bg-white/[0.04] border border-white/[0.06] p-5 backdrop-blur-sm transition-all duration-500 cursor-default hover:bg-white/[0.07] hover:border-white/[0.1]"
+                className="group rounded-2xl p-5 cursor-default transition-all duration-500 hover:shadow-lg hover:shadow-white/[0.03]"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(217 30% 20% / 0.35), hsl(220 25% 15% / 0.2))',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid hsl(217 40% 50% / 0.1)',
+                  boxShadow: 'inset 0 1px 0 0 hsl(217 60% 80% / 0.05)',
+                }}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110" style={{ background: 'hsl(217 72% 50% / 0.15)' }}>
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    background: 'hsl(217 72% 50% / 0.12)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid hsl(217 60% 60% / 0.1)',
+                  }}
+                >
                   <f.icon className="h-5 w-5" style={{ color: 'hsl(217 72% 70%)' }} />
                 </div>
                 <h3 className="text-sm font-bold text-white mb-1">{f.title}</h3>
@@ -251,16 +291,24 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
             ))}
           </div>
 
-          {/* Trust badges */}
+          {/* Trust badges — glass style */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="flex items-center gap-6 pt-6 border-t border-white/[0.06]"
+            className="flex items-center gap-6 pt-6"
+            style={{ borderTop: '1px solid hsl(217 40% 50% / 0.1)' }}
           >
             {trustBadges.map((b, i) => (
               <div key={i} className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'hsl(217 72% 50% / 0.1)' }}>
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{
+                    background: 'hsl(217 72% 50% / 0.08)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid hsl(217 60% 60% / 0.08)',
+                  }}
+                >
                   <b.icon className="h-3.5 w-3.5" style={{ color: 'hsl(217 72% 60% / 0.8)' }} />
                 </div>
                 <span className="text-[11px] text-white/30 font-medium">{b.t}</span>
@@ -285,10 +333,24 @@ export default function AuthPage() {
       {/* Left panel - branding */}
       <BrandingPanel sysName={sysName} sysSub={sysSub} logoSrc={logoSrc} />
 
-      {/* Right panel - form */}
-      <div className="flex-1 flex items-center justify-center relative z-10 p-6 sm:p-10 lg:max-w-[520px]">
-        {/* Subtle background pattern for light side */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
+      {/* Right panel - form with glassmorphism */}
+      <div className="flex-1 flex items-center justify-center relative z-10 p-6 sm:p-10 lg:max-w-[520px] overflow-hidden">
+        {/* Ambient glass glow behind form */}
+        <motion.div
+          className="absolute w-[400px] h-[400px] rounded-full opacity-[0.07] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)' }}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full opacity-[0.05] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, hsl(199 89% 48%) 0%, transparent 70%)' }}
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        />
+
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 0.5px, transparent 0)',
           backgroundSize: '24px 24px',
         }} />
@@ -306,29 +368,50 @@ export default function AuthPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-8 lg:hidden"
           >
-            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg gradient-accent overflow-hidden">
+            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg gradient-accent overflow-hidden backdrop-blur-sm">
               <img src={logoSrc} alt={sysName} className="h-12 w-12 object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-foreground mt-3">{sysName}</h1>
             <p className="text-muted-foreground mt-1 text-xs">منصة إدارة الطلبات الذكية</p>
           </motion.div>
 
-          {/* Card */}
+          {/* Glassmorphism Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-3xl bg-card shadow-2xl shadow-foreground/[0.06] border border-border/50 overflow-hidden relative"
+            className="rounded-3xl overflow-hidden relative"
+            style={{
+              background: 'linear-gradient(145deg, hsl(var(--card) / 0.7), hsl(var(--card) / 0.5))',
+              backdropFilter: 'blur(24px) saturate(1.4)',
+              border: '1px solid hsl(var(--border) / 0.3)',
+              boxShadow: `
+                0 25px 50px -12px hsl(var(--foreground) / 0.08),
+                0 0 0 1px hsl(var(--border) / 0.1),
+                inset 0 1px 0 0 hsl(var(--card) / 0.5)
+              `,
+            }}
           >
             {/* Top accent — animated gradient bar */}
             <motion.div
-              className="h-1"
-              style={{ background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(199 89% 48%), hsl(var(--primary)))' }}
+              className="h-[2px]"
+              style={{
+                background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(199 89% 48%), hsl(var(--primary)), transparent)',
+                backgroundSize: '200% 100%',
+              }}
               animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             />
 
-            <div className="p-8">
+            {/* Inner glass highlight */}
+            <div
+              className="absolute top-0 left-0 right-0 h-32 pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, hsl(var(--card) / 0.3) 0%, transparent 100%)',
+              }}
+            />
+
+            <div className="p-8 relative">
               <AnimatePresence mode="wait">
                 {forgotMode ? (
                   <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
@@ -347,9 +430,15 @@ export default function AuthPage() {
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ delay: 0.25, type: 'spring', stiffness: 180, damping: 14 }}
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl gradient-accent ring-4 ring-primary/10"
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl ring-4 ring-primary/10 relative overflow-hidden"
+                        style={{
+                          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.8), hsl(var(--primary)))',
+                          backdropFilter: 'blur(8px)',
+                        }}
                       >
-                        <Lock className="h-7 w-7 text-primary-foreground" />
+                        {/* Glass shine on icon */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                        <Lock className="h-7 w-7 text-primary-foreground relative z-10" />
                       </motion.div>
                       <h2 className="text-2xl font-extrabold text-foreground">مرحباً بعودتك</h2>
                       <p className="text-sm text-muted-foreground mt-1.5">سجّل دخولك للوصول إلى لوحة التحكم</p>
