@@ -8,7 +8,8 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Loader2, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
+import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
+import { TicketListSkeleton } from '@/components/SkeletonLoaders';
 import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
@@ -156,11 +157,7 @@ export default function TicketsInbox() {
 
   const renderList = (list: typeof tickets) => {
     if (isLoading) {
-      return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </motion.div>
-      );
+      return <TicketListSkeleton count={6} />;
     }
     if (list.length === 0) {
       return (
@@ -385,7 +382,7 @@ export default function TicketsInbox() {
                   {isAgentOrAdmin && (
                     <TabsContent value="department" className="m-0 flex-1">
                       {isLoading ? (
-                        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                        <TicketListSkeleton count={4} />
                       ) : Object.keys(byDepartment).length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                           <Inbox className="h-12 w-12 mb-3 opacity-30" />
@@ -412,7 +409,7 @@ export default function TicketsInbox() {
                   {isAgentOrAdmin && (
                     <TabsContent value="service" className="m-0 flex-1">
                       {isLoading ? (
-                        <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                        <TicketListSkeleton count={4} />
                       ) : Object.keys(byService).length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                           <Inbox className="h-12 w-12 mb-3 opacity-30" />
