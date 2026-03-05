@@ -154,7 +154,7 @@ export const sourceSystemLabels: Record<SourceSystem, string> = {
 };
 
 export const roleLabels: Record<AppRole, string> = {
-  admin: 'مشرف',
+  admin: 'أدمن',
   agent: 'دعم فني',
   requester: 'عميل',
   developer: 'مطور',
