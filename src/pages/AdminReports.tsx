@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReportData, statusLabels, priorityLabels } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown, FileText } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown, FileText, Building2, Monitor, Layers } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { motion } from 'framer-motion';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
@@ -48,6 +50,9 @@ export default function AdminReports() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [activePreset, setActivePreset] = useState('الكل');
+  const [filterDept, setFilterDept] = useState('all');
+  const [filterSystem, setFilterSystem] = useState('all');
+  const [filterService, setFilterService] = useState('all');
 
   const dateRange = dateFrom || dateTo ? { from: dateFrom, to: dateTo } : undefined;
 
@@ -56,6 +61,66 @@ export default function AdminReports() {
     queryFn: () => fetchReportData(dateRange),
   });
 
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments-filter'],
+    queryFn: async () => { const { data } = await supabase.from('departments').select('id, name'); return data || []; },
+  });
+  const { data: systems = [] } = useQuery({
+    queryKey: ['systems-filter'],
+    queryFn: async () => { const { data } = await supabase.from('systems').select('id, name, code').eq('is_active', true); return data || []; },
+  });
+  const { data: services = [] } = useQuery({
+    queryKey: ['services-filter'],
+    queryFn: async () => { const { data } = await supabase.from('services').select('id, name, system_id').eq('is_active', true); return data || []; },
+  });
+
+  // Filter raw tickets
+  const filteredReport = useMemo(() => {
+    if (!report) return null;
+    if (filterDept === 'all' && filterSystem === 'all' && filterService === 'all') return report;
+
+    const filtered = (report.rawTickets || []).filter((t: any) => {
+      if (filterDept !== 'all' && t.department !== departments.find((d: any) => d.id === filterDept)?.name) return false;
+      if (filterSystem !== 'all' && t.system !== systems.find((s: any) => s.id === filterSystem)?.name) return false;
+      if (filterService !== 'all' && t.service !== services.find((s: any) => s.id === filterService)?.name) return false;
+      return true;
+    });
+
+    // Recalculate stats from filtered tickets
+    const byStatus: Record<string, number> = {};
+    const byPriority: Record<string, number> = {};
+    const byDepartment: Record<string, number> = {};
+    const bySystem: Record<string, number> = {};
+    const byService: Record<string, number> = {};
+    let slaMet = 0, slaBreaches = 0, totalResMs = 0, resolvedCount = 0;
+    let totalFrMs = 0, frCount = 0, overdueCount = 0;
+
+    filtered.forEach((t: any) => {
+      byStatus[t.status] = (byStatus[t.status] || 0) + 1;
+      byPriority[t.priority] = (byPriority[t.priority] || 0) + 1;
+      if (t.department) byDepartment[t.department] = (byDepartment[t.department] || 0) + 1;
+      if (t.system) bySystem[t.system] = (bySystem[t.system] || 0) + 1;
+      if (t.service) byService[t.service] = (byService[t.service] || 0) + 1;
+      if (t.resolutionHours != null) { totalResMs += t.resolutionHours; resolvedCount++; }
+      if (t.firstResponseHours != null) { totalFrMs += t.firstResponseHours; frCount++; }
+      if (t.sla_met === true) slaMet++;
+      if (t.sla_met === false) slaBreaches++;
+      if (t.overdue) overdueCount++;
+    });
+
+    return {
+      ...report,
+      rawTickets: filtered,
+      total: filtered.length,
+      byStatus, byPriority, byDepartment, bySystem, byService,
+      slaMet, slaBreaches,
+      avgResolutionHours: resolvedCount > 0 ? Math.round(totalResMs / resolvedCount * 10) / 10 : 0,
+      avgFirstResponseHours: frCount > 0 ? Math.round(totalFrMs / frCount * 10) / 10 : 0,
+      slaCompliancePercent: (slaMet + slaBreaches) > 0 ? Math.round((slaMet / (slaMet + slaBreaches)) * 100) : 100,
+      overdueCount,
+    };
+  }, [report, filterDept, filterSystem, filterService, departments, systems, services]);
+
   const applyPreset = (preset: typeof datePresets[0]) => {
     const val = preset.getValue();
     setDateFrom(val.from);
@@ -63,7 +128,7 @@ export default function AdminReports() {
     setActivePreset(preset.label);
   };
 
-  if (isLoading || !report) {
+  if (isLoading || !filteredReport) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
@@ -76,32 +141,34 @@ export default function AdminReports() {
     );
   }
 
-  const statusData = Object.entries(report.byStatus).map(([key, val]) => ({
+  const r = filteredReport;
+
+  const statusData = Object.entries(r.byStatus).map(([key, val]) => ({
     name: statusLabels[key as keyof typeof statusLabels] || key,
     value: val as number,
   }));
 
-  const priorityData = Object.entries(report.byPriority).map(([key, val]) => ({
+  const priorityData = Object.entries(r.byPriority).map(([key, val]) => ({
     name: priorityLabels[key as keyof typeof priorityLabels] || key,
     value: val as number,
   }));
 
-  const deptData = Object.entries(report.byDepartment).map(([key, val]) => ({
+  const deptData = Object.entries(r.byDepartment).map(([key, val]) => ({
     name: key,
     value: val as number,
   }));
 
-  const systemData = Object.entries(report.bySystem || {}).map(([key, val]) => ({
+  const systemData = Object.entries(r.bySystem || {}).map(([key, val]) => ({
     name: key,
     value: val as number,
   }));
 
-  const serviceData = Object.entries(report.byService || {}).map(([key, val]) => ({
+  const serviceData = Object.entries(r.byService || {}).map(([key, val]) => ({
     name: key,
     value: val as number,
   }));
 
-  const slaByServiceData = Object.entries(report.slaByService || {}).map(([key, val]: any) => ({
+  const slaByServiceData = Object.entries(r.slaByService || {}).map(([key, val]: any) => ({
     name: key,
     compliance: val.compliance,
     breaches: val.breaches,
@@ -109,7 +176,7 @@ export default function AdminReports() {
 
   // Trend data - group by day
   const trendMap: Record<string, { date: string; count: number; resolved: number }> = {};
-  (report.rawTickets || []).forEach((t: any) => {
+  (r.rawTickets || []).forEach((t: any) => {
     const day = t.created_at?.slice(0, 10);
     if (!day) return;
     if (!trendMap[day]) trendMap[day] = { date: day, count: 0, resolved: 0 };
@@ -119,7 +186,7 @@ export default function AdminReports() {
   const trendData = Object.values(trendMap).sort((a, b) => a.date.localeCompare(b.date));
 
   const handleExportAll = () => {
-    const rows = (report.rawTickets || []).map((t: any) => ({
+    const rows = (r.rawTickets || []).map((t: any) => ({
       'رقم التذكرة': t.ticket_number,
       'العنوان': t.title,
       'الحالة': statusLabels[t.status as keyof typeof statusLabels] || t.status,
@@ -138,12 +205,12 @@ export default function AdminReports() {
   const handlePrint = () => window.print();
 
   const kpis = [
-    { icon: BarChart3, value: report.total, label: 'إجمالي التذاكر', color: 'text-primary', trend: null },
-    { icon: Clock, value: `${report.avgResolutionHours}h`, label: 'متوسط زمن الحل', color: 'text-accent', trend: null },
-    { icon: Timer, value: `${report.avgFirstResponseHours ?? 0}h`, label: 'متوسط أول رد', color: 'text-info', trend: null },
-    { icon: ShieldCheck, value: `${report.slaCompliancePercent}%`, label: 'الالتزام بالـ SLA', color: 'text-success', trend: report.slaCompliancePercent >= 80 ? 'up' : 'down' },
-    { icon: AlertTriangle, value: report.slaBreaches, label: 'تجاوزات SLA', color: 'text-destructive', trend: report.slaBreaches === 0 ? 'up' : 'down' },
-    { icon: AlertTriangle, value: report.overdueCount ?? 0, label: 'متأخرة حالياً', color: 'text-warning', trend: (report.overdueCount ?? 0) === 0 ? 'up' : 'down' },
+    { icon: BarChart3, value: r.total, label: 'إجمالي التذاكر', color: 'text-primary', trend: null },
+    { icon: Clock, value: `${r.avgResolutionHours}h`, label: 'متوسط زمن الحل', color: 'text-accent', trend: null },
+    { icon: Timer, value: `${r.avgFirstResponseHours ?? 0}h`, label: 'متوسط أول رد', color: 'text-info', trend: null },
+    { icon: ShieldCheck, value: `${r.slaCompliancePercent}%`, label: 'الالتزام بالـ SLA', color: 'text-success', trend: r.slaCompliancePercent >= 80 ? 'up' : 'down' },
+    { icon: AlertTriangle, value: r.slaBreaches, label: 'تجاوزات SLA', color: 'text-destructive', trend: r.slaBreaches === 0 ? 'up' : 'down' },
+    { icon: AlertTriangle, value: r.overdueCount ?? 0, label: 'متأخرة حالياً', color: 'text-warning', trend: (r.overdueCount ?? 0) === 0 ? 'up' : 'down' },
   ];
 
   return (
@@ -162,7 +229,7 @@ export default function AdminReports() {
             </div>
             <div className="flex gap-2 items-center">
               <NotificationsPopover />
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportReportPDF(report, activePreset || `${dateFrom} - ${dateTo}`)}>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportReportPDF(r, activePreset || `${dateFrom} - ${dateTo}`)}>
                 <FileText className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">تصدير PDF</span>
               </Button>
@@ -220,6 +287,39 @@ export default function AdminReports() {
                           className="h-8 text-xs w-36"
                           dir="ltr"
                         />
+                      </div>
+                    </div>
+                    {/* Additional Filters */}
+                    <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/50">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Select value={filterDept} onValueChange={setFilterDept}>
+                          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="القسم" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">كل الأقسام</SelectItem>
+                            {departments.map((d: any) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Select value={filterSystem} onValueChange={setFilterSystem}>
+                          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="النظام" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">كل الأنظمة</SelectItem>
+                            {systems.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Select value={filterService} onValueChange={setFilterService}>
+                          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="الخدمة" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">كل الخدمات</SelectItem>
+                            {services.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </CardContent>
@@ -391,23 +491,23 @@ export default function AdminReports() {
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">غير محلولة</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold">{report.total - (report.byStatus['resolved'] || 0) - (report.byStatus['closed'] || 0)}</span>
+                          <span className="text-sm font-bold">{r.total - (r.byStatus['resolved'] || 0) - (r.byStatus['closed'] || 0)}</span>
                           <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{ width: `${report.total ? ((report.total - (report.byStatus['resolved'] || 0) - (report.byStatus['closed'] || 0)) / report.total * 100) : 0}%` }} />
+                            <div className="h-full bg-primary rounded-full" style={{ width: `${r.total ? ((r.total - (r.byStatus['resolved'] || 0) - (r.byStatus['closed'] || 0)) / r.total * 100) : 0}%` }} />
                           </div>
                         </div>
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">معلّقة</span>
-                        <span className="text-sm font-bold">{(report.byStatus['new'] || 0) + (report.byStatus['waiting_on_customer'] || 0)}</span>
+                        <span className="text-sm font-bold">{(r.byStatus['new'] || 0) + (r.byStatus['waiting_on_customer'] || 0)}</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">متأخرة</span>
-                        <span className="text-sm font-bold text-destructive">{report.overdueCount ?? 0}</span>
+                        <span className="text-sm font-bold text-destructive">{r.overdueCount ?? 0}</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5">
                         <span className="text-xs text-muted-foreground">تجاوزات SLA</span>
-                        <span className="text-sm font-bold text-destructive">{report.slaBreaches}</span>
+                        <span className="text-sm font-bold text-destructive">{r.slaBreaches}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -422,19 +522,19 @@ export default function AdminReports() {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">متوسط زمن الحل</span>
-                        <span className="text-sm font-bold">{report.avgResolutionHours}h</span>
+                        <span className="text-sm font-bold">{r.avgResolutionHours}h</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">متوسط أول رد</span>
-                        <span className="text-sm font-bold">{report.avgFirstResponseHours ?? 0}h</span>
+                        <span className="text-sm font-bold">{r.avgFirstResponseHours ?? 0}h</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                         <span className="text-xs text-muted-foreground">تم حلها</span>
-                        <span className="text-sm font-bold text-success">{report.byStatus['resolved'] || 0}</span>
+                        <span className="text-sm font-bold text-success">{r.byStatus['resolved'] || 0}</span>
                       </div>
                       <div className="flex justify-between items-center py-1.5">
                         <span className="text-xs text-muted-foreground">مغلقة</span>
-                        <span className="text-sm font-bold">{report.byStatus['closed'] || 0}</span>
+                        <span className="text-sm font-bold">{r.byStatus['closed'] || 0}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -452,19 +552,19 @@ export default function AdminReports() {
                         <div className="relative w-24 h-24 mx-auto">
                           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                             <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-                            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--success))" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(report.slaCompliancePercent / 100) * 264} 264`} />
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--success))" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(r.slaCompliancePercent / 100) * 264} 264`} />
                           </svg>
-                          <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">{report.slaCompliancePercent}%</span>
+                          <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">{r.slaCompliancePercent}%</span>
                         </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">ضمن SLA</span>
-                          <span className="font-bold text-success">{report.slaMet}</span>
+                          <span className="font-bold text-success">{r.slaMet}</span>
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">تجاوزت SLA</span>
-                          <span className="font-bold text-destructive">{report.slaBreaches}</span>
+                          <span className="font-bold text-destructive">{r.slaBreaches}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -492,7 +592,7 @@ export default function AdminReports() {
                         </tr>
                       </thead>
                       <tbody>
-                        {(report.rawTickets || []).slice(0, 50).map((t: any, i: number) => (
+                        {(r.rawTickets || []).slice(0, 50).map((t: any, i: number) => (
                           <tr key={i} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                             <td className="p-2">{t.ticket_number}</td>
                             <td className="p-2 max-w-[200px] truncate">{t.title}</td>

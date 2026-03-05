@@ -17,6 +17,8 @@ import {
   MessageSquare,
   Mail,
   Columns,
+  Star,
+  ShieldAlert,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -73,6 +75,8 @@ const adminItems = [
   { title: 'أداء الوكلاء', url: '/admin/agent-performance', icon: Award },
   { title: 'إعدادات SLA', url: '/admin/sla', icon: Timer },
   { title: 'التقارير', url: '/admin/reports', icon: BarChart3 },
+  { title: 'تحليلات CSAT', url: '/admin/csat-analytics', icon: Star },
+  { title: 'تقرير SLA', url: '/admin/sla-compliance', icon: ShieldAlert },
   { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
