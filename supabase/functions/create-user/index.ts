@@ -122,8 +122,18 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Deactivate profile first and remove role
+      await adminClient.from("profiles").update({ is_active: false }).eq("id", user_id);
+      await adminClient.from("user_roles").delete().eq("user_id", user_id);
+      await adminClient.from("developer_access").delete().eq("developer_id", user_id);
+
+      // Try hard delete, if it fails due to FK constraints, just ban the user
       const { error } = await adminClient.auth.admin.deleteUser(user_id);
-      if (error) throw new Error(error.message);
+      if (error) {
+        // Can't fully delete due to existing data - ban instead
+        await adminClient.auth.admin.updateUserById(user_id, { ban_duration: "876600h" }); // ~100 years
+        console.log(`User ${user_id} banned instead of deleted: ${error.message}`);
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
