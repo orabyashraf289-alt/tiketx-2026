@@ -7,10 +7,11 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import {
-  Inbox, Clock, CheckCircle2, AlertTriangle, Search, Plus, Loader2,
+  Inbox, Clock, CheckCircle2, AlertTriangle, Search, Plus,
   Users, BarChart3, Shield, Zap, Globe, Headphones, Timer, TrendingUp,
   TrendingDown, Activity, BookOpen, Download
 } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/SkeletonLoaders';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
@@ -123,7 +124,8 @@ export default function Dashboard() {
           <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-4 shrink-0 no-print sticky top-0 z-30"
+            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-3 sm:px-4 gap-2 sm:gap-4 shrink-0 no-print sticky top-0 z-30"
+            role="banner"
           >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
@@ -158,7 +160,7 @@ export default function Dashboard() {
             </div>
           </motion.header>
 
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto" role="main">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -245,9 +247,9 @@ export default function Dashboard() {
                 </div>
 
                 <AnimatePresence mode="wait">
-                  {ticketsLoading ? (
-                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center py-20">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              {ticketsLoading ? (
+                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <DashboardSkeleton />
                     </motion.div>
                   ) : filteredTickets.length === 0 ? (
                     <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
