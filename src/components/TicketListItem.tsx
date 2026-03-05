@@ -2,7 +2,9 @@ import { Ticket } from '@/lib/api';
 import { StatusBadge, PriorityBadge, SLABadge } from '@/components/TicketBadges';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { User, Clock, AlertTriangle } from 'lucide-react';
+import { enUS } from 'date-fns/locale';
+import { User, Clock } from 'lucide-react';
+import { useLanguage } from '@/i18n';
 
 interface Props {
   ticket: Ticket;
@@ -11,13 +13,15 @@ interface Props {
 }
 
 export function TicketListItem({ ticket, index, onClick }: Props) {
+  const { t, lang } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
+  const dateLocale = lang === 'ar' ? ar : enUS;
 
   return (
     <button
       onClick={onClick}
-      className={`w-full text-right px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 ${isOverdue ? 'border-r-2 border-r-destructive' : ''}`}
-      aria-label={`تذكرة ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
+      className={`w-full ltr:text-left rtl:text-right px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 ${isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive' : ''}`}
+      aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="flex-1 min-w-0">
@@ -47,7 +51,7 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
         <div className="flex items-center gap-2 sm:gap-4">
           <span className="flex items-center gap-1">
             <User className="h-3 w-3" />
-            <span className="truncate max-w-[80px] sm:max-w-none">{ticket.requester?.full_name || 'غير معروف'}</span>
+            <span className="truncate max-w-[80px] sm:max-w-none">{ticket.requester?.full_name || t.common.unknown}</span>
           </span>
           {ticket.agent?.full_name && (
             <span className="hidden sm:flex items-center gap-1 text-primary">
@@ -57,7 +61,7 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
         </div>
         <span className="flex items-center gap-1 shrink-0">
           <Clock className="h-3 w-3" />
-          {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: ar })}
+          {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: dateLocale })}
         </span>
       </div>
     </button>

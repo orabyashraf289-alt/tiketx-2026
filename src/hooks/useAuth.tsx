@@ -9,6 +9,7 @@ interface Profile {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  preferred_language: string;
 }
 
 interface AuthContextType {

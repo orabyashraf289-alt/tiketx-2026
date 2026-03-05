@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useRealtimeNotificationSound } from '@/hooks/useRealtimeNotificationSound';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { SystemSettingsProvider } from '@/hooks/useSystemSettings';
+import { LanguageProvider } from '@/i18n';
 import { PageLoader } from '@/components/PageLoader';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
 
@@ -85,55 +86,57 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <SystemSettingsProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
-                  <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                  <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                  <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
-                  <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
-                  <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
-                  <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
-                  <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
-                  <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
-                  <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-                  <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
-                  <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
-                  <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
-                  <Route path="/admin/service-fields" element={<ProtectedRoute><AdminServiceFields /></ProtectedRoute>} />
-                  <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
-                  <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
-                  <Route path="/admin/approval-kanban" element={<ProtectedRoute><AdminApprovalKanban /></ProtectedRoute>} />
-                  <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                  <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
-                  <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
-                  <Route path="/admin/webhooks" element={<ProtectedRoute><AdminWebhooks /></ProtectedRoute>} />
-                  <Route path="/admin/automation" element={<ProtectedRoute><AdminAutomation /></ProtectedRoute>} />
-                  <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-                  <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
-                  <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
-                  <Route path="/admin/executive" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/slack" element={<ProtectedRoute><AdminSlackIntegration /></ProtectedRoute>} />
-                  <Route path="/admin/audit-log" element={<ProtectedRoute><AdminAuditLog /></ProtectedRoute>} />
-                  <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
-                  <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
-                  <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </SystemSettingsProvider>
+      <LanguageProvider>
+        <SystemSettingsProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/" element={<ProtectedRoute redirectRequester><Index /></ProtectedRoute>} />
+                    <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                    <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                    <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                    <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
+                    <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
+                    <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
+                    <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
+                    <Route path="/admin/departments" element={<ProtectedRoute><AdminDepartments /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+                    <Route path="/admin/sla" element={<ProtectedRoute><AdminSLA /></ProtectedRoute>} />
+                    <Route path="/admin/reports" element={<ProtectedRoute><AdminReports /></ProtectedRoute>} />
+                    <Route path="/admin/services" element={<ProtectedRoute><AdminServiceCatalog /></ProtectedRoute>} />
+                    <Route path="/admin/service-fields" element={<ProtectedRoute><AdminServiceFields /></ProtectedRoute>} />
+                    <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
+                    <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
+                    <Route path="/admin/approval-kanban" element={<ProtectedRoute><AdminApprovalKanban /></ProtectedRoute>} />
+                    <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
+                    <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
+                    <Route path="/admin/webhooks" element={<ProtectedRoute><AdminWebhooks /></ProtectedRoute>} />
+                    <Route path="/admin/automation" element={<ProtectedRoute><AdminAutomation /></ProtectedRoute>} />
+                    <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+                    <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
+                    <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
+                    <Route path="/admin/executive" element={<ProtectedRoute><ExecutiveDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/slack" element={<ProtectedRoute><AdminSlackIntegration /></ProtectedRoute>} />
+                    <Route path="/admin/audit-log" element={<ProtectedRoute><AdminAuditLog /></ProtectedRoute>} />
+                    <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
+                    <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SystemSettingsProvider>
+      </LanguageProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

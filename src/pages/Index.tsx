@@ -1,33 +1,24 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, fetchTicketStats, fetchDepartments, fetchReportData, TicketStatus, statusLabels } from '@/lib/api';
+import { fetchTickets, fetchTicketStats, fetchDepartments, fetchReportData, TicketStatus } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import {
   Inbox, Clock, CheckCircle2, AlertTriangle, Search, Plus,
-  Users, BarChart3, Shield, Zap, Globe, Headphones, Timer, TrendingUp,
-  TrendingDown, Activity, BookOpen, Download
+  Users, BarChart3, Shield, Timer, TrendingUp,
+  TrendingDown, BookOpen,
 } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/SkeletonLoaders';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DashboardCharts, exportToCSV } from '@/components/DashboardCharts';
+import { DashboardCharts } from '@/components/DashboardCharts';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
-
-const statusFilters: { label: string; value: TicketStatus | 'all' }[] = [
-  { label: 'الكل', value: 'all' },
-  { label: 'جديدة', value: 'new' },
-  { label: 'مفتوحة', value: 'open' },
-  { label: 'قيد المعالجة', value: 'in_progress' },
-  { label: 'بانتظار العميل', value: 'waiting_on_customer' },
-  { label: 'تم الحل', value: 'resolved' },
-  { label: 'مغلقة', value: 'closed' },
-];
+import { useLanguage } from '@/i18n';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -44,22 +35,32 @@ const listItem = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-const datePresets = [
-  { label: 'آخر 7 أيام', days: 7 },
-  { label: 'آخر 30 يوم', days: 30 },
-  { label: 'آخر 90 يوم', days: 90 },
-];
-
 export default function Dashboard() {
   const { role } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deptFilter, setDeptFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState(7);
 
-  // Enable Realtime
   useRealtimeTickets();
+
+  const statusFilters: { label: string; value: TicketStatus | 'all' }[] = [
+    { label: t.common.all, value: 'all' },
+    { label: t.tickets.new, value: 'new' },
+    { label: t.tickets.open, value: 'open' },
+    { label: t.tickets.inProgress, value: 'in_progress' },
+    { label: t.tickets.waitingOnCustomer, value: 'waiting_on_customer' },
+    { label: t.tickets.resolved, value: 'resolved' },
+    { label: t.tickets.closed, value: 'closed' },
+  ];
+
+  const datePresets = [
+    { label: t.dashboard.last7Days, days: 7 },
+    { label: t.dashboard.last30Days, days: 30 },
+    { label: t.dashboard.last90Days, days: 90 },
+  ];
 
   const rangeFrom = useMemo(() => {
     const d = new Date();
@@ -88,18 +89,16 @@ export default function Dashboard() {
     queryFn: fetchDepartments,
   });
 
-  const filteredTickets = tickets.filter((t) => {
-    const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
-    const matchesSearch = !searchQuery || t.title.includes(searchQuery) || t.ticket_number.toString().includes(searchQuery);
-    const matchesDept = deptFilter === 'all' || t.department_id === deptFilter;
+  const filteredTickets = tickets.filter((ticket) => {
+    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesSearch = !searchQuery || ticket.title.includes(searchQuery) || ticket.ticket_number.toString().includes(searchQuery);
+    const matchesDept = deptFilter === 'all' || ticket.department_id === deptFilter;
     return matchesStatus && matchesSearch && matchesDept;
   });
 
-  // Derive dashboard KPIs
   const unresolvedCount = (stats?.new ?? 0) + (stats?.open ?? 0) + (stats?.in_progress ?? 0) + (stats?.waiting_on_customer ?? 0) + (stats?.reopened ?? 0);
   const pendingCount = (stats?.new ?? 0) + (stats?.waiting_on_customer ?? 0);
 
-  // Trend data from report
   const trendData = useMemo(() => {
     if (!report?.rawTickets) return [];
     const map: Record<string, { date: string; created: number; resolved: number }> = {};
@@ -120,7 +119,6 @@ export default function Dashboard() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
           <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -129,17 +127,14 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold hidden sm:block text-foreground">لوحة التحكم</h1>
-              {/* Date range filter */}
-              <div className="flex gap-1 mr-2">
+              <h1 className="text-lg font-bold hidden sm:block text-foreground">{t.dashboard.title}</h1>
+              <div className="flex gap-1 ltr:ml-2 rtl:mr-2">
                 {datePresets.map(p => (
                   <button
                     key={p.days}
                     onClick={() => setDateRange(p.days)}
                     className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
-                      dateRange === p.days
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      dateRange === p.days ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
                     {p.label}
@@ -149,47 +144,39 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-2">
               <div className="relative hidden md:block">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input placeholder="بحث..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 h-8 w-48 text-xs rounded-full" />
+                <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-8 w-48 text-xs rounded-full" />
               </div>
               <NotificationsPopover />
               <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">تذكرة جديدة</span>
+                <span className="hidden sm:inline">{t.sidebar.newTicket}</span>
               </Button>
             </div>
           </motion.header>
 
           <main className="flex-1 overflow-auto" role="main">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-4 md:p-6 space-y-6"
-            >
-              {/* Top KPI Row */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 space-y-6">
+              {/* KPI Row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                <KPICard title="تذاكر غير محلولة" value={unresolvedCount} icon={Inbox} color="text-primary" bgGradient="from-primary/10 to-primary/5" />
-                <KPICard title="معلّقة" value={pendingCount} icon={Clock} color="text-warning" bgGradient="from-warning/10 to-warning/5" />
-                <KPICard title="متأخرة" value={report?.overdueCount ?? 0} icon={AlertTriangle} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" />
-                <KPICard title="تجاوزات SLA" value={report?.slaBreaches ?? 0} icon={Shield} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
-                <KPICard title="متوسط أول رد" value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} color="text-info" bgGradient="from-info/10 to-info/5" />
-                <KPICard title="التزام SLA" value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} color="text-success" bgGradient="from-success/10 to-success/5" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
+                <KPICard title={t.dashboard.unresolvedTickets} value={unresolvedCount} icon={Inbox} color="text-primary" bgGradient="from-primary/10 to-primary/5" />
+                <KPICard title={t.dashboard.pending} value={pendingCount} icon={Clock} color="text-warning" bgGradient="from-warning/10 to-warning/5" />
+                <KPICard title={t.dashboard.overdue} value={report?.overdueCount ?? 0} icon={AlertTriangle} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" />
+                <KPICard title={t.dashboard.slaBreaches} value={report?.slaBreaches ?? 0} icon={Shield} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
+                <KPICard title={t.dashboard.avgFirstResponse} value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} color="text-info" bgGradient="from-info/10 to-info/5" />
+                <KPICard title={t.dashboard.slaCompliance} value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} color="text-success" bgGradient="from-success/10 to-success/5" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
               </div>
 
-              {/* Charts Section - Admin only */}
-              {isAdmin && (
-                <DashboardCharts report={report} trendData={trendData} />
-              )}
+              {isAdmin && <DashboardCharts report={report} trendData={trendData} />}
 
-              {/* Quick Actions */}
               {isAdmin && (
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {[
-                    { label: 'تقارير', icon: BarChart3, path: '/admin/reports' },
-                    { label: 'المستخدمين', icon: Users, path: '/admin/users' },
-                    { label: 'صندوق التذاكر', icon: Inbox, path: '/tickets' },
-                    { label: 'قاعدة المعرفة', icon: BookOpen, path: '/knowledge-base' },
-                    { label: 'تذكرة جديدة', icon: Plus, path: '/tickets/new' },
+                    { label: t.dashboard.quickActions.reports, icon: BarChart3, path: '/admin/reports' },
+                    { label: t.dashboard.quickActions.users, icon: Users, path: '/admin/users' },
+                    { label: t.dashboard.quickActions.ticketInbox, icon: Inbox, path: '/tickets' },
+                    { label: t.dashboard.quickActions.knowledgeBase, icon: BookOpen, path: '/knowledge-base' },
+                    { label: t.dashboard.quickActions.newTicket, icon: Plus, path: '/tickets/new' },
                   ].map((action) => (
                     <motion.button
                       key={action.path}
@@ -210,8 +197,8 @@ export default function Dashboard() {
                 <div className="p-4 border-b border-border/50">
                   <div className="flex items-center gap-3 mb-3 md:hidden">
                     <div className="relative flex-1">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="بحث في التذاكر..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
+                      <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder={t.tickets.searchTickets} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 rounded-xl" />
                     </div>
                   </div>
                   <div className="flex gap-1.5 flex-wrap">
@@ -234,7 +221,7 @@ export default function Dashboard() {
                       <button
                         onClick={() => setDeptFilter('all')}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${deptFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                      >الكل</button>
+                      >{t.common.all}</button>
                       {departments.map(d => (
                         <button
                           key={d.id}
@@ -247,14 +234,14 @@ export default function Dashboard() {
                 </div>
 
                 <AnimatePresence mode="wait">
-              {ticketsLoading ? (
+                  {ticketsLoading ? (
                     <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                       <DashboardSkeleton />
                     </motion.div>
                   ) : filteredTickets.length === 0 ? (
                     <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                       <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                      <p className="font-medium">لا توجد تذاكر</p>
+                      <p className="font-medium">{t.dashboard.noTickets}</p>
                     </motion.div>
                   ) : (
                     <motion.div key="list" variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-border/50">
@@ -275,7 +262,6 @@ export default function Dashboard() {
   );
 }
 
-// KPI Card component
 function KPICard({ title, value, icon: Icon, color, bgGradient, trend }: {
   title: string;
   value: number | string;

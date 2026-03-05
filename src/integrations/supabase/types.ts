@@ -484,6 +484,7 @@ export type Database = {
           notify_ticket_created: boolean | null
           notify_weekly_report: boolean | null
           phone: string | null
+          preferred_language: string
           updated_at: string
         }
         Insert: {
@@ -509,6 +510,7 @@ export type Database = {
           notify_ticket_created?: boolean | null
           notify_weekly_report?: boolean | null
           phone?: string | null
+          preferred_language?: string
           updated_at?: string
         }
         Update: {
@@ -534,6 +536,7 @@ export type Database = {
           notify_ticket_created?: boolean | null
           notify_weekly_report?: boolean | null
           phone?: string | null
+          preferred_language?: string
           updated_at?: string
         }
         Relationships: [
