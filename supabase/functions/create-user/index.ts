@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
     // =================== CREATE USER ===================
     if (action === "create") {
-      const { email, password, full_name, role, job_title } = body;
+      const { email, password, full_name, role, job_title, phone, mobile, employee_number } = body;
       if (!email || !password || !full_name) {
         return new Response(JSON.stringify({ error: "البريد وكلمة المرور والاسم مطلوبة" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -65,8 +65,15 @@ Deno.serve(async (req) => {
         await adminClient.from("user_roles").update({ role }).eq("user_id", newUser.user.id);
       }
 
-      if (job_title && newUser.user) {
-        await adminClient.from("profiles").update({ job_title }).eq("id", newUser.user.id);
+      if (newUser.user) {
+        const profileUpdates: Record<string, any> = {};
+        if (job_title) profileUpdates.job_title = job_title;
+        if (phone) profileUpdates.phone = phone;
+        if (mobile) profileUpdates.mobile = mobile;
+        if (employee_number) profileUpdates.employee_number = employee_number;
+        if (Object.keys(profileUpdates).length > 0) {
+          await adminClient.from("profiles").update(profileUpdates).eq("id", newUser.user.id);
+        }
       }
 
       return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), {
@@ -76,7 +83,8 @@ Deno.serve(async (req) => {
 
     // =================== UPDATE USER ===================
     if (action === "update") {
-      const { user_id, full_name, email, job_title, department_id, is_active } = body;
+      const { user_id, full_name, email, job_title, department_id, is_active,
+              phone, mobile, city, country, employee_number, manager_id } = body;
       if (!user_id) {
         return new Response(JSON.stringify({ error: "user_id مطلوب" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -89,6 +97,12 @@ Deno.serve(async (req) => {
       if (job_title !== undefined) profileUpdates.job_title = job_title;
       if (department_id !== undefined) profileUpdates.department_id = department_id || null;
       if (is_active !== undefined) profileUpdates.is_active = is_active;
+      if (phone !== undefined) profileUpdates.phone = phone;
+      if (mobile !== undefined) profileUpdates.mobile = mobile;
+      if (city !== undefined) profileUpdates.city = city;
+      if (country !== undefined) profileUpdates.country = country;
+      if (employee_number !== undefined) profileUpdates.employee_number = employee_number;
+      if (manager_id !== undefined) profileUpdates.manager_id = manager_id || null;
 
       if (Object.keys(profileUpdates).length > 0) {
         const { error } = await adminClient.from("profiles").update(profileUpdates).eq("id", user_id);
