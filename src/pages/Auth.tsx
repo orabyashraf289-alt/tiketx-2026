@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ShieldCheck, Zap, BarChart3, CheckCircle2, Lock, Mail, ArrowLeft, Layers, Clock, Users, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeError } from '@/lib/errorHandler';
-import logoImg from '@/assets/logo.png';
+import logoImg from '@/assets/logo-icon.png';
 import authBg from '@/assets/auth-bg.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
@@ -191,8 +191,8 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-4 mb-12"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-2xl ring-1 ring-white/10 backdrop-blur-sm" style={{ background: 'linear-gradient(135deg, hsl(217 72% 50% / 0.9), hsl(217 72% 58% / 0.9))' }}>
-              <img src={logoSrc} alt={sysName} className="h-9 w-9 object-contain" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl shadow-2xl ring-1 ring-white/10 backdrop-blur-sm" style={{ background: 'linear-gradient(135deg, hsl(217 72% 50% / 0.9), hsl(217 72% 58% / 0.9))' }}>
+              <img src={logoSrc} alt={sysName} className="h-14 w-14 object-contain" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-white tracking-tight">{sysName}</h1>
@@ -306,8 +306,8 @@ export default function AuthPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-8 lg:hidden"
           >
-            <div className="flex h-14 w-14 mx-auto items-center justify-center rounded-2xl shadow-lg gradient-accent">
-              <img src={logoSrc} alt={sysName} className="h-8 w-8 object-contain" />
+            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg gradient-accent overflow-hidden">
+              <img src={logoSrc} alt={sysName} className="h-12 w-12 object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-foreground mt-3">{sysName}</h1>
             <p className="text-muted-foreground mt-1 text-xs">منصة إدارة الطلبات الذكية</p>

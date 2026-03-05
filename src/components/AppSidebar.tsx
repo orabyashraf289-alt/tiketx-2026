@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { roleLabels } from '@/lib/api';
-import logoImg from '@/assets/logo.png';
+import logoImg from '@/assets/logo-icon.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const mainItems = [
@@ -99,13 +99,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side="right">
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary shrink-0">
-            <img src={logoSrc} alt={sysName} className="h-6 w-6 object-contain" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 shrink-0 overflow-hidden">
+            <img src={logoSrc} alt={sysName} className="h-8 w-8 object-contain" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">{sysName}</h2>
-              <p className="text-[10px] text-sidebar-foreground/50 font-medium">{sysSub}</p>
+              <h2 className="text-base font-extrabold text-sidebar-accent-foreground tracking-tight">{sysName}</h2>
+              <p className="text-[10px] text-sidebar-foreground/50 font-medium tracking-widest uppercase">{sysSub}</p>
             </div>
           )}
         </div>
