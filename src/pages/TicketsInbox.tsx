@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, fetchDepartments, fetchServices, TicketStatus, TicketPriority, statusLabels, priorityLabels } from '@/lib/api';
+import { fetchTickets, fetchDepartments, fetchServices, TicketStatus, TicketPriority } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { TicketListItem } from '@/components/TicketListItem';
@@ -17,10 +17,12 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 import { KanbanBoard } from '@/components/KanbanBoard';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -54,8 +56,10 @@ interface SavedFilter {
 export default function TicketsInbox() {
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const { t, lang, isRTL } = useLanguage();
+  const { statusLabels, priorityLabels } = useLocalizedLabels();
+  const dateLocale = lang === 'ar' ? ar : enUS;
 
-  // Enable Realtime
   useRealtimeTickets();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,10 +109,10 @@ export default function TicketsInbox() {
   const byDepartment = useMemo(() => {
     const filtered = applyFilters(tickets);
     const map: Record<string, typeof tickets> = {};
-    filtered.forEach(t => {
-      const deptName = t.departments?.name || 'بدون قسم';
-      if (!map[deptName]) map[deptName] = [];
-      map[deptName].push(t);
+    filtered.forEach(tk => {
+      const key = tk.departments?.name || '__none__';
+      if (!map[key]) map[key] = [];
+      map[key].push(tk);
     });
     return map;
   }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
@@ -116,10 +120,10 @@ export default function TicketsInbox() {
   const byService = useMemo(() => {
     const filtered = applyFilters(tickets);
     const map: Record<string, typeof tickets> = {};
-    filtered.forEach(t => {
-      const svcName = t.services ? `${t.services.systems?.name || ''} → ${t.services.name}` : 'بدون خدمة';
+    filtered.forEach(tk => {
+      const svcName = tk.services ? `${tk.services.systems?.name || ''} → ${tk.services.name}` : '__none__';
       if (!map[svcName]) map[svcName] = [];
-      map[svcName].push(t);
+      map[svcName].push(tk);
     });
     return map;
   }, [tickets, searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
@@ -129,7 +133,7 @@ export default function TicketsInbox() {
   const activeFiltersCount = [statusFilter !== 'all', priorityFilter !== 'all', !!dateFrom, !!dateTo].filter(Boolean).length;
 
   const saveCurrentFilter = () => {
-    const name = `فلتر ${savedFilters.length + 1}`;
+    const name = `${t.tickets.filter} ${savedFilters.length + 1}`;
     const newFilter: SavedFilter = { name, status: statusFilter, priority: priorityFilter };
     const updated = [...savedFilters, newFilter];
     setSavedFilters(updated);
@@ -167,7 +171,7 @@ export default function TicketsInbox() {
           className="flex flex-col items-center justify-center py-20 text-muted-foreground"
         >
           <Inbox className="h-12 w-12 mb-3 opacity-30" />
-          <p className="font-medium">لا توجد تذاكر</p>
+          <p className="font-medium">{t.tickets.noTicketsFound}</p>
         </motion.div>
       );
     }
@@ -196,26 +200,26 @@ export default function TicketsInbox() {
     <motion.div variants={fadeUp} className="p-4 border-b border-border/50 space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="بحث بالعنوان أو الرقم أو الكود..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pr-9 rounded-xl" />
+          <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+          <Input placeholder={t.tickets.searchPlaceholder} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={isRTL ? 'pr-9' : 'pl-9' + ' rounded-xl'} />
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
           <SelectTrigger className="w-36 rounded-xl">
-            <SelectValue placeholder="الحالة" />
+            <SelectValue placeholder={t.tickets.status} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل الحالات</SelectItem>
+            <SelectItem value="all">{t.tickets.allStatuses}</SelectItem>
             {allStatuses.map(s => <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>)}
           </SelectContent>
         </Select>
 
         <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
           <SelectTrigger className="w-32 rounded-xl">
-            <SelectValue placeholder="الأولوية" />
+            <SelectValue placeholder={t.tickets.priority.low} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل الأولويات</SelectItem>
+            <SelectItem value="all">{t.tickets.allPriorities}</SelectItem>
             {allPriorities.map(p => <SelectItem key={p} value={p}>{priorityLabels[p]}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -224,44 +228,42 @@ export default function TicketsInbox() {
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl">
               <CalendarDays className="h-3.5 w-3.5" />
-              {dateFrom ? format(dateFrom, 'dd/MM', { locale: ar }) : 'من'}
+              {dateFrom ? format(dateFrom, 'dd/MM', { locale: dateLocale }) : t.common.from}
               {' - '}
-              {dateTo ? format(dateTo, 'dd/MM', { locale: ar }) : 'إلى'}
+              {dateTo ? format(dateTo, 'dd/MM', { locale: dateLocale }) : t.common.to}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-3" align="start">
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">من تاريخ</p>
-              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} locale={ar} />
-              <p className="text-xs font-medium text-muted-foreground">إلى تاريخ</p>
-              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} locale={ar} />
+              <p className="text-xs font-medium text-muted-foreground">{t.common.fromDate}</p>
+              <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} locale={dateLocale} />
+              <p className="text-xs font-medium text-muted-foreground">{t.common.toDate}</p>
+              <Calendar mode="single" selected={dateTo} onSelect={setDateTo} locale={dateLocale} />
               {(dateFrom || dateTo) && (
                 <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
-                  مسح التواريخ
+                  {t.common.clearDates}
                 </Button>
               )}
             </div>
           </PopoverContent>
         </Popover>
 
-        {/* Save filter */}
         <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={saveCurrentFilter}>
           <Bookmark className="h-3.5 w-3.5" />
-          حفظ الفلتر
+          {t.tickets.filters.saveFilter}
         </Button>
 
         {activeFiltersCount > 0 && (
           <Button variant="ghost" size="sm" className="gap-1 text-xs text-destructive" onClick={clearFilters}>
             <X className="h-3.5 w-3.5" />
-            مسح ({activeFiltersCount})
+            {t.tickets.clearCount} ({activeFiltersCount})
           </Button>
         )}
       </div>
 
-      {/* Saved filters */}
       {savedFilters.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] text-muted-foreground font-medium">فلاتر محفوظة:</span>
+          <span className="text-[10px] text-muted-foreground font-medium">{t.tickets.savedFiltersLabel}</span>
           {savedFilters.map((f, i) => (
             <div key={i} className="flex items-center gap-1 bg-primary/10 text-primary rounded-full px-2.5 py-1">
               <button className="text-[10px] font-medium" onClick={() => applySavedFilter(f)}>{f.name}</button>
@@ -290,18 +292,16 @@ export default function TicketsInbox() {
           >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold hidden sm:block text-foreground">صندوق التذاكر</h1>
-              {/* Live indicator */}
+              <h1 className="text-lg font-bold hidden sm:block text-foreground">{t.tickets.inbox}</h1>
               <div className="flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
                 </span>
-                <span className="text-[10px] text-success font-medium hidden sm:inline">مباشر</span>
+                <span className="text-[10px] text-success font-medium hidden sm:inline">{t.common.live}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* View toggle */}
               {isAgentOrAdmin && (
                 <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
                   <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
@@ -318,7 +318,7 @@ export default function TicketsInbox() {
               <NotificationsPopover />
               <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">تذكرة جديدة</span>
+                <span className="hidden sm:inline">{t.tickets.createNewTicket}</span>
               </Button>
             </div>
           </motion.header>
@@ -334,33 +334,33 @@ export default function TicketsInbox() {
                   <KanbanBoard tickets={allFiltered} isAdmin={isAgentOrAdmin} />
                 </motion.div>
               ) : (
-              <Tabs defaultValue={defaultTab} className="flex flex-col h-full" dir="rtl">
+              <Tabs defaultValue={defaultTab} className="flex flex-col h-full" dir={isRTL ? 'rtl' : 'ltr'}>
                 <motion.div variants={fadeUp} className="border-b border-border/50 bg-card/60 backdrop-blur-sm px-4">
                   <TabsList className="bg-transparent h-auto p-0 gap-0">
                     {isAgentOrAdmin && (
                       <TabsTrigger value="unassigned" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
-                        غير معيّنة
-                        <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{unassigned.length}</span>
+                        {t.tickets.unassigned}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium`}>{unassigned.length}</span>
                       </TabsTrigger>
                     )}
                     <TabsTrigger value="my" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
-                      {isAgentOrAdmin ? 'معيّنة لي' : 'تذاكري'}
-                      <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{assignedToMe.length}</span>
+                      {isAgentOrAdmin ? t.tickets.assignedToMe : t.sidebar.myTickets}
+                      <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium`}>{assignedToMe.length}</span>
                     </TabsTrigger>
                     {isAgentOrAdmin && (
                       <TabsTrigger value="department" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
-                        حسب القسم
+                        {t.tickets.byDepartment}
                       </TabsTrigger>
                     )}
                     {isAgentOrAdmin && (
                       <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
-                        حسب الخدمة
+                        {t.tickets.byService}
                       </TabsTrigger>
                     )}
                     {role === 'admin' && (
                       <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
-                        الكل
-                        <span className="mr-1.5 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">{allFiltered.length}</span>
+                        {t.common.all}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium`}>{allFiltered.length}</span>
                       </TabsTrigger>
                     )}
                   </TabsList>
@@ -386,15 +386,15 @@ export default function TicketsInbox() {
                       ) : Object.keys(byDepartment).length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                           <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                          <p className="font-medium">لا توجد تذاكر</p>
+                          <p className="font-medium">{t.tickets.noTicketsFound}</p>
                         </motion.div>
                       ) : (
                         <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
                           {Object.entries(byDepartment).map(([dept, deptTickets]) => (
                             <motion.div key={dept} variants={listItem}>
                               <div className="px-4 py-2.5 bg-muted/30 sticky top-0 backdrop-blur-sm border-b border-border/30">
-                                <span className="text-sm font-semibold text-foreground">{dept}</span>
-                                <span className="text-xs text-muted-foreground mr-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">({deptTickets.length})</span>
+                                <span className="text-sm font-semibold text-foreground">{dept === '__none__' ? t.tickets.noDepartment : dept}</span>
+                                <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({deptTickets.length})</span>
                               </div>
                               {deptTickets.map((ticket, i) => (
                                 <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
@@ -413,15 +413,15 @@ export default function TicketsInbox() {
                       ) : Object.keys(byService).length === 0 ? (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                           <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                          <p className="font-medium">لا توجد تذاكر</p>
+                          <p className="font-medium">{t.tickets.noTicketsFound}</p>
                         </motion.div>
                       ) : (
                         <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
                           {Object.entries(byService).map(([svc, svcTickets]) => (
                             <motion.div key={svc} variants={listItem}>
                               <div className="px-4 py-2.5 bg-muted/30 sticky top-0 backdrop-blur-sm border-b border-border/30">
-                                <span className="text-sm font-semibold text-foreground">{svc}</span>
-                                <span className="text-xs text-muted-foreground mr-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">({svcTickets.length})</span>
+                                <span className="text-sm font-semibold text-foreground">{svc === '__none__' ? t.tickets.noService : svc}</span>
+                                <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({svcTickets.length})</span>
                               </div>
                               {svcTickets.map((ticket, i) => (
                                 <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
