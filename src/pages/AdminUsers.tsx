@@ -50,6 +50,9 @@ export default function AdminUsers() {
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('requester');
   const [newJobTitle, setNewJobTitle] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newMobile, setNewMobile] = useState('');
+  const [newEmployeeNumber, setNewEmployeeNumber] = useState('');
 
   // Edit form
   const [editName, setEditName] = useState('');
@@ -57,6 +60,12 @@ export default function AdminUsers() {
   const [editJobTitle, setEditJobTitle] = useState('');
   const [editDeptId, setEditDeptId] = useState('');
   const [editActive, setEditActive] = useState(true);
+  const [editPhone, setEditPhone] = useState('');
+  const [editMobile, setEditMobile] = useState('');
+  const [editCity, setEditCity] = useState('');
+  const [editCountry, setEditCountry] = useState('');
+  const [editEmployeeNumber, setEditEmployeeNumber] = useState('');
+  const [editManagerId, setEditManagerId] = useState('');
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
@@ -113,14 +122,20 @@ export default function AdminUsers() {
     setCreating(true);
     try {
       const res = await supabase.functions.invoke('create-user', {
-        body: { action: 'create', email: newEmail.trim(), password: newPassword, full_name: newName.trim(), role: newRole, job_title: newJobTitle.trim() || null },
+        body: {
+          action: 'create', email: newEmail.trim(), password: newPassword, full_name: newName.trim(),
+          role: newRole, job_title: newJobTitle.trim() || null,
+          phone: newPhone.trim() || null, mobile: newMobile.trim() || null,
+          employee_number: newEmployeeNumber.trim() || null,
+        },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
       toast({ title: 'تم إنشاء المستخدم بنجاح ✅' });
       setOpen(false);
-      setNewName(''); setNewEmail(''); setNewPassword(''); setNewRole('requester'); setNewJobTitle('');
+      setNewName(''); setNewEmail(''); setNewPassword(''); setNewRole('requester');
+      setNewJobTitle(''); setNewPhone(''); setNewMobile(''); setNewEmployeeNumber('');
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
       toast({ title: 'خطأ في إنشاء المستخدم', description: sanitizeError(err), variant: 'destructive' });
@@ -136,6 +151,12 @@ export default function AdminUsers() {
     setEditJobTitle(user.job_title || '');
     setEditDeptId(user.department_id || '');
     setEditActive(user.is_active !== false);
+    setEditPhone(user.phone || '');
+    setEditMobile(user.mobile || '');
+    setEditCity(user.city || '');
+    setEditCountry(user.country || '');
+    setEditEmployeeNumber(user.employee_number || '');
+    setEditManagerId(user.manager_id || '');
     setEditOpen(true);
   };
 
@@ -152,6 +173,12 @@ export default function AdminUsers() {
           job_title: editJobTitle.trim() || null,
           department_id: editDeptId || null,
           is_active: editActive,
+          phone: editPhone.trim() || null,
+          mobile: editMobile.trim() || null,
+          city: editCity.trim() || null,
+          country: editCountry.trim() || null,
+          employee_number: editEmployeeNumber.trim() || null,
+          manager_id: editManagerId || null,
         },
       });
       if (res.error) throw new Error(res.error.message);
@@ -245,7 +272,7 @@ export default function AdminUsers() {
                     مستخدم جديد
                   </Button>
                 </DialogTrigger>
-                <DialogContent dir="rtl">
+                <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
                   <DialogHeader><DialogTitle>إنشاء مستخدم جديد</DialogTitle></DialogHeader>
                   <form onSubmit={handleCreateUser} className="space-y-4 mt-2">
                     <div className="grid grid-cols-2 gap-3">
@@ -254,11 +281,18 @@ export default function AdminUsers() {
                     </div>
                     <div><Label>البريد الإلكتروني *</Label><Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" /></div>
                     <div><Label>كلمة المرور *</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6 أحرف على الأقل" required dir="ltr" minLength={6} /></div>
-                    <div><Label>الدور</Label>
-                      <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}</SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>رقم الهاتف</Label><Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                      <div><Label>رقم الجوال</Label><Input value={newMobile} onChange={e => setNewMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>رقم الموظف</Label><Input value={newEmployeeNumber} onChange={e => setNewEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                      <div><Label>الدور</Label>
+                        <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <Button type="submit" className="w-full" disabled={creating}>
                       {creating && <Loader2 className="h-4 w-4 animate-spin ml-2" />}إنشاء المستخدم
@@ -301,7 +335,11 @@ export default function AdminUsers() {
                                 {!u.is_active && <Badge variant="destructive" className="text-[10px]">معطّل</Badge>}
                               </div>
                               <p className="text-sm text-muted-foreground truncate">{u.email}</p>
-                              {u.job_title && <p className="text-xs text-muted-foreground/70">{u.job_title}</p>}
+                              <div className="flex items-center gap-3 flex-wrap">
+                                {u.job_title && <p className="text-xs text-muted-foreground/70">{u.job_title}</p>}
+                                {u.employee_number && <span className="text-[10px] text-muted-foreground/50">#{u.employee_number}</span>}
+                                {u.mobile && <span className="text-[10px] text-muted-foreground/50">📱 {u.mobile}</span>}
+                              </div>
                               {u.role === 'developer' && devAccessForUser(u.id).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {devAccessForUser(u.id).map((a: any) => (
@@ -359,21 +397,47 @@ export default function AdminUsers() {
 
           {/* Edit User Dialog */}
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogContent dir="rtl">
+            <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
               <DialogHeader><DialogTitle>تعديل المستخدم</DialogTitle></DialogHeader>
               {editUser && (
                 <div className="space-y-4 mt-2">
-                  <div><Label>الاسم الكامل</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
-                  <div><Label>البريد الإلكتروني</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
-                  <div><Label>الوظيفة</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder="مثال: مهندس برمجيات" /></div>
-                  <div><Label>القسم</Label>
-                    <Select value={editDeptId} onValueChange={setEditDeptId}>
-                      <SelectTrigger><SelectValue placeholder="بدون قسم" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">بدون قسم</SelectItem>
-                        {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>الاسم الكامل</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
+                    <div><Label>البريد الإلكتروني</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>الوظيفة</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder="مهندس برمجيات" /></div>
+                    <div><Label>رقم الموظف</Label><Input value={editEmployeeNumber} onChange={e => setEditEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>رقم الهاتف</Label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                    <div><Label>رقم الجوال</Label><Input value={editMobile} onChange={e => setEditMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>المدينة</Label><Input value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="الرياض" /></div>
+                    <div><Label>الدولة</Label><Input value={editCountry} onChange={e => setEditCountry(e.target.value)} placeholder="السعودية" /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>القسم</Label>
+                      <Select value={editDeptId} onValueChange={setEditDeptId}>
+                        <SelectTrigger><SelectValue placeholder="بدون قسم" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">بدون قسم</SelectItem>
+                          {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div><Label>المدير المباشر</Label>
+                      <Select value={editManagerId} onValueChange={setEditManagerId}>
+                        <SelectTrigger><SelectValue placeholder="بدون مدير" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">بدون مدير</SelectItem>
+                          {users.filter((u: any) => u.id !== editUser?.id).map((u: any) => (
+                            <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>الحساب نشط</Label>

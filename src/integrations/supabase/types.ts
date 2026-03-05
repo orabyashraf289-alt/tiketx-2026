@@ -463,35 +463,77 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string
           department_id: string | null
           email: string
+          employee_number: string | null
           full_name: string
+          hire_date: string | null
           id: string
           is_active: boolean
           job_title: string | null
+          manager_id: string | null
+          mobile: string | null
+          notify_approval: boolean | null
+          notify_comment_added: boolean | null
+          notify_sla_breach: boolean | null
+          notify_status_changed: boolean | null
+          notify_ticket_assigned: boolean | null
+          notify_ticket_created: boolean | null
+          notify_weekly_report: boolean | null
+          phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           department_id?: string | null
           email?: string
+          employee_number?: string | null
           full_name?: string
+          hire_date?: string | null
           id: string
           is_active?: boolean
           job_title?: string | null
+          manager_id?: string | null
+          mobile?: string | null
+          notify_approval?: boolean | null
+          notify_comment_added?: boolean | null
+          notify_sla_breach?: boolean | null
+          notify_status_changed?: boolean | null
+          notify_ticket_assigned?: boolean | null
+          notify_ticket_created?: boolean | null
+          notify_weekly_report?: boolean | null
+          phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           department_id?: string | null
           email?: string
+          employee_number?: string | null
           full_name?: string
+          hire_date?: string | null
           id?: string
           is_active?: boolean
           job_title?: string | null
+          manager_id?: string | null
+          mobile?: string | null
+          notify_approval?: boolean | null
+          notify_comment_added?: boolean | null
+          notify_sla_breach?: boolean | null
+          notify_status_changed?: boolean | null
+          notify_ticket_assigned?: boolean | null
+          notify_ticket_created?: boolean | null
+          notify_weekly_report?: boolean | null
+          phone?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -500,6 +542,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
