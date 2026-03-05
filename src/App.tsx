@@ -29,6 +29,8 @@ import AdminExternalAPI from './pages/AdminExternalAPI';
 import AdminSettings from './pages/AdminSettings';
 import CustomerPortal from './pages/CustomerPortal';
 import DeveloperDashboard from './pages/DeveloperDashboard';
+import CSATAnalytics from './pages/CSATAnalytics';
+import SLACompliance from './pages/SLACompliance';
 import NotFound from './pages/NotFound';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
 import { Loader2 } from 'lucide-react';
@@ -112,6 +114,8 @@ const App = () => (
                 <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
                 <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+                <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
+                <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>
