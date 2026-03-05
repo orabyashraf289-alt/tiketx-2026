@@ -19,6 +19,8 @@ import {
   Columns,
   Star,
   ShieldAlert,
+  Webhook,
+  Zap,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,6 +80,8 @@ const adminItems = [
   { title: 'تحليلات CSAT', url: '/admin/csat-analytics', icon: Star },
   { title: 'تقرير SLA', url: '/admin/sla-compliance', icon: ShieldAlert },
   { title: 'واجهة API', url: '/admin/external-api', icon: Globe },
+  { title: 'Webhooks', url: '/admin/webhooks', icon: Webhook },
+  { title: 'الأتمتة', url: '/admin/automation', icon: Zap },
   { title: 'إعدادات النظام', url: '/admin/settings', icon: Settings },
 ];
 

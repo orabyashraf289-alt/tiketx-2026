@@ -129,6 +129,99 @@ export type Database = {
           },
         ]
       }
+      automation_logs: {
+        Row: {
+          actions_executed: Json | null
+          created_at: string
+          error_message: string | null
+          id: string
+          rule_id: string
+          success: boolean
+          ticket_id: string | null
+          trigger_event: string
+        }
+        Insert: {
+          actions_executed?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          rule_id: string
+          success?: boolean
+          ticket_id?: string | null
+          trigger_event: string
+        }
+        Update: {
+          actions_executed?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          rule_id?: string
+          success?: boolean
+          ticket_id?: string | null
+          trigger_event?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_logs_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          created_by: string
+          description: string | null
+          execution_count: number
+          id: string
+          is_active: boolean
+          last_executed_at: string | null
+          name: string
+          trigger_event: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          name: string
+          trigger_event: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          name?: string
+          trigger_event?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       canned_responses: {
         Row: {
           category: string
@@ -1039,6 +1132,92 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      webhook_endpoints: {
+        Row: {
+          created_at: string
+          created_by: string
+          events: string[]
+          failure_count: number
+          headers: Json | null
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          name: string
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          events?: string[]
+          failure_count?: number
+          headers?: Json | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          name: string
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          events?: string[]
+          failure_count?: number
+          headers?: Json | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          name?: string
+          secret?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      webhook_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json | null
+          response_body: string | null
+          response_status: number | null
+          success: boolean
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          response_status?: number | null
+          success?: boolean
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          response_body?: string | null
+          response_status?: number | null
+          success?: boolean
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

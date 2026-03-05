@@ -26,6 +26,8 @@ import KnowledgeBase from './pages/KnowledgeBase';
 import ProfilePage from './pages/ProfilePage';
 import AgentPerformance from './pages/AgentPerformance';
 import AdminExternalAPI from './pages/AdminExternalAPI';
+import AdminWebhooks from './pages/AdminWebhooks';
+import AdminAutomation from './pages/AdminAutomation';
 import AdminSettings from './pages/AdminSettings';
 import CustomerPortal from './pages/CustomerPortal';
 import DeveloperDashboard from './pages/DeveloperDashboard';
@@ -113,6 +115,8 @@ const App = () => (
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
                 <Route path="/admin/external-api" element={<ProtectedRoute><AdminExternalAPI /></ProtectedRoute>} />
+                <Route path="/admin/webhooks" element={<ProtectedRoute><AdminWebhooks /></ProtectedRoute>} />
+                <Route path="/admin/automation" element={<ProtectedRoute><AdminAutomation /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
                 <Route path="/admin/csat-analytics" element={<ProtectedRoute><CSATAnalytics /></ProtectedRoute>} />
                 <Route path="/admin/sla-compliance" element={<ProtectedRoute><SLACompliance /></ProtectedRoute>} />
