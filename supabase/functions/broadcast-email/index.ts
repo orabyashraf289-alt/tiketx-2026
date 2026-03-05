@@ -1,11 +1,61 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+async function getEmailConfig(adminClient: any) {
+  const keys = [
+    "email_provider", "email_sender_name", "email_sender_address",
+    "smtp_host", "smtp_port", "smtp_username", "smtp_password", "smtp_encryption",
+  ];
+  const { data } = await adminClient.from("system_settings").select("key, value").in("key", keys);
+  const config: Record<string, string> = {};
+  (data || []).forEach((s: any) => { config[s.key] = s.value || ""; });
+  return {
+    provider: config.email_provider || "resend",
+    senderName: config.email_sender_name || "TicketFlow",
+    senderAddress: config.email_sender_address || "notify@ticketflow.a.com",
+    smtp: {
+      host: config.smtp_host || "",
+      port: parseInt(config.smtp_port || "587"),
+      username: config.smtp_username || "",
+      password: config.smtp_password || "",
+      tls: (config.smtp_encryption || "tls") !== "none",
+    },
+  };
+}
+
+async function sendViaResend(apiKey: string, from: string, to: string, subject: string, html: string) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ from, to: [to], subject, html }),
+  });
+  return res.ok;
+}
+
+async function sendViaSMTP(config: any, from: string, fromName: string, to: string, subject: string, html: string) {
+  try {
+    const client = new SMTPClient({
+      connection: {
+        hostname: config.host,
+        port: config.port,
+        tls: config.tls,
+        auth: { username: config.username, password: config.password },
+      },
+    });
+    await client.send({ from: `${fromName} <${from}>`, to, subject, content: "auto", html });
+    await client.close();
+    return true;
+  } catch (e) {
+    console.error("SMTP error:", e);
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -29,10 +79,7 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .single();
+      .from("user_roles").select("role").eq("user_id", caller.id).single();
     if (!roleData || roleData.role !== "admin") throw new Error("صلاحيات غير كافية");
 
     const { subject, body, target, test_email } = await req.json();
@@ -42,39 +89,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!resendApiKey) {
-      return new Response(JSON.stringify({ error: "خدمة البريد غير مهيئة (RESEND_API_KEY مفقود)" }), {
+    // Get email config
+    const emailConfig = await getEmailConfig(adminClient);
+
+    if (emailConfig.provider === "resend" && !resendApiKey) {
+      return new Response(JSON.stringify({ error: "خدمة Resend غير مهيئة (RESEND_API_KEY مفقود)" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Get sender config from system_settings
-    let senderName = "TicketFlow";
-    let senderAddress = "notify@ticketflow.a.com";
-    const { data: senderSettings } = await adminClient
-      .from("system_settings")
-      .select("key, value")
-      .in("key", ["email_sender_name", "email_sender_address"]);
-    if (senderSettings) {
-      senderSettings.forEach((s: any) => {
-        if (s.key === "email_sender_name" && s.value) senderName = s.value;
-        if (s.key === "email_sender_address" && s.value) senderAddress = s.value;
+    if (emailConfig.provider === "smtp" && !emailConfig.smtp.host) {
+      return new Response(JSON.stringify({ error: "إعدادات SMTP غير مكتملة — أدخل عنوان الخادم من صفحة الإعدادات" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // Build user list
     let users: any[] = [];
-
     if (target === "test" && test_email) {
       users = [{ email: test_email, full_name: "مستخدم اختبار" }];
     } else {
       let query = adminClient.from("profiles").select("email, full_name").eq("is_active", true);
-
       if (target && target !== "all") {
-        const { data: targetUsers } = await adminClient
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", target);
+        const { data: targetUsers } = await adminClient.from("user_roles").select("user_id").eq("role", target);
         const userIds = (targetUsers || []).map((u: any) => u.user_id);
         if (userIds.length === 0) {
           return new Response(JSON.stringify({ sent_count: 0, message: "لا يوجد مستخدمين في هذه الفئة" }), {
@@ -83,7 +119,6 @@ Deno.serve(async (req) => {
         }
         query = query.in("id", userIds);
       }
-
       const { data: fetchedUsers } = await query;
       users = fetchedUsers || [];
     }
@@ -95,7 +130,26 @@ Deno.serve(async (req) => {
     }
 
     let sentCount = 0;
-    const batchSize = 10;
+    const batchSize = emailConfig.provider === "smtp" ? 5 : 10;
+
+    // Create SMTP client once for all emails if using SMTP
+    let smtpClient: SMTPClient | null = null;
+    if (emailConfig.provider === "smtp") {
+      try {
+        smtpClient = new SMTPClient({
+          connection: {
+            hostname: emailConfig.smtp.host,
+            port: emailConfig.smtp.port,
+            tls: emailConfig.smtp.tls,
+            auth: { username: emailConfig.smtp.username, password: emailConfig.smtp.password },
+          },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: "فشل الاتصال بخادم SMTP: " + (e as Error).message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     for (let i = 0; i < users.length; i += batchSize) {
       const batch = users.slice(i, i + batchSize);
@@ -122,20 +176,33 @@ body{font-family:'Tajawal',sans-serif;background:#f5f5f5;margin:0;padding:40px 2
 <p class="greeting">مرحباً ${user.full_name || 'عزيزي المستخدم'}،</p>
 <div class="content">${body.replace(/\n/g, '<br>')}</div>
 </div>
-<div class="footer">هذا الإشعار مُرسل من نظام ${senderName}</div>
+<div class="footer">هذا الإشعار مُرسل من نظام ${emailConfig.senderName}</div>
 </div></body></html>`;
 
-          const res = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${resendApiKey}` },
-            body: JSON.stringify({
-              from: `${senderName} <${senderAddress}>`,
-              to: [user.email],
-              subject: `📢 ${subject}`,
-              html: htmlContent,
-            }),
-          });
-          if (res.ok) sentCount++;
+          let sent = false;
+          if (emailConfig.provider === "smtp" && smtpClient) {
+            try {
+              await smtpClient.send({
+                from: `${emailConfig.senderName} <${emailConfig.senderAddress}>`,
+                to: user.email,
+                subject: `📢 ${subject}`,
+                content: "auto",
+                html: htmlContent,
+              });
+              sent = true;
+            } catch (e) {
+              console.error(`SMTP send failed for ${user.email}:`, e);
+            }
+          } else if (resendApiKey) {
+            sent = await sendViaResend(
+              resendApiKey,
+              `${emailConfig.senderName} <${emailConfig.senderAddress}>`,
+              user.email,
+              `📢 ${subject}`,
+              htmlContent
+            );
+          }
+          if (sent) sentCount++;
         } catch (e) {
           console.error(`Failed to send to ${user.email}:`, e);
         }
@@ -143,7 +210,14 @@ body{font-family:'Tajawal',sans-serif;background:#f5f5f5;margin:0;padding:40px 2
       await Promise.all(promises);
     }
 
-    return new Response(JSON.stringify({ success: true, sent_count: sentCount, total: users.length }), {
+    // Close SMTP connection
+    if (smtpClient) {
+      try { await smtpClient.close(); } catch (_) { /* ignore */ }
+    }
+
+    return new Response(JSON.stringify({
+      success: true, sent_count: sentCount, total: users.length, provider: emailConfig.provider,
+    }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

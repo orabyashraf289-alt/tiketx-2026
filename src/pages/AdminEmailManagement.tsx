@@ -76,6 +76,12 @@ export default function AdminEmailManagement() {
   // Email config state
   const [senderName, setSenderName] = useState('TicketFlow');
   const [senderEmail, setSenderEmail] = useState('notify@ticketflow.a.com');
+  const [emailProvider, setEmailProvider] = useState<string>('resend');
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState('587');
+  const [smtpUsername, setSmtpUsername] = useState('');
+  const [smtpPassword, setSmtpPassword] = useState('');
+  const [smtpEncryption, setSmtpEncryption] = useState('tls');
   const [configSaving, setConfigSaving] = useState(false);
 
   // Notification toggles
@@ -102,7 +108,8 @@ export default function AdminEmailManagement() {
         .from('system_settings')
         .select('*')
         .in('key', [
-          'email_sender_name', 'email_sender_address',
+          'email_sender_name', 'email_sender_address', 'email_provider',
+          'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption',
           'notify_on_create', 'notify_on_assign', 'notify_on_status',
           'notify_on_comment', 'notify_on_sla',
         ]);
@@ -110,6 +117,12 @@ export default function AdminEmailManagement() {
         data.forEach((s: any) => {
           if (s.key === 'email_sender_name') setSenderName(s.value || 'TicketFlow');
           if (s.key === 'email_sender_address') setSenderEmail(s.value || 'notify@ticketflow.a.com');
+          if (s.key === 'email_provider') setEmailProvider(s.value || 'resend');
+          if (s.key === 'smtp_host') setSmtpHost(s.value || '');
+          if (s.key === 'smtp_port') setSmtpPort(s.value || '587');
+          if (s.key === 'smtp_username') setSmtpUsername(s.value || '');
+          if (s.key === 'smtp_password') setSmtpPassword(s.value || '');
+          if (s.key === 'smtp_encryption') setSmtpEncryption(s.value || 'tls');
           if (s.key === 'notify_on_create') setNotifyOnCreate(s.value !== 'false');
           if (s.key === 'notify_on_assign') setNotifyOnAssign(s.value !== 'false');
           if (s.key === 'notify_on_status') setNotifyOnStatus(s.value !== 'false');
@@ -150,6 +163,12 @@ export default function AdminEmailManagement() {
       const entries = [
         { key: 'email_sender_name', value: senderName },
         { key: 'email_sender_address', value: senderEmail },
+        { key: 'email_provider', value: emailProvider },
+        { key: 'smtp_host', value: smtpHost },
+        { key: 'smtp_port', value: smtpPort },
+        { key: 'smtp_username', value: smtpUsername },
+        { key: 'smtp_password', value: smtpPassword },
+        { key: 'smtp_encryption', value: smtpEncryption },
         { key: 'notify_on_create', value: String(notifyOnCreate) },
         { key: 'notify_on_assign', value: String(notifyOnAssign) },
         { key: 'notify_on_status', value: String(notifyOnStatus) },
@@ -314,10 +333,55 @@ export default function AdminEmailManagement() {
                 {/* ── Tab: Email Config ── */}
                 <TabsContent value="config">
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                    {/* Provider Selection */}
                     <Card className="rounded-2xl">
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />إعدادات المرسل</CardTitle>
-                        <CardDescription>تحكم في هوية المرسل التي تظهر في رسائل البريد الإلكتروني</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary" />مزوّد خدمة البريد</CardTitle>
+                        <CardDescription>اختر طريقة إرسال البريد الإلكتروني من النظام</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setEmailProvider('resend')}
+                            className={`p-4 border-2 rounded-xl text-right transition-all ${emailProvider === 'resend' ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-primary/40'}`}
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Sparkles className="h-5 w-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-foreground">Resend API</p>
+                                <p className="text-xs text-muted-foreground">خدمة بريد سحابية سريعة</p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">يستخدم مفتاح API فقط — لا حاجة لإعدادات خادم. مناسب للبدء السريع.</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEmailProvider('smtp')}
+                            className={`p-4 border-2 rounded-xl text-right transition-all ${emailProvider === 'smtp' ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:border-primary/40'}`}
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                                <Mail className="h-5 w-5 text-accent-foreground" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm text-foreground">SMTP مخصص</p>
+                                <p className="text-xs text-muted-foreground">خادم بريد خاص بك</p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Gmail, Outlook, أو أي خادم SMTP خاص. تحكم كامل في الإرسال.</p>
+                          </button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Sender Identity */}
+                    <Card className="rounded-2xl">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5 text-primary" />هوية المرسل</CardTitle>
+                        <CardDescription>الاسم والبريد الذي يظهر للمستلم</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -329,47 +393,118 @@ export default function AdminEmailManagement() {
                           <div className="space-y-2">
                             <Label>عنوان المرسل</Label>
                             <Input value={senderEmail} onChange={e => setSenderEmail(e.target.value)} placeholder="notify@domain.com" />
-                            <p className="text-xs text-muted-foreground">يتطلب تهيئة نطاق مخصص</p>
+                            <p className="text-xs text-muted-foreground">{emailProvider === 'smtp' ? 'يجب أن يتطابق مع حساب SMTP' : 'يتطلب تهيئة نطاق في Resend'}</p>
                           </div>
                         </div>
-
-                        <div className="border rounded-xl p-4 bg-muted/20">
-                          <div className="flex items-start gap-2">
-                            <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-                            <div className="text-xs text-muted-foreground">
-                              <p className="font-medium text-foreground mb-1">ملاحظة</p>
-                              <p>لإرسال رسائل من نطاقك الخاص، يجب إعداد سجلات DNS وتفعيل النطاق في إعدادات البريد.</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Test Email */}
-                        <div className="border rounded-xl p-4 space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-primary" />
-                            إرسال بريد تجريبي
-                          </h3>
-                          <div className="flex gap-2">
-                            <Input
-                              value={testEmail}
-                              onChange={e => setTestEmail(e.target.value)}
-                              placeholder="test@example.com"
-                              type="email"
-                              className="flex-1"
-                            />
-                            <Button onClick={sendTestEmail} disabled={sendingTest} size="sm" variant="outline">
-                              {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                              <span className="mr-1">إرسال</span>
-                            </Button>
-                          </div>
-                        </div>
-
-                        <Button onClick={saveEmailConfig} disabled={configSaving} className="w-full">
-                          {configSaving && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                          حفظ الإعدادات
-                        </Button>
                       </CardContent>
                     </Card>
+
+                    {/* SMTP Settings */}
+                    {emailProvider === 'smtp' && (
+                      <Card className="rounded-2xl border-primary/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" />إعدادات خادم SMTP</CardTitle>
+                          <CardDescription>أدخل بيانات خادم البريد الصادر</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>عنوان الخادم (Host)</Label>
+                              <Input value={smtpHost} onChange={e => setSmtpHost(e.target.value)} placeholder="smtp.gmail.com" dir="ltr" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>المنفذ (Port)</Label>
+                              <Input value={smtpPort} onChange={e => setSmtpPort(e.target.value)} placeholder="587" dir="ltr" type="number" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>اسم المستخدم</Label>
+                              <Input value={smtpUsername} onChange={e => setSmtpUsername(e.target.value)} placeholder="user@gmail.com" dir="ltr" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>كلمة المرور</Label>
+                              <Input value={smtpPassword} onChange={e => setSmtpPassword(e.target.value)} placeholder="••••••••" type="password" dir="ltr" />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>التشفير</Label>
+                            <Select value={smtpEncryption} onValueChange={setSmtpEncryption}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="tls">TLS (المنفذ 587 - موصى به)</SelectItem>
+                                <SelectItem value="ssl">SSL (المنفذ 465)</SelectItem>
+                                <SelectItem value="none">بدون تشفير (المنفذ 25)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="border rounded-xl p-4 bg-muted/20">
+                            <div className="flex items-start gap-2">
+                              <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                              <div className="text-xs text-muted-foreground">
+                                <p className="font-medium text-foreground mb-1">ملاحظات مهمة</p>
+                                <ul className="space-y-1 list-disc mr-4">
+                                  <li>لـ Gmail: استخدم كلمة مرور التطبيقات (App Password) وليس كلمة المرور العادية</li>
+                                  <li>لـ Outlook/Office 365: استخدم <code className="bg-muted px-1 rounded" dir="ltr">smtp.office365.com</code> المنفذ 587</li>
+                                  <li>تأكد من تفعيل الوصول لتطبيقات أقل أماناً أو إنشاء كلمة مرور تطبيقات</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Resend note */}
+                    {emailProvider === 'resend' && (
+                      <Card className="rounded-2xl border-primary/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />إعدادات Resend API</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="border rounded-xl p-4 bg-primary/5">
+                            <div className="flex items-start gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <div className="text-xs text-muted-foreground">
+                                <p className="font-medium text-foreground mb-1">مفتاح API مُعدّ</p>
+                                <p>مفتاح Resend API مُخزّن بشكل آمن في إعدادات النظام. لتغييره، تواصل مع مسؤول النظام.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Test Email */}
+                    <Card className="rounded-2xl">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Send className="h-5 w-5 text-primary" />اختبار الاتصال</CardTitle>
+                        <CardDescription>أرسل رسالة تجريبية للتأكد من صحة الإعدادات</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            value={testEmail}
+                            onChange={e => setTestEmail(e.target.value)}
+                            placeholder="test@example.com"
+                            type="email"
+                            className="flex-1"
+                            dir="ltr"
+                          />
+                          <Button onClick={sendTestEmail} disabled={sendingTest} variant="outline">
+                            {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                            <span className="mr-1">إرسال تجريبي</span>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Button onClick={saveEmailConfig} disabled={configSaving} className="w-full" size="lg">
+                      {configSaving && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                      حفظ جميع الإعدادات
+                    </Button>
                   </motion.div>
                 </TabsContent>
 
