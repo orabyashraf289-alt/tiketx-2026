@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useLanguage } from '@/i18n';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +40,7 @@ async function streamChat({
   });
 
   if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ error: 'خطأ غير معروف' }));
+    const err = await resp.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(err.error || `HTTP ${resp.status}`);
   }
 
@@ -94,14 +95,8 @@ async function streamChat({
   onDone();
 }
 
-const quickQuestions = [
-  'كيف أرفع تذكرة جديدة؟',
-  'ما حالة طلبي؟',
-  'كيف أعيد تعيين كلمة المرور؟',
-  'من يمكنني التواصل معه؟',
-];
-
 export function CustomerChatbot() {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -112,6 +107,13 @@ export function CustomerChatbot() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const sysSettings = useSystemSettings();
+
+  const quickQuestions = [
+    t.portal.quickQ1,
+    t.portal.quickQ2,
+    t.portal.quickQ3,
+    t.portal.quickQ4,
+  ];
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -151,7 +153,7 @@ export function CustomerChatbot() {
     } catch (e: any) {
       if (e.name !== 'AbortError') {
         console.error('Customer AI chat error:', e);
-        toast({ title: 'خطأ', description: e.message, variant: 'destructive' });
+        toast({ title: t.common.error, description: e.message, variant: 'destructive' });
       }
       setIsLoading(false);
     }
@@ -169,7 +171,7 @@ export function CustomerChatbot() {
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-6 left-6 z-50"
+        className="fixed bottom-6 ltr:right-6 rtl:left-6 z-50"
       >
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -181,7 +183,7 @@ export function CustomerChatbot() {
             size="icon"
           >
             <MessageCircle className="h-6 w-6" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-background animate-pulse" />
+            <span className="absolute -top-1 ltr:-left-1 rtl:-right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-background animate-pulse" />
           </Button>
         </motion.div>
       </motion.div>
@@ -194,7 +196,7 @@ export function CustomerChatbot() {
         initial={{ opacity: 0, y: 50, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 50, scale: 0.9 }}
-        className={`fixed z-50 ${isExpanded ? 'inset-4' : 'bottom-6 left-6 w-[400px] h-[560px]'} transition-all duration-300`}
+        className={`fixed z-50 ${isExpanded ? 'inset-4' : 'bottom-6 ltr:right-6 rtl:left-6 w-[400px] h-[560px]'} transition-all duration-300`}
       >
         <Card className="h-full flex flex-col rounded-2xl border-border/50 shadow-2xl bg-card/95 backdrop-blur-xl overflow-hidden">
           {/* Header */}
@@ -205,12 +207,12 @@ export function CustomerChatbot() {
                   <Bot className="h-5 w-5 text-accent-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm">المساعد الذكي</CardTitle>
-                  <p className="text-[10px] text-muted-foreground">{sysSettings.system_name} — متصل</p>
+                  <CardTitle className="text-sm">{t.portal.chatbotTitle}</CardTitle>
+                  <p className="text-[10px] text-muted-foreground">{sysSettings.system_name} — {t.portal.chatbotConnected}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate('/tickets/new')} title="إنشاء تذكرة">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate('/tickets/new')} title={t.portal.chatbotCreateTicket}>
                   <TicketPlus className="h-3.5 w-3.5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsExpanded(!isExpanded)}>
@@ -231,9 +233,9 @@ export function CustomerChatbot() {
                   <div className="h-14 w-14 rounded-full gradient-accent flex items-center justify-center">
                     <Sparkles className="h-7 w-7 text-accent-foreground" />
                   </div>
-                  <p className="text-sm font-bold">مرحباً! كيف يمكنني مساعدتك؟</p>
+                  <p className="text-sm font-bold">{t.portal.chatbotWelcome}</p>
                   <p className="text-xs text-muted-foreground max-w-[280px]">
-                    أنا المساعد الذكي لـ {sysSettings.system_name}. يمكنني الإجابة على استفساراتك ومساعدتك في حل المشكلات.
+                    {t.portal.chatbotDesc.replace('{name}', sysSettings.system_name)}
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center mt-2">
                     {quickQuestions.map(q => (
@@ -290,7 +292,7 @@ export function CustomerChatbot() {
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="اكتب استفسارك هنا..."
+                  placeholder={t.portal.chatbotPlaceholder}
                   className="min-h-[40px] max-h-[100px] resize-none rounded-xl text-sm"
                   rows={1}
                 />

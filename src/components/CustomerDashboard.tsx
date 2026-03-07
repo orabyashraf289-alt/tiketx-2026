@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, statusLabels, priorityLabels, Ticket, fetchMyRatings } from '@/lib/api';
+import { fetchTickets, Ticket, fetchMyRatings } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,13 +12,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format, subDays, isWithinInterval, startOfDay, endOfDay, differenceInHours, parseISO } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import {
   CalendarIcon, Ticket as TicketIcon, Clock, CheckCircle2, AlertTriangle, TrendingUp,
-  BarChart3, Timer, Loader2, ArrowUpRight, ArrowDownRight, Minus, Star
+  BarChart3, Timer, Loader2, Star
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
-  PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer, Legend, AreaChart, Area
+  PieChart, Pie, Cell, ResponsiveContainer, Legend, AreaChart, Area
 } from 'recharts';
 import { motion } from 'framer-motion';
 
@@ -43,6 +46,9 @@ interface CustomerDashboardProps {
 
 export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
   const { user } = useAuth();
+  const { t, lang } = useLanguage();
+  const { statusLabels, priorityLabels } = useLocalizedLabels();
+  const dateLocale = lang === 'ar' ? ar : enUS;
   const [dateFrom, setDateFrom] = useState<Date | undefined>(subDays(new Date(), 30));
   const [dateTo, setDateTo] = useState<Date | undefined>(new Date());
 
@@ -64,8 +70,8 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
 
   const filtered = useMemo(() => {
     if (!dateFrom && !dateTo) return tickets;
-    return tickets.filter(t => {
-      const d = parseISO(t.created_at);
+    return tickets.filter(t_item => {
+      const d = parseISO(t_item.created_at);
       if (dateFrom && dateTo) return isWithinInterval(d, { start: startOfDay(dateFrom), end: endOfDay(dateTo) });
       if (dateFrom) return d >= startOfDay(dateFrom);
       if (dateTo) return d <= endOfDay(dateTo);
@@ -75,16 +81,16 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
 
   // KPIs
   const total = filtered.length;
-  const active = filtered.filter(t => !['closed', 'resolved'].includes(t.status)).length;
-  const resolved = filtered.filter(t => t.status === 'resolved').length;
-  const closed = filtered.filter(t => t.status === 'closed').length;
-  const urgent = filtered.filter(t => t.priority === 'urgent' || t.priority === 'high').length;
+  const active = filtered.filter(t_item => !['closed', 'resolved'].includes(t_item.status)).length;
+  const resolved = filtered.filter(t_item => t_item.status === 'resolved').length;
+  const closed = filtered.filter(t_item => t_item.status === 'closed').length;
+  const urgent = filtered.filter(t_item => t_item.priority === 'urgent' || t_item.priority === 'high').length;
 
   const avgResolutionHours = useMemo(() => {
-    const resolvedTickets = filtered.filter(t => t.resolved_at);
+    const resolvedTickets = filtered.filter(t_item => t_item.resolved_at);
     if (resolvedTickets.length === 0) return 0;
-    const totalHours = resolvedTickets.reduce((sum, t) => {
-      return sum + differenceInHours(parseISO(t.resolved_at!), parseISO(t.created_at));
+    const totalHours = resolvedTickets.reduce((sum, t_item) => {
+      return sum + differenceInHours(parseISO(t_item.resolved_at!), parseISO(t_item.created_at));
     }, 0);
     return Math.round(totalHours / resolvedTickets.length);
   }, [filtered]);
@@ -92,35 +98,35 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
   // Status distribution
   const statusData = useMemo(() => {
     const counts: Record<string, number> = {};
-    filtered.forEach(t => { counts[t.status] = (counts[t.status] || 0) + 1; });
+    filtered.forEach(t_item => { counts[t_item.status] = (counts[t_item.status] || 0) + 1; });
     return Object.entries(counts).map(([status, count]) => ({
       name: statusLabels[status as keyof typeof statusLabels] || status,
       value: count,
       fill: STATUS_COLORS[status] || 'hsl(220, 9%, 46%)',
     }));
-  }, [filtered]);
+  }, [filtered, statusLabels]);
 
   // Priority distribution
   const priorityData = useMemo(() => {
     const counts: Record<string, number> = {};
-    filtered.forEach(t => { counts[t.priority] = (counts[t.priority] || 0) + 1; });
+    filtered.forEach(t_item => { counts[t_item.priority] = (counts[t_item.priority] || 0) + 1; });
     return Object.entries(counts).map(([priority, count]) => ({
       name: priorityLabels[priority as keyof typeof priorityLabels] || priority,
       value: count,
       fill: PRIORITY_COLORS[priority] || 'hsl(220, 9%, 46%)',
     }));
-  }, [filtered]);
+  }, [filtered, priorityLabels]);
 
   // Timeline (tickets per day)
   const timelineData = useMemo(() => {
     const days: Record<string, { created: number; resolved: number }> = {};
-    filtered.forEach(t => {
-      const day = format(parseISO(t.created_at), 'MM/dd');
+    filtered.forEach(t_item => {
+      const day = format(parseISO(t_item.created_at), 'MM/dd');
       if (!days[day]) days[day] = { created: 0, resolved: 0 };
       days[day].created++;
     });
-    filtered.filter(t => t.resolved_at).forEach(t => {
-      const day = format(parseISO(t.resolved_at!), 'MM/dd');
+    filtered.filter(t_item => t_item.resolved_at).forEach(t_item => {
+      const day = format(parseISO(t_item.resolved_at!), 'MM/dd');
       if (!days[day]) days[day] = { created: 0, resolved: 0 };
       days[day].resolved++;
     });
@@ -136,9 +142,9 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
   );
 
   const presets = [
-    { label: 'آخر 7 أيام', days: 7 },
-    { label: 'آخر 30 يوم', days: 30 },
-    { label: 'آخر 90 يوم', days: 90 },
+    { label: t.portal.last7Days, days: 7 },
+    { label: t.portal.last30Days, days: 30 },
+    { label: t.portal.last90Days, days: 90 },
   ];
 
   if (isLoading) {
@@ -154,8 +160,8 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
       {/* Header & Date Filter */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">لوحة المتابعة</h1>
-          <p className="text-sm text-muted-foreground mt-1">نظرة شاملة على جميع تذاكرك</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.portal.dashboardTitle}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t.portal.dashboardSubtitle}</p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -175,7 +181,7 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <CalendarIcon className="h-3.5 w-3.5" />
-                {dateFrom ? format(dateFrom, 'dd/MM/yyyy') : 'من'}
+                {dateFrom ? format(dateFrom, 'dd/MM/yyyy') : t.common.from}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -183,13 +189,13 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
             </PopoverContent>
           </Popover>
 
-          <span className="text-muted-foreground text-xs">إلى</span>
+          <span className="text-muted-foreground text-xs">{t.common.to}</span>
 
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
                 <CalendarIcon className="h-3.5 w-3.5" />
-                {dateTo ? format(dateTo, 'dd/MM/yyyy') : 'إلى'}
+                {dateTo ? format(dateTo, 'dd/MM/yyyy') : t.common.to}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -201,12 +207,12 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard title="إجمالي التذاكر" value={total} icon={<TicketIcon className="h-5 w-5" />} color="text-primary" bgColor="bg-primary/10" />
-        <KpiCard title="نشطة" value={active} icon={<Clock className="h-5 w-5" />} color="text-amber-600 dark:text-amber-400" bgColor="bg-amber-500/10" />
-        <KpiCard title="محلولة" value={resolved} icon={<CheckCircle2 className="h-5 w-5" />} color="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-500/10" />
-        <KpiCard title="مغلقة" value={closed} icon={<CheckCircle2 className="h-5 w-5" />} color="text-muted-foreground" bgColor="bg-muted" />
-        <KpiCard title="عالية/عاجلة" value={urgent} icon={<AlertTriangle className="h-5 w-5" />} color="text-red-600 dark:text-red-400" bgColor="bg-red-500/10" />
-        <KpiCard title="متوسط الحل (ساعة)" value={avgResolutionHours} icon={<Timer className="h-5 w-5" />} color="text-indigo-600 dark:text-indigo-400" bgColor="bg-indigo-500/10" />
+        <KpiCard title={t.portal.totalTickets} value={total} icon={<TicketIcon className="h-5 w-5" />} color="text-primary" bgColor="bg-primary/10" />
+        <KpiCard title={t.portal.active} value={active} icon={<Clock className="h-5 w-5" />} color="text-amber-600 dark:text-amber-400" bgColor="bg-amber-500/10" />
+        <KpiCard title={t.portal.resolvedLabel} value={resolved} icon={<CheckCircle2 className="h-5 w-5" />} color="text-emerald-600 dark:text-emerald-400" bgColor="bg-emerald-500/10" />
+        <KpiCard title={t.portal.closed} value={closed} icon={<CheckCircle2 className="h-5 w-5" />} color="text-muted-foreground" bgColor="bg-muted" />
+        <KpiCard title={t.portal.highUrgent} value={urgent} icon={<AlertTriangle className="h-5 w-5" />} color="text-red-600 dark:text-red-400" bgColor="bg-red-500/10" />
+        <KpiCard title={t.portal.avgResolutionHours} value={avgResolutionHours} icon={<Timer className="h-5 w-5" />} color="text-indigo-600 dark:text-indigo-400" bgColor="bg-indigo-500/10" />
       </div>
 
       {/* Charts Row */}
@@ -216,12 +222,12 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              حركة التذاكر
+              {t.portal.ticketTrends}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {timelineData.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">لا توجد بيانات في هذه الفترة</p>
+              <p className="text-sm text-muted-foreground text-center py-10">{t.portal.noDataPeriod}</p>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <AreaChart data={timelineData}>
@@ -240,8 +246,8 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
                   <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                   <ReTooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid hsl(var(--border))' }} />
                   <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  <Area type="monotone" dataKey="created" name="مُنشأة" stroke="hsl(217, 91%, 60%)" fill="url(#colorCreated)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="resolved" name="محلولة" stroke="hsl(142, 71%, 45%)" fill="url(#colorResolved)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="created" name={t.portal.created} stroke="hsl(217, 91%, 60%)" fill="url(#colorCreated)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="resolved" name={t.portal.resolvedLabel} stroke="hsl(142, 71%, 45%)" fill="url(#colorResolved)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -253,12 +259,12 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-primary" />
-              توزيع الحالات
+              {t.portal.statusDistribution}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {statusData.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">لا توجد بيانات</p>
+              <p className="text-sm text-muted-foreground text-center py-10">{t.portal.noData}</p>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -280,12 +286,12 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-primary" />
-              توزيع الأولويات
+              {t.portal.priorityDistribution}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {priorityData.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">لا توجد بيانات</p>
+              <p className="text-sm text-muted-foreground text-center py-10">{t.portal.noData}</p>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={priorityData} layout="vertical">
@@ -293,7 +299,7 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
                   <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={60} />
                   <ReTooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid hsl(var(--border))' }} />
-                  <Bar dataKey="value" name="العدد" radius={[0, 6, 6, 0]}>
+                  <Bar dataKey="value" name={t.portal.count} radius={[0, 6, 6, 0]}>
                     {priorityData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Bar>
                 </BarChart>
@@ -307,12 +313,12 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Clock className="h-4 w-4 text-primary" />
-              أحدث التذاكر
+              {t.portal.recentTickets}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {recentTickets.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-10">لا توجد تذاكر</p>
+              <p className="text-sm text-muted-foreground text-center py-10">{t.portal.noTickets}</p>
             ) : (
               <div className="divide-y divide-border">
                 {recentTickets.map((ticket, i) => (
@@ -337,7 +343,7 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
                       <p className="text-sm font-medium text-foreground truncate">{ticket.title}</p>
                     </div>
                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {format(parseISO(ticket.created_at), 'dd MMM', { locale: ar })}
+                      {format(parseISO(ticket.created_at), 'dd MMM', { locale: dateLocale })}
                     </span>
                   </motion.div>
                 ))}
@@ -352,7 +358,7 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <Star className="h-4 w-4 text-amber-500" />
-            تقييم رضا العملاء (CSAT)
+            {t.portal.csatTitle}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -364,7 +370,7 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
                   <Star key={s} className={cn("h-4 w-4", s <= Math.round(avgRating) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
                 ))}
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">من 5</p>
+              <p className="text-[11px] text-muted-foreground mt-1">{t.portal.outOf5}</p>
             </div>
             <div className="flex-1 space-y-1.5">
               {[5, 4, 3, 2, 1].map(star => {
@@ -377,14 +383,14 @@ export function CustomerDashboard({ onTicketClick }: CustomerDashboardProps) {
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-[10px] text-muted-foreground w-5 text-left">{count}</span>
+                    <span className="text-[10px] text-muted-foreground w-5 ltr:text-left rtl:text-right">{count}</span>
                   </div>
                 );
               })}
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-foreground">{myRatings.length}</p>
-              <p className="text-[11px] text-muted-foreground">تقييم</p>
+              <p className="text-[11px] text-muted-foreground">{t.portal.ratingsCount}</p>
             </div>
           </div>
         </CardContent>
