@@ -43,6 +43,38 @@ const ar = {
     fromDate: 'من تاريخ',
     toDate: 'إلى تاريخ',
     saveChanges: 'حفظ التغييرات',
+    create: 'إنشاء',
+    update: 'تحديث',
+    name: 'الاسم',
+    description: 'الوصف',
+    active: 'نشط',
+    inactive: 'غير نشط',
+    status: 'الحالة',
+    type: 'النوع',
+    date: 'التاريخ',
+    noData: 'لا توجد بيانات',
+    reset: 'إعادة ضبط',
+    upload: 'رفع',
+    preview: 'معاينة',
+    required: 'مطلوب',
+    optional: 'اختياري',
+    enabled: 'مفعّل',
+    disabled: 'معطّل',
+    minutes: 'دقائق',
+    hours: 'ساعات',
+    today: 'اليوم',
+    print: 'طباعة',
+    total: 'الإجمالي',
+    average: 'المتوسط',
+    count: 'العدد',
+    percentage: 'النسبة',
+    filter: 'تصفية',
+    clear: 'مسح',
+    apply: 'تطبيق',
+    select: 'اختر',
+    none: 'بدون',
+    view: 'عرض',
+    manage: 'إدارة',
   },
 
   // Auth
@@ -199,7 +231,6 @@ const ar = {
       timeline: 'الأحداث',
       comments: 'التعليقات',
     },
-    // Inbox-specific
     searchPlaceholder: 'بحث بالعنوان أو الرقم أو الكود...',
     allStatuses: 'كل الحالات',
     allPriorities: 'كل الأولويات',
@@ -212,7 +243,6 @@ const ar = {
     byService: 'حسب الخدمة',
     noDepartment: 'بدون قسم',
     noService: 'بدون خدمة',
-    // Detail page
     ticketLabel: 'تذكرة',
     resolutionSummary: 'ملخص الحل',
     conversation: 'المحادثة',
@@ -263,7 +293,6 @@ const ar = {
     performed: 'قام بـ',
     fromLabel: 'من',
     toLabel: 'إلى',
-    // Portal detail
     ticketDetails: 'تفاصيل التذكرة',
     theCode: 'الكود',
     theTitle: 'العنوان',
@@ -288,7 +317,6 @@ const ar = {
     ratingError: 'حدث خطأ أثناء إرسال التقييم',
     messageSent: 'تم إرسال الرسالة',
     statusChangedTo: 'تم تغيير حالة التذكرة',
-    // Stats
     totalTickets: 'إجمالي التذاكر',
     active: 'نشطة',
     resolvedLabel: 'محلولة',
@@ -314,7 +342,6 @@ const ar = {
     selectPriority: 'اختر الأولوية',
     submitTicket: 'إرسال التذكرة',
     ticketCreated: 'تم إنشاء التذكرة بنجاح 🎉',
-    // Wizard step labels
     descriptionStep: 'الوصف',
     serviceStep: 'الخدمة',
     attachmentsStep: 'المرفقات',
@@ -339,7 +366,6 @@ const ar = {
     fieldRequired: 'مطلوب',
     selectFieldPlaceholder: 'اختر',
     requesterLabel: 'مقدّم الطلب',
-    // Preview
     previewTitle: 'العنوان',
     previewDescription: 'الوصف',
     previewPriority: 'الأولوية:',
@@ -366,7 +392,6 @@ const ar = {
     active: 'نشطة',
     resolvedLabel: 'محلولة',
     all: 'الكل',
-    // Dashboard
     dashboardTitle: 'لوحة المتابعة',
     dashboardSubtitle: 'نظرة شاملة على جميع تذاكرك',
     closed: 'مغلقة',
@@ -386,7 +411,6 @@ const ar = {
     last7Days: 'آخر 7 أيام',
     last30Days: 'آخر 30 يوم',
     last90Days: 'آخر 90 يوم',
-    // Ticket Detail
     ticketDetails: 'تفاصيل التذكرة',
     theCode: 'الكود',
     theTitle: 'العنوان',
@@ -412,7 +436,6 @@ const ar = {
     ratingError: 'حدث خطأ أثناء إرسال التقييم',
     imageAttachment: 'صورة مرفقة',
     fileAttachment: 'ملف مرفق',
-    // Wizard
     selectSystem: 'اختر النظام',
     selectModule: 'اختر الموديول / الخدمة',
     selectScreen: 'اختر الشاشة',
@@ -427,7 +450,6 @@ const ar = {
     analyzing: 'جاري التحليل...',
     suggestAuto: 'اقترح تلقائياً',
     applySuggestion: 'تطبيق الاقتراح',
-    // Chatbot
     chatbotTitle: 'المساعد الذكي',
     chatbotConnected: 'متصل',
     chatbotCreateTicket: 'إنشاء تذكرة',
@@ -449,7 +471,6 @@ const ar = {
     developer: 'مطوّر',
   },
 
-  // Role labels (used in UI badges)
   roleLabels: {
     admin: 'مشرف',
     agent: 'دعم فني',
@@ -485,7 +506,6 @@ const ar = {
     hireDate: 'تاريخ الانضمام',
     notificationPreferences: 'تفضيلات الإشعارات',
     preferredLanguage: 'اللغة المفضلة',
-    // Tabs
     infoTab: 'المعلومات',
     contactTab: 'التواصل',
     notificationsTab: 'الإشعارات',
@@ -529,11 +549,276 @@ const ar = {
     generalError: 'حدث خطأ',
   },
 
-  // Admin
+  // Admin pages
   admin: {
     departments: 'الأقسام',
     users: 'المستخدمين',
     settings: 'إعدادات النظام',
+
+    // Departments
+    deptManagement: 'إدارة الأقسام',
+    newDept: 'قسم جديد',
+    editDept: 'تعديل القسم',
+    createDept: 'إنشاء قسم جديد',
+    deptName: 'اسم القسم *',
+    deptNamePlaceholder: 'مثال: تقنية المعلومات',
+    deptDesc: 'الوصف',
+    deptDescPlaceholder: 'وصف مختصر',
+    deptCreated: 'تم إنشاء القسم',
+    deptUpdated: 'تم تحديث القسم',
+    deptDeleted: 'تم حذف القسم',
+    noDepts: 'لا توجد أقسام بعد',
+
+    // Users
+    userManagement: 'إدارة المستخدمين',
+    newUser: 'مستخدم جديد',
+    createNewUser: 'إنشاء مستخدم جديد',
+    createUser: 'إنشاء المستخدم',
+    editUser: 'تعديل المستخدم',
+    updateUser: 'تحديث المستخدم',
+    deleteUser: 'حذف المستخدم',
+    deleteUserConfirm: 'هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+    fullName: 'الاسم الكامل *',
+    fullNamePlaceholder: 'أحمد محمد',
+    jobTitleLabel: 'الوظيفة',
+    jobTitlePlaceholder: 'مهندس برمجيات',
+    emailRequired: 'البريد الإلكتروني *',
+    passwordRequired: 'كلمة المرور *',
+    passwordMinLength: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+    phoneLabel: 'رقم الهاتف',
+    mobileLabel: 'رقم الجوال',
+    employeeNumberLabel: 'رقم الموظف',
+    roleLabel: 'الدور',
+    departmentLabel: 'القسم',
+    managerLabel: 'المدير المباشر',
+    cityLabel: 'المدينة',
+    countryLabel: 'الدولة',
+    activeStatus: 'نشط',
+    allFieldsRequired: 'جميع الحقول مطلوبة',
+    userCreated: 'تم إنشاء المستخدم بنجاح ✅',
+    userCreateError: 'خطأ في إنشاء المستخدم',
+    userUpdated: 'تم تحديث المستخدم ✅',
+    userDeleted: 'تم حذف المستخدم ✅',
+    roleUpdated: 'تم تحديث الدور',
+    noUsers: 'لا يوجد مستخدمين',
+    noName: 'بدون اسم',
+    disabled: 'معطّل',
+    searchByNameEmailJob: 'بحث بالاسم أو البريد أو الوظيفة...',
+    devPermissions: 'صلاحيات المطور',
+    devAccessTitle: 'صلاحيات الوصول للمطور',
+    systemAccess: 'الأنظمة',
+    serviceAccess: 'الخدمات',
+    clearAllAccess: 'مسح جميع القيود',
+    allAccessCleared: 'تم مسح جميع القيود - المطور يصل لكل الأنظمة الآن',
+
+    // Settings
+    systemSettings: 'إعدادات النظام',
+    systemSettingsDesc: 'تخصيص اسم النظام والشعار وألوان الثيم',
+    resetDefaults: 'إعادة ضبط',
+    saving: 'جاري الحفظ...',
+    settingsSaved: 'تم حفظ الإعدادات بنجاح',
+    settingsSaveError: 'حدث خطأ أثناء الحفظ',
+    settingsReset: 'تم إعادة ضبط الإعدادات الافتراضية',
+    systemIdentity: 'هوية النظام',
+    systemIdentityDesc: 'تخصيص اسم النظام والعنوان الفرعي',
+    systemName: 'اسم النظام',
+    systemNamePlaceholder: 'مثال: TicketFlow',
+    subtitle: 'العنوان الفرعي',
+    subtitlePlaceholder: 'مثال: HELPDESK',
+    logoTitle: 'الشعار',
+    logoDesc: 'ارفع صورة الشعار أو أدخل رابط مباشر (يفضل PNG شفاف، أقصى حجم 10MB)',
+    uploadLogo: 'رفع شعار',
+    uploading: 'جاري الرفع...',
+    uploadDirectLink: 'أو أدخل رابط مباشر:',
+    logoUploaded: 'تم رفع الشعار بنجاح',
+    logoUploadError: 'فشل رفع الشعار',
+    imageFileRequired: 'يرجى اختيار ملف صورة',
+    fileSizeLimit: 'حجم الملف يجب أن لا يتجاوز 10 ميجابايت',
+    themeColors: 'ألوان الثيم',
+    themeColorsDesc: 'اختر من القوالب الجاهزة أو خصص الألوان يدوياً',
+    presetThemes: 'قوالب جاهزة',
+    primaryColor: 'اللون الأساسي (Primary)',
+    accentColor: 'لون التمييز (Accent)',
+    livePreview: 'معاينة مباشرة',
+    primaryBtn: 'زر أساسي',
+    secondaryBtn: 'زر ثانوي',
+    outlineBtn: 'زر محدد',
+    deleteBtn: 'زر حذف',
+
+    // Theme presets
+    themeNavyBlue: 'أزرق كحلي (افتراضي)',
+    themeEmeraldGreen: 'أخضر زمردي',
+    themeRoyalPurple: 'بنفسجي ملكي',
+    themeWarmOrange: 'برتقالي دافئ',
+    themeCrimsonRed: 'أحمر عنابي',
+    themeTurquoise: 'تركوازي',
+
+    // SLA
+    slaTitle: 'إعدادات SLA',
+    slaDesc: 'تحديد أوقات الاستجابة والحل لكل مستوى أولوية',
+    firstResponseMin: 'وقت أول رد (دقيقة)',
+    resolutionMin: 'وقت الحل (دقيقة)',
+    slaUpdated: 'تم تحديث إعدادات SLA',
+    noSlaPolicies: 'لا توجد سياسات SLA',
+
+    // Service Catalog
+    serviceCatalogTitle: 'كتالوج الخدمات',
+    addService: 'إضافة خدمة',
+    addCategory: 'إضافة تصنيف',
+    newService: 'خدمة جديدة',
+    newCategory: 'تصنيف جديد',
+    selectSystem: 'اختر النظام',
+    serviceName: 'اسم الخدمة',
+    assignToDept: 'مجموعة التعيين',
+    slaPolicy: 'سياسة SLA',
+    categoryName: 'اسم التصنيف',
+    forService: 'للخدمة',
+    serviceCreated: 'تم إنشاء الخدمة',
+    serviceDeleted: 'تم حذف الخدمة',
+    categoryCreated: 'تم إنشاء التصنيف',
+    categoryDeleted: 'تم حذف التصنيف',
+    noServices: 'لا توجد خدمات',
+    services: 'خدمات',
+    categories: 'تصنيفات',
+
+    // Service Fields
+    serviceFieldsTitle: 'حقول الخدمات',
+    addField: 'إضافة حقل',
+    fieldName: 'اسم الحقل',
+    fieldType: 'نوع الحقل',
+    fieldRequired: 'مطلوب',
+    fieldOptions: 'الخيارات',
+    fieldOrder: 'الترتيب',
+    textField: 'نص',
+    textareaField: 'نص طويل',
+    selectField: 'قائمة اختيار',
+    numberField: 'رقم',
+    dateField: 'تاريخ',
+    fieldCreated: 'تم إنشاء الحقل',
+    fieldDeleted: 'تم حذف الحقل',
+
+    // Reports
+    reportsTitle: 'التقارير والتحليلات',
+    exportPDF: 'تصدير PDF',
+    exportCSV: 'تصدير CSV',
+    dateRange: 'الفترة',
+    filterByDept: 'تصفية حسب القسم',
+    filterBySystem: 'تصفية حسب النظام',
+    filterByService: 'تصفية حسب الخدمة',
+    allDepts: 'كل الأقسام',
+    allSystems: 'كل الأنظمة',
+    allServices: 'كل الخدمات',
+    ticketsByStatus: 'التذاكر حسب الحالة',
+    ticketsByPriority: 'التذاكر حسب الأولوية',
+    ticketsByDept: 'التذاكر حسب القسم',
+    monthlyTrend: 'الاتجاه الشهري',
+    avgResponseTime: 'متوسط وقت الاستجابة',
+    avgResolutionTime: 'متوسط وقت الحل',
+    ticketVolume: 'حجم التذاكر',
+    resolutionRate: 'معدل الحل',
+    datePresets: {
+      today: 'اليوم',
+      last7: 'آخر 7 أيام',
+      last30: 'آخر 30 يوم',
+      last90: 'آخر 90 يوم',
+      allTime: 'الكل',
+    },
+
+    // Approval Stages
+    approvalStagesTitle: 'مراحل الاعتماد',
+    addStage: 'إضافة مرحلة',
+    stageName: 'اسم المرحلة',
+    stageOrder: 'الترتيب',
+    stageType: 'نوع المرحلة',
+    sequential: 'تسلسلي',
+    parallel: 'متوازي',
+    approver: 'المعتمد',
+    approverRole: 'دور المعتمد',
+    deadlineHours: 'المهلة (ساعات)',
+    escalateTo: 'التصعيد إلى',
+
+    // Automation
+    automationTitle: 'سير العمل التلقائي',
+    addRule: 'إضافة قاعدة',
+    ruleName: 'اسم القاعدة',
+    ruleDesc: 'الوصف',
+    triggerEvent: 'حدث التشغيل',
+    conditions: 'الشروط',
+    ruleActions: 'الإجراءات',
+    ruleActive: 'نشطة',
+    executionCount: 'عدد التنفيذات',
+    lastExecuted: 'آخر تنفيذ',
+
+    // Webhooks
+    webhooksTitle: 'إدارة Webhooks',
+    addWebhook: 'إضافة Webhook',
+    webhookName: 'الاسم',
+    webhookUrl: 'الرابط (URL)',
+    webhookEvents: 'الأحداث',
+    webhookSecret: 'مفتاح السرية',
+    webhookActive: 'نشط',
+    failureCount: 'عدد الفشل',
+
+    // Audit Log
+    auditLogTitle: 'سجل التدقيق',
+    auditAction: 'الإجراء',
+    auditUser: 'المستخدم',
+    auditTicket: 'التذكرة',
+    auditOldValue: 'القيمة القديمة',
+    auditNewValue: 'القيمة الجديدة',
+    auditDate: 'التاريخ',
+
+    // Knowledge Base
+    knowledgeBaseTitle: 'قاعدة المعرفة',
+    addArticle: 'مقال جديد',
+    articleTitle: 'عنوان المقال',
+    articleContent: 'المحتوى',
+    articleCategory: 'التصنيف',
+    articleTags: 'الوسوم',
+    articlePublished: 'منشور',
+    articleDraft: 'مسودة',
+    views: 'مشاهدات',
+    helpful: 'مفيد',
+    noArticles: 'لا توجد مقالات',
+    searchArticles: 'بحث في المقالات...',
+    categoryLabels: {
+      general: 'عام',
+      howTo: 'شرح الاستخدام',
+      troubleshooting: 'حل المشكلات',
+      faq: 'أسئلة متكررة',
+      policy: 'سياسات وإجراءات',
+    },
+
+    // Executive Dashboard
+    executiveTitle: 'Dashboard تنفيذي',
+
+    // CSAT
+    csatTitle: 'تحليلات رضا العملاء',
+
+    // SLA Compliance
+    slaComplianceTitle: 'تقرير التزام SLA',
+
+    // Agent Performance
+    agentPerformanceTitle: 'أداء الوكلاء',
+
+    // External API
+    externalApiTitle: 'واجهة API الخارجية',
+
+    // Slack
+    slackTitle: 'تكامل Slack',
+
+    // Security
+    securityTitle: 'الأمان والحوكمة',
+    securitySettingsTitle: 'إعدادات الأمان والإشعارات',
+
+    // Email
+    emailTitle: 'إدارة البريد الإلكتروني',
+
+    // Approval Reports
+    approvalReportsTitle: 'تقرير الاعتمادات',
+
+    // Approval Kanban
+    approvalKanbanTitle: 'لوحة الاعتمادات',
   },
 };
 

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchSLAPolicies, updateSLAPolicy, priorityLabels } from '@/lib/api';
+import { fetchSLAPolicies, updateSLAPolicy } from '@/lib/api';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Timer } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +26,8 @@ const fadeUp = {
 export default function AdminSLA() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, isRTL } = useLanguage();
+  const { priorityLabels: localizedPriority } = useLocalizedLabels();
 
   const { data: policies = [], isLoading } = useQuery({
     queryKey: ['sla-policies'],
@@ -47,7 +51,7 @@ export default function AdminSLA() {
       updateSLAPolicy(id, { first_response_minutes: response, resolution_minutes: resolution }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sla-policies'] });
-      toast({ title: 'تم تحديث إعدادات SLA' });
+      toast({ title: t.admin.slaUpdated });
     },
   });
 
@@ -63,7 +67,7 @@ export default function AdminSLA() {
             className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
           >
             <SidebarTrigger />
-            <h1 className="text-lg font-bold text-foreground">إعدادات SLA</h1>
+            <h1 className="text-lg font-bold text-foreground">{t.admin.slaTitle}</h1>
           </motion.header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
@@ -71,7 +75,7 @@ export default function AdminSLA() {
               <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
               <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-2xl mx-auto space-y-4">
-                <motion.p variants={fadeUp} className="text-sm text-muted-foreground mb-4">حدد زمن الاستجابة والحل المتوقع لكل مستوى أولوية (بالدقائق)</motion.p>
+                <motion.p variants={fadeUp} className="text-sm text-muted-foreground mb-4">{t.admin.slaDesc}</motion.p>
                 {policies.map(policy => (
                   <motion.div key={policy.id} variants={fadeUp} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
                     <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
@@ -80,13 +84,13 @@ export default function AdminSLA() {
                           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                             <Timer className="h-4 w-4 text-primary" />
                           </div>
-                          {priorityLabels[policy.priority]}
+                          {localizedPriority[policy.priority]}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <Label className="text-xs">زمن الاستجابة (دقائق)</Label>
+                            <Label className="text-xs">{t.admin.firstResponseMin}</Label>
                             <Input
                               type="number"
                               min={1}
@@ -99,7 +103,7 @@ export default function AdminSLA() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">زمن الحل (دقائق)</Label>
+                            <Label className="text-xs">{t.admin.resolutionMin}</Label>
                             <Input
                               type="number"
                               min={1}
@@ -122,8 +126,8 @@ export default function AdminSLA() {
                             resolution: edits[policy.id]?.resolution ?? policy.resolution_minutes,
                           })}
                         >
-                          {updateMut.isPending && <Loader2 className="h-3 w-3 animate-spin ml-1" />}
-                          حفظ
+                          {updateMut.isPending && <Loader2 className={`h-3 w-3 animate-spin ${isRTL ? 'ml-1' : 'mr-1'}`} />}
+                          {t.common.save}
                         </Button>
                       </CardContent>
                     </Card>

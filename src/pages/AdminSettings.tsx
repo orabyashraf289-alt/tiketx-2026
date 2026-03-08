@@ -11,6 +11,7 @@ import { Settings, Palette, Type, Image, Save, RotateCcw, Upload, Trash2 } from 
 import { CannedResponsesManager } from '@/components/CannedResponses';
 import { motion } from 'framer-motion';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useLanguage } from '@/i18n';
 
 interface SettingsForm {
   system_name: string;
@@ -27,15 +28,6 @@ const defaultSettings: SettingsForm = {
   accent_color: '217 72% 55%',
   logo_url: '',
 };
-
-const presetThemes = [
-  { name: 'أزرق كحلي (افتراضي)', primary: '217 72% 50%', accent: '217 72% 55%' },
-  { name: 'أخضر زمردي', primary: '152 55% 42%', accent: '152 55% 48%' },
-  { name: 'بنفسجي ملكي', primary: '262 60% 50%', accent: '262 60% 56%' },
-  { name: 'برتقالي دافئ', primary: '24 80% 50%', accent: '24 80% 56%' },
-  { name: 'أحمر عنابي', primary: '345 60% 42%', accent: '345 60% 48%' },
-  { name: 'تركوازي', primary: '180 55% 42%', accent: '180 55% 48%' },
-];
 
 function hslToHex(hsl: string): string {
   const parts = hsl.split(' ');
@@ -73,11 +65,21 @@ function hexToHsl(hex: string): string {
 
 export default function AdminSettings() {
   const systemSettings = useSystemSettings();
+  const { t, isRTL } = useLanguage();
   const [settings, setSettings] = useState<SettingsForm>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const presetThemes = [
+    { name: t.admin.themeNavyBlue, primary: '217 72% 50%', accent: '217 72% 55%' },
+    { name: t.admin.themeEmeraldGreen, primary: '152 55% 42%', accent: '152 55% 48%' },
+    { name: t.admin.themeRoyalPurple, primary: '262 60% 50%', accent: '262 60% 56%' },
+    { name: t.admin.themeWarmOrange, primary: '24 80% 50%', accent: '24 80% 56%' },
+    { name: t.admin.themeCrimsonRed, primary: '345 60% 42%', accent: '345 60% 48%' },
+    { name: t.admin.themeTurquoise, primary: '180 55% 42%', accent: '180 55% 48%' },
+  ];
 
   useEffect(() => {
     if (!systemSettings.loading) {
@@ -96,11 +98,11 @@ export default function AdminSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('يرجى اختيار ملف صورة');
+      toast.error(t.admin.imageFileRequired);
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('حجم الملف يجب أن لا يتجاوز 10 ميجابايت');
+      toast.error(t.admin.fileSizeLimit);
       return;
     }
 
@@ -110,14 +112,14 @@ export default function AdminSettings() {
 
     const { error } = await supabase.storage.from('system-assets').upload(filePath, file, { upsert: true });
     if (error) {
-      toast.error('فشل رفع الشعار');
+      toast.error(t.admin.logoUploadError);
       setUploading(false);
       return;
     }
 
     const { data: urlData } = supabase.storage.from('system-assets').getPublicUrl(filePath);
     setSettings(prev => ({ ...prev, logo_url: urlData.publicUrl }));
-    toast.success('تم رفع الشعار بنجاح');
+    toast.success(t.admin.logoUploaded);
     setUploading(false);
   };
 
@@ -136,9 +138,9 @@ export default function AdminSettings() {
           .eq('key', key);
       }
       await systemSettings.refetch();
-      toast.success('تم حفظ الإعدادات بنجاح');
+      toast.success(t.admin.settingsSaved);
     } catch {
-      toast.error('حدث خطأ أثناء الحفظ');
+      toast.error(t.admin.settingsSaveError);
     }
     setSaving(false);
   };
@@ -151,7 +153,7 @@ export default function AdminSettings() {
     root.style.removeProperty('--ring');
     root.style.removeProperty('--sidebar-primary');
     root.style.removeProperty('--sidebar-ring');
-    toast.info('تم إعادة ضبط الإعدادات الافتراضية');
+    toast.info(t.admin.settingsReset);
   };
 
   const applyPreset = (primary: string, accent: string) => {
@@ -176,18 +178,18 @@ export default function AdminSettings() {
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
                   <Settings className="h-6 w-6 text-primary" />
-                  إعدادات النظام
+                  {t.admin.systemSettings}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">تخصيص اسم النظام والشعار وألوان الثيم</p>
+                <p className="text-sm text-muted-foreground mt-1">{t.admin.systemSettingsDesc}</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleReset} size="sm">
-                  <RotateCcw className="h-4 w-4 ml-1" />
-                  إعادة ضبط
+                  <RotateCcw className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                  {t.admin.resetDefaults}
                 </Button>
                 <Button onClick={handleSave} disabled={saving} size="sm">
-                  <Save className="h-4 w-4 ml-1" />
-                  {saving ? 'جاري الحفظ...' : 'حفظ'}
+                  <Save className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                  {saving ? t.admin.saving : t.common.save}
                 </Button>
               </div>
             </div>
@@ -197,26 +199,26 @@ export default function AdminSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Type className="h-5 w-5 text-primary" />
-                  هوية النظام
+                  {t.admin.systemIdentity}
                 </CardTitle>
-                <CardDescription>تخصيص اسم النظام والعنوان الفرعي</CardDescription>
+                <CardDescription>{t.admin.systemIdentityDesc}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>اسم النظام</Label>
+                    <Label>{t.admin.systemName}</Label>
                     <Input
                       value={settings.system_name}
                       onChange={e => setSettings(prev => ({ ...prev, system_name: e.target.value }))}
-                      placeholder="مثال: TicketFlow"
+                      placeholder={t.admin.systemNamePlaceholder}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>العنوان الفرعي</Label>
+                    <Label>{t.admin.subtitle}</Label>
                     <Input
                       value={settings.system_subtitle}
                       onChange={e => setSettings(prev => ({ ...prev, system_subtitle: e.target.value }))}
-                      placeholder="مثال: HELPDESK"
+                      placeholder={t.admin.subtitlePlaceholder}
                     />
                   </div>
                 </div>
@@ -228,12 +230,11 @@ export default function AdminSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Image className="h-5 w-5 text-primary" />
-                  الشعار
+                  {t.admin.logoTitle}
                 </CardTitle>
-                <CardDescription>ارفع صورة الشعار أو أدخل رابط مباشر (يفضل PNG شفاف، أقصى حجم 10MB)</CardDescription>
+                <CardDescription>{t.admin.logoDesc}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Upload area */}
                 <div className="flex flex-col gap-3">
                   <input
                     ref={fileInputRef}
@@ -249,8 +250,8 @@ export default function AdminSettings() {
                       disabled={uploading}
                       className="flex-1"
                     >
-                      <Upload className="h-4 w-4 ml-2" />
-                      {uploading ? 'جاري الرفع...' : 'رفع شعار'}
+                      <Upload className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {uploading ? t.admin.uploading : t.admin.uploadLogo}
                     </Button>
                     {settings.logo_url && (
                       <Button variant="outline" size="icon" onClick={handleRemoveLogo} className="text-destructive hover:text-destructive">
@@ -259,7 +260,7 @@ export default function AdminSettings() {
                     )}
                   </div>
 
-                  <div className="text-xs text-muted-foreground">أو أدخل رابط مباشر:</div>
+                  <div className="text-xs text-muted-foreground">{t.admin.uploadDirectLink}</div>
                   <Input
                     value={settings.logo_url}
                     onChange={e => setSettings(prev => ({ ...prev, logo_url: e.target.value }))}
@@ -270,7 +271,7 @@ export default function AdminSettings() {
 
                 {settings.logo_url && (
                   <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-                    <span className="text-sm text-muted-foreground">معاينة:</span>
+                    <span className="text-sm text-muted-foreground">{t.common.preview}:</span>
                     <img src={settings.logo_url} alt="Logo preview" className="h-16 w-16 object-contain rounded" />
                   </div>
                 )}
@@ -282,13 +283,13 @@ export default function AdminSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Palette className="h-5 w-5 text-primary" />
-                  ألوان الثيم
+                  {t.admin.themeColors}
                 </CardTitle>
-                <CardDescription>اختر من القوالب الجاهزة أو خصص الألوان يدوياً</CardDescription>
+                <CardDescription>{t.admin.themeColorsDesc}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label className="mb-3 block">قوالب جاهزة</Label>
+                  <Label className="mb-3 block">{t.admin.presetThemes}</Label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {presetThemes.map(theme => (
                       <button
@@ -309,7 +310,7 @@ export default function AdminSettings() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>اللون الأساسي (Primary)</Label>
+                    <Label>{t.admin.primaryColor}</Label>
                     <div className="flex items-center gap-3">
                       <input
                         type="color"
@@ -333,7 +334,7 @@ export default function AdminSettings() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>لون التمييز (Accent)</Label>
+                    <Label>{t.admin.accentColor}</Label>
                     <div className="flex items-center gap-3">
                       <input
                         type="color"
@@ -358,12 +359,12 @@ export default function AdminSettings() {
                 </div>
 
                 <div className="p-4 bg-muted rounded-lg space-y-3">
-                  <Label className="text-muted-foreground">معاينة مباشرة</Label>
+                  <Label className="text-muted-foreground">{t.admin.livePreview}</Label>
                   <div className="flex flex-wrap gap-3">
-                    <Button size="sm">زر أساسي</Button>
-                    <Button size="sm" variant="secondary">زر ثانوي</Button>
-                    <Button size="sm" variant="outline">زر محدد</Button>
-                    <Button size="sm" variant="destructive">زر حذف</Button>
+                    <Button size="sm">{t.admin.primaryBtn}</Button>
+                    <Button size="sm" variant="secondary">{t.admin.secondaryBtn}</Button>
+                    <Button size="sm" variant="outline">{t.admin.outlineBtn}</Button>
+                    <Button size="sm" variant="destructive">{t.admin.deleteBtn}</Button>
                   </div>
                   <div className="flex gap-2">
                     <div className="h-8 w-8 rounded" style={{ background: `hsl(${settings.primary_color})` }} />

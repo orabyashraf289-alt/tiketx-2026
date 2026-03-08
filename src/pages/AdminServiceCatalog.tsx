@@ -19,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Loader2, Server, FolderOpen, Tag } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -33,6 +35,8 @@ const fadeUp = {
 export default function AdminServiceCatalog() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, isRTL } = useLanguage();
+  const { priorityLabels: localizedPriority } = useLocalizedLabels();
 
   const { data: systems = [] } = useQuery({ queryKey: ['systems'], queryFn: fetchSystems });
   const { data: services = [] } = useQuery({ queryKey: ['services'], queryFn: () => fetchServices() });
@@ -59,12 +63,9 @@ export default function AdminServiceCatalog() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
-      toast({ title: 'تم إنشاء الخدمة' });
+      toast({ title: t.admin.serviceCreated });
       setSvcOpen(false);
-      setSvcName('');
-      setSvcSystemId('');
-      setSvcDept('');
-      setSvcSla('');
+      setSvcName(''); setSvcSystemId(''); setSvcDept(''); setSvcSla('');
     },
   });
 
@@ -72,7 +73,7 @@ export default function AdminServiceCatalog() {
     mutationFn: deleteService,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
-      toast({ title: 'تم حذف الخدمة' });
+      toast({ title: t.admin.serviceDeleted });
     },
   });
 
@@ -80,10 +81,8 @@ export default function AdminServiceCatalog() {
     mutationFn: () => createServiceCategory({ service_id: catServiceId, name: catName.trim() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-categories'] });
-      toast({ title: 'تم إنشاء التصنيف' });
-      setCatOpen(false);
-      setCatName('');
-      setCatServiceId('');
+      toast({ title: t.admin.categoryCreated });
+      setCatOpen(false); setCatName(''); setCatServiceId('');
     },
   });
 
@@ -91,11 +90,9 @@ export default function AdminServiceCatalog() {
     mutationFn: deleteServiceCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-categories'] });
-      toast({ title: 'تم حذف التصنيف' });
+      toast({ title: t.admin.categoryDeleted });
     },
   });
-
-  const priorityLabels: Record<string, string> = { low: 'منخفضة', medium: 'متوسطة', high: 'عالية', urgent: 'عاجلة' };
 
   return (
     <SidebarProvider>
@@ -110,52 +107,52 @@ export default function AdminServiceCatalog() {
           >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold text-foreground">كتالوج الخدمات</h1>
+              <h1 className="text-lg font-bold text-foreground">{t.admin.serviceCatalogTitle}</h1>
             </div>
             <div className="flex gap-2">
               <Dialog open={svcOpen} onOpenChange={setSvcOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gradient-accent text-accent-foreground gap-1 text-xs shadow-lg shadow-primary/20 rounded-xl">
-                    <Plus className="h-3.5 w-3.5" /> خدمة
+                    <Plus className="h-3.5 w-3.5" /> {t.admin.addService}
                   </Button>
                 </DialogTrigger>
-                <DialogContent dir="rtl">
-                  <DialogHeader><DialogTitle>إضافة خدمة جديدة</DialogTitle></DialogHeader>
+                <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+                  <DialogHeader><DialogTitle>{t.admin.newService}</DialogTitle></DialogHeader>
                   <div className="space-y-4 pt-2">
                     <div className="space-y-2">
-                      <Label>النظام *</Label>
+                      <Label>{t.admin.selectSystem} *</Label>
                       <Select value={svcSystemId} onValueChange={setSvcSystemId}>
-                        <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر النظام" /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.selectSystem} /></SelectTrigger>
                         <SelectContent>
                           {systems.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>اسم الخدمة *</Label>
-                      <Input value={svcName} onChange={e => setSvcName(e.target.value)} placeholder="مثال: الموارد البشرية" className="rounded-xl" />
+                      <Label>{t.admin.serviceName} *</Label>
+                      <Input value={svcName} onChange={e => setSvcName(e.target.value)} className="rounded-xl" />
                     </div>
                     <div className="space-y-2">
-                      <Label>فريق مسؤول</Label>
+                      <Label>{t.admin.assignToDept}</Label>
                       <Select value={svcDept} onValueChange={setSvcDept}>
-                        <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر القسم" /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.departmentLabel} /></SelectTrigger>
                         <SelectContent>
                           {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>سياسة SLA</Label>
+                      <Label>{t.admin.slaPolicy}</Label>
                       <Select value={svcSla} onValueChange={setSvcSla}>
-                        <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر سياسة SLA" /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.slaPolicy} /></SelectTrigger>
                         <SelectContent>
-                          {slaPolicies.map(p => <SelectItem key={p.id} value={p.id}>{priorityLabels[p.priority]} ({p.first_response_minutes}د / {p.resolution_minutes}د)</SelectItem>)}
+                          {slaPolicies.map(p => <SelectItem key={p.id} value={p.id}>{localizedPriority[p.priority]} ({p.first_response_minutes}m / {p.resolution_minutes}m)</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <Button className="w-full gradient-accent text-accent-foreground rounded-xl" disabled={!svcSystemId || !svcName.trim() || createSvcMut.isPending} onClick={() => createSvcMut.mutate()}>
-                      {createSvcMut.isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                      إنشاء
+                      {createSvcMut.isPending && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
+                      {t.common.create}
                     </Button>
                   </div>
                 </DialogContent>
@@ -164,28 +161,28 @@ export default function AdminServiceCatalog() {
               <Dialog open={catOpen} onOpenChange={setCatOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline" className="gap-1 text-xs rounded-xl">
-                    <Plus className="h-3.5 w-3.5" /> تصنيف فرعي
+                    <Plus className="h-3.5 w-3.5" /> {t.admin.addCategory}
                   </Button>
                 </DialogTrigger>
-                <DialogContent dir="rtl">
-                  <DialogHeader><DialogTitle>إضافة تصنيف فرعي</DialogTitle></DialogHeader>
+                <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+                  <DialogHeader><DialogTitle>{t.admin.newCategory}</DialogTitle></DialogHeader>
                   <div className="space-y-4 pt-2">
                     <div className="space-y-2">
-                      <Label>الخدمة *</Label>
+                      <Label>{t.admin.forService} *</Label>
                       <Select value={catServiceId} onValueChange={setCatServiceId}>
-                        <SelectTrigger className="rounded-xl"><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
+                        <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.tickets.selectService} /></SelectTrigger>
                         <SelectContent>
                           {services.map(s => <SelectItem key={s.id} value={s.id}>{s.systems?.name} → {s.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>اسم التصنيف *</Label>
-                      <Input value={catName} onChange={e => setCatName(e.target.value)} placeholder="مثال: مشكلة في الدخول" className="rounded-xl" />
+                      <Label>{t.admin.categoryName} *</Label>
+                      <Input value={catName} onChange={e => setCatName(e.target.value)} className="rounded-xl" />
                     </div>
                     <Button className="w-full gradient-accent text-accent-foreground rounded-xl" disabled={!catServiceId || !catName.trim() || createCatMut.isPending} onClick={() => createCatMut.mutate()}>
-                      {createCatMut.isPending && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                      إنشاء
+                      {createCatMut.isPending && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
+                      {t.common.create}
                     </Button>
                   </div>
                 </DialogContent>
@@ -196,7 +193,7 @@ export default function AdminServiceCatalog() {
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-4xl mx-auto">
               <Accordion type="multiple" className="space-y-3">
-                {systems.map((system, si) => {
+                {systems.map((system) => {
                   const sysServices = services.filter(s => s.system_id === system.id);
                   return (
                     <motion.div key={system.id} variants={fadeUp}>
@@ -208,12 +205,12 @@ export default function AdminServiceCatalog() {
                             </div>
                             <span className="font-semibold text-foreground">{system.name}</span>
                             <span className="text-xs text-muted-foreground">({system.code})</span>
-                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{sysServices.length} خدمة</span>
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{sysServices.length} {t.admin.services}</span>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-4">
                           {sysServices.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">لا توجد خدمات</p>
+                            <p className="text-sm text-muted-foreground text-center py-4">{t.admin.noServices}</p>
                           ) : (
                             <div className="space-y-3">
                               {sysServices.map(svc => {
@@ -231,8 +228,7 @@ export default function AdminServiceCatalog() {
                                         </Button>
                                       </div>
                                       <div className="flex gap-4 text-xs text-muted-foreground mb-2">
-                                        {svc.departments?.name && <span>الفريق: {svc.departments.name}</span>}
-                                        {svc.sla_policies && <span>SLA: {svc.sla_policies.response_time_hours}h استجابة / {svc.sla_policies.resolution_time_hours}h حل</span>}
+                                        {svc.departments?.name && <span>{t.admin.assignToDept}: {svc.departments.name}</span>}
                                       </div>
                                       {svcCats.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mt-1">
