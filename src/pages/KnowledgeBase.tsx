@@ -15,6 +15,7 @@ import { BookOpen, Search, Plus, Eye, ThumbsUp, Loader2, X } from 'lucide-react'
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
+import { useLanguage } from '@/i18n';
 
 interface KBArticle {
   id: string;
@@ -45,22 +46,24 @@ async function fetchArticles(search?: string) {
 }
 
 const categories = ['general', 'how-to', 'troubleshooting', 'faq', 'policy'];
-const categoryLabels: Record<string, string> = {
-  general: 'عام',
-  'how-to': 'شرح الاستخدام',
-  troubleshooting: 'حل المشاكل',
-  faq: 'أسئلة شائعة',
-  policy: 'سياسات',
-};
 
 export default function KnowledgeBase() {
   const { user, role } = useAuth();
   const queryClient = useQueryClient();
+  const { t, isRTL } = useLanguage();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
   const [selectedArticle, setSelectedArticle] = useState<KBArticle | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', category: 'general', tags: '' });
+
+  const categoryLabels: Record<string, string> = {
+    general: t.admin.categoryLabels.general,
+    'how-to': t.admin.categoryLabels.howTo,
+    troubleshooting: t.admin.categoryLabels.troubleshooting,
+    faq: t.admin.categoryLabels.faq,
+    policy: t.admin.categoryLabels.policy,
+  };
 
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['kb-articles', search],
@@ -82,9 +85,9 @@ export default function KnowledgeBase() {
       queryClient.invalidateQueries({ queryKey: ['kb-articles'] });
       setShowCreate(false);
       setForm({ title: '', content: '', category: 'general', tags: '' });
-      toast({ title: 'تم إنشاء المقال بنجاح' });
+      toast({ title: t.common.success });
     },
-    onError: () => toast({ title: 'حدث خطأ', variant: 'destructive' }),
+    onError: () => toast({ title: t.common.error, variant: 'destructive' }),
   });
 
   const markHelpful = async (id: string) => {
@@ -109,7 +112,7 @@ export default function KnowledgeBase() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <BookOpen className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">قاعدة المعرفة</h1>
+              <h1 className="text-lg font-bold">{t.admin.knowledgeBaseTitle}</h1>
             </div>
             <div className="flex gap-2 items-center">
               <NotificationsPopover />
@@ -117,13 +120,13 @@ export default function KnowledgeBase() {
                 <Dialog open={showCreate} onOpenChange={setShowCreate}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="gradient-accent text-accent-foreground gap-1.5">
-                      <Plus className="h-4 w-4" /> مقال جديد
+                      <Plus className="h-4 w-4" /> {t.admin.addArticle}
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader><DialogTitle>إنشاء مقال جديد</DialogTitle></DialogHeader>
+                  <DialogContent className="max-w-lg" dir={isRTL ? 'rtl' : 'ltr'}>
+                    <DialogHeader><DialogTitle>{t.admin.addArticle}</DialogTitle></DialogHeader>
                     <div className="space-y-3">
-                      <Input placeholder="عنوان المقال" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                      <Input placeholder={t.admin.articleTitle} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
                       <select
                         value={form.category}
                         onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
@@ -131,14 +134,14 @@ export default function KnowledgeBase() {
                       >
                         {categories.map(c => <option key={c} value={c}>{categoryLabels[c]}</option>)}
                       </select>
-                      <Input placeholder="الوسوم (مفصولة بفاصلة)" value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} />
-                      <Textarea rows={8} placeholder="محتوى المقال (يدعم Markdown)" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
+                      <Input placeholder={t.admin.articleTags} value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} />
+                      <Textarea rows={8} placeholder={t.admin.articleContent} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
                       <Button
                         className="w-full"
                         disabled={!form.title || !form.content || createMutation.isPending}
                         onClick={() => createMutation.mutate(form)}
                       >
-                        {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'نشر المقال'}
+                        {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t.common.submit}
                       </Button>
                     </div>
                   </DialogContent>
@@ -151,18 +154,18 @@ export default function KnowledgeBase() {
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                 <Input
-                  placeholder="ابحث في قاعدة المعرفة..."
+                  placeholder={t.admin.searchArticles}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="pr-11 h-12 rounded-2xl text-base"
+                  className={`${isRTL ? 'pr-11' : 'pl-11'} h-12 rounded-2xl text-base`}
                 />
               </div>
 
               {/* Category filter */}
               <div className="flex gap-2 flex-wrap">
-                <button onClick={() => setCatFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${catFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>الكل</button>
+                <button onClick={() => setCatFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${catFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>{t.common.all}</button>
                 {categories.map(c => (
                   <button key={c} onClick={() => setCatFilter(c)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${catFilter === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {categoryLabels[c]}
@@ -176,7 +179,7 @@ export default function KnowledgeBase() {
               ) : filtered.length === 0 ? (
                 <div className="text-center py-20 text-muted-foreground">
                   <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p>لا توجد مقالات</p>
+                  <p>{t.admin.noArticles}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -216,7 +219,7 @@ export default function KnowledgeBase() {
 
             {/* Article Detail Dialog */}
             <Dialog open={!!selectedArticle} onOpenChange={(open) => !open && setSelectedArticle(null)}>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
                 {selectedArticle && (
                   <>
                     <DialogHeader>
@@ -224,17 +227,17 @@ export default function KnowledgeBase() {
                     </DialogHeader>
                     <div className="flex gap-2 mb-4">
                       <Badge variant="secondary">{categoryLabels[selectedArticle.category]}</Badge>
-                      {selectedArticle.tags?.map(t => <Badge key={t} variant="outline">{t}</Badge>)}
+                      {selectedArticle.tags?.map(tg => <Badge key={tg} variant="outline">{tg}</Badge>)}
                     </div>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       <ReactMarkdown>{selectedArticle.content}</ReactMarkdown>
                     </div>
                     <div className="flex items-center justify-between mt-6 pt-4 border-t">
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Eye className="h-3 w-3" /> {selectedArticle.views_count} مشاهدة
+                        <Eye className="h-3 w-3" /> {selectedArticle.views_count} {t.admin.views}
                       </span>
                       <Button variant="outline" size="sm" className="gap-1.5" onClick={() => markHelpful(selectedArticle.id)}>
-                        <ThumbsUp className="h-3.5 w-3.5" /> مفيد ({selectedArticle.helpful_count})
+                        <ThumbsUp className="h-3.5 w-3.5" /> {t.admin.helpful} ({selectedArticle.helpful_count})
                       </Button>
                     </div>
                   </>

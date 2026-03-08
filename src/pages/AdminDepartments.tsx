@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Loader2, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -26,6 +27,7 @@ const fadeUp = {
 export default function AdminDepartments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, isRTL } = useLanguage();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -40,7 +42,7 @@ export default function AdminDepartments() {
     mutationFn: () => createDepartment({ name: name.trim(), description: description.trim() || undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['departments'] });
-      toast({ title: 'تم إنشاء القسم' });
+      toast({ title: t.admin.deptCreated });
       resetForm();
     },
   });
@@ -49,7 +51,7 @@ export default function AdminDepartments() {
     mutationFn: () => updateDepartment(editId!, { name: name.trim(), description: description.trim() }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['departments'] });
-      toast({ title: 'تم تحديث القسم' });
+      toast({ title: t.admin.deptUpdated });
       resetForm();
     },
   });
@@ -58,7 +60,7 @@ export default function AdminDepartments() {
     mutationFn: deleteDepartment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['departments'] });
-      toast({ title: 'تم حذف القسم' });
+      toast({ title: t.admin.deptDeleted });
     },
   });
 
@@ -89,34 +91,34 @@ export default function AdminDepartments() {
           >
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <h1 className="text-lg font-bold text-foreground">إدارة الأقسام</h1>
+              <h1 className="text-lg font-bold text-foreground">{t.admin.deptManagement}</h1>
             </div>
             <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
               <DialogTrigger asChild>
                 <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl">
-                  <Plus className="h-4 w-4" /> قسم جديد
+                  <Plus className="h-4 w-4" /> {t.admin.newDept}
                 </Button>
               </DialogTrigger>
-              <DialogContent dir="rtl">
+              <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
                 <DialogHeader>
-                  <DialogTitle>{editId ? 'تعديل القسم' : 'إنشاء قسم جديد'}</DialogTitle>
+                  <DialogTitle>{editId ? t.admin.editDept : t.admin.createDept}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
-                    <Label>اسم القسم *</Label>
-                    <Input value={name} onChange={e => setName(e.target.value)} placeholder="مثال: تقنية المعلومات" className="rounded-xl" />
+                    <Label>{t.admin.deptName}</Label>
+                    <Input value={name} onChange={e => setName(e.target.value)} placeholder={t.admin.deptNamePlaceholder} className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
-                    <Label>الوصف</Label>
-                    <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="وصف مختصر" className="rounded-xl" />
+                    <Label>{t.admin.deptDesc}</Label>
+                    <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder={t.admin.deptDescPlaceholder} className="rounded-xl" />
                   </div>
                   <Button
                     className="w-full gradient-accent text-accent-foreground rounded-xl"
                     disabled={!name.trim() || createMut.isPending || updateMut.isPending}
                     onClick={() => editId ? updateMut.mutate() : createMut.mutate()}
                   >
-                    {(createMut.isPending || updateMut.isPending) && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                    {editId ? 'تحديث' : 'إنشاء'}
+                    {(createMut.isPending || updateMut.isPending) && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
+                    {editId ? t.common.update : t.common.create}
                   </Button>
                 </div>
               </DialogContent>
@@ -129,7 +131,7 @@ export default function AdminDepartments() {
             ) : departments.length === 0 ? (
               <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
                 <Building2 className="h-12 w-12 mb-3 opacity-30" />
-                <p>لا توجد أقسام بعد</p>
+                <p>{t.admin.noDepts}</p>
               </motion.div>
             ) : (
               <motion.div variants={pageVariants} initial="hidden" animate="visible" className="grid gap-4 max-w-3xl mx-auto">
