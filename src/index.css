@@ -97,6 +97,14 @@
     direction: rtl;
   }
 
+  html[dir='ltr'] {
+    direction: ltr;
+  }
+
+  html[dir='ltr'] body {
+    text-align: left;
+  }
+
   body {
     @apply bg-background text-foreground font-tajawal antialiased;
   }
