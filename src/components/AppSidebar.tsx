@@ -86,8 +86,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side={lang === 'ar' ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 shrink-0 overflow-hidden">
-            <img src={logoSrc} alt={sysName} className="h-8 w-8 object-contain" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-card/10 backdrop-blur-sm border border-sidebar-border/50 shadow-lg shrink-0 overflow-hidden p-1">
+            <img src={logoSrc} alt={sysName} className="h-full w-full object-contain drop-shadow-md" />
           </div>
           {!collapsed && (
             <div>
