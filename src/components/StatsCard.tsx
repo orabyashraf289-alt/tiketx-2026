@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
@@ -25,7 +26,7 @@ const iconVariantStyles = {
   warning: "bg-warning-foreground/20 text-warning-foreground",
 };
 
-export function StatsCard({ title, value, icon: Icon, trend, variant = "default" }: StatsCardProps) {
+export const StatsCard = memo(function StatsCard({ title, value, icon: Icon, trend, variant = "default" }: StatsCardProps) {
   return (
     <div className={cn(
       "rounded-lg p-5 shadow-card transition-all duration-200 hover:shadow-card-hover animate-fade-in",
@@ -49,4 +50,4 @@ export function StatsCard({ title, value, icon: Icon, trend, variant = "default"
       </div>
     </div>
   );
-}
+});
