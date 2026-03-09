@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchSLAPolicies, updateSLAPolicy } from '@/lib/api';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { LoadingSpinner } from '@/components/common';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -56,88 +56,74 @@ export default function AdminSLA() {
   });
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <SidebarTrigger />
-            <h1 className="text-lg font-bold text-foreground">{t.admin.slaTitle}</h1>
-          </motion.header>
-
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            {isLoading ? (
-              <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-            ) : (
-              <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-2xl mx-auto space-y-4">
-                <motion.p variants={fadeUp} className="text-sm text-muted-foreground mb-4">{t.admin.slaDesc}</motion.p>
-                {policies.map(policy => (
-                  <motion.div key={policy.id} variants={fadeUp} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-                    <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                            <Timer className="h-4 w-4 text-primary" />
-                          </div>
-                          {localizedPriority[policy.priority]}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t.admin.firstResponseMin}</Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              className="rounded-xl"
-                              value={edits[policy.id]?.response ?? policy.first_response_minutes}
-                              onChange={e => setEdits(prev => ({
-                                ...prev,
-                                [policy.id]: { ...prev[policy.id], response: parseInt(e.target.value) || 1 }
-                              }))}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t.admin.resolutionMin}</Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              className="rounded-xl"
-                              value={edits[policy.id]?.resolution ?? policy.resolution_minutes}
-                              onChange={e => setEdits(prev => ({
-                                ...prev,
-                                [policy.id]: { ...prev[policy.id], resolution: parseInt(e.target.value) || 1 }
-                              }))}
-                            />
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="mt-3 gradient-accent text-accent-foreground rounded-xl shadow-lg shadow-primary/20"
-                          disabled={updateMut.isPending}
-                          onClick={() => updateMut.mutate({
-                            id: policy.id,
-                            response: edits[policy.id]?.response ?? policy.first_response_minutes,
-                            resolution: edits[policy.id]?.resolution ?? policy.resolution_minutes,
-                          })}
-                        >
-                          {updateMut.isPending && <Loader2 className={`h-3 w-3 animate-spin ${isRTL ? 'ml-1' : 'mr-1'}`} />}
-                          {t.common.save}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+    <PageLayout>
+      <PageHeader title={t.admin.slaTitle} icon={<Timer className="h-5 w-5" />} />
+      <main className="flex-1 p-4 md:p-6 overflow-auto">
+        {isLoading ? (
+          <LoadingSpinner size="lg" fullPage />
+        ) : (
+          <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-2xl mx-auto space-y-4">
+            <motion.p variants={fadeUp} className="text-sm text-muted-foreground mb-4">{t.admin.slaDesc}</motion.p>
+            {policies.map(policy => (
+              <motion.div key={policy.id} variants={fadeUp} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+                <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                        <Timer className="h-4 w-4 text-primary" />
+                      </div>
+                      {localizedPriority[policy.priority]}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t.admin.firstResponseMin}</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          className="rounded-xl"
+                          value={edits[policy.id]?.response ?? policy.first_response_minutes}
+                          onChange={e => setEdits(prev => ({
+                            ...prev,
+                            [policy.id]: { ...prev[policy.id], response: parseInt(e.target.value) || 1 }
+                          }))}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t.admin.resolutionMin}</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          className="rounded-xl"
+                          value={edits[policy.id]?.resolution ?? policy.resolution_minutes}
+                          onChange={e => setEdits(prev => ({
+                            ...prev,
+                            [policy.id]: { ...prev[policy.id], resolution: parseInt(e.target.value) || 1 }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="mt-3 gradient-accent text-accent-foreground rounded-xl shadow-lg shadow-primary/20"
+                      disabled={updateMut.isPending}
+                      onClick={() => updateMut.mutate({
+                        id: policy.id,
+                        response: edits[policy.id]?.response ?? policy.first_response_minutes,
+                        resolution: edits[policy.id]?.resolution ?? policy.resolution_minutes,
+                      })}
+                    >
+                      {updateMut.isPending && <Loader2 className={`h-3 w-3 animate-spin ${isRTL ? 'ml-1' : 'mr-1'}`} />}
+                      {t.common.save}
+                    </Button>
+                  </CardContent>
+                </Card>
               </motion.div>
-            )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+            ))}
+          </motion.div>
+        )}
+      </main>
+    </PageLayout>
   );
 }
