@@ -278,7 +278,7 @@ const BrandingPanel = ({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
       </div>
     </div>
   );
-}
+};
 
 export default function AuthPage() {
   const sysSettings = useSystemSettings();

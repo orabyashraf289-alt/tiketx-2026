@@ -5,19 +5,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeError } from '@/lib/errorHandler';
-import { Loader2, Lock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Loader2, Lock, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import logoImg from '@/assets/logo.png';
+import logoImg from '@/assets/logo-icon.png';
+import { useSystemSettings } from '@/hooks/useSystemSettings';
+import { useLanguage } from '@/i18n';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export default function ResetPassword() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t, isRTL } = useLanguage();
+  const sysSettings = useSystemSettings();
+  const sysName = sysSettings.system_name || 'TicketFlow';
+  const logoSrc = sysSettings.logo_url || logoImg;
+  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+
+  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
 
   useEffect(() => {
     // Listen for PASSWORD_RECOVERY event
@@ -39,11 +49,11 @@ export default function ResetPassword() {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast({ title: 'كلمتا المرور غير متطابقتين', variant: 'destructive' });
+      toast({ title: t.auth.error, description: t.profilePage.passwordMismatch, variant: 'destructive' });
       return;
     }
     if (password.length < 6) {
-      toast({ title: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', variant: 'destructive' });
+      toast({ title: t.auth.error, description: t.profilePage.passwordTooShort, variant: 'destructive' });
       return;
     }
 
@@ -52,10 +62,10 @@ export default function ResetPassword() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setSuccess(true);
-      toast({ title: 'تم تغيير كلمة المرور بنجاح' });
+      toast({ title: t.profilePage.passwordChanged });
       setTimeout(() => navigate('/auth'), 2000);
     } catch (err: any) {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.auth.error, description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -63,6 +73,11 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-5">
+      {/* Language switcher - top corner */}
+      <div className="absolute top-4 ltr:right-4 rtl:left-4 z-20">
+        <LanguageSwitcher variant="outline" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
@@ -70,8 +85,10 @@ export default function ResetPassword() {
         className="w-full max-w-[400px]"
       >
         <div className="text-center mb-8">
-          <img src={logoImg} alt="TicketFlow" className="h-12 w-12 mx-auto rounded-xl shadow-lg" />
-          <h1 className="text-lg font-bold text-foreground mt-3">TicketFlow</h1>
+          <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-xl shadow-lg gradient-accent overflow-hidden backdrop-blur-sm">
+            <img src={logoSrc} alt={sysName} className="h-8 w-8 object-contain" />
+          </div>
+          <h1 className="text-lg font-bold text-foreground mt-3">{sysName}</h1>
         </div>
 
         <div className="rounded-2xl bg-card shadow-xl border overflow-hidden">
@@ -84,8 +101,10 @@ export default function ResetPassword() {
                 className="text-center py-6"
               >
                 <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-3" />
-                <h2 className="text-lg font-bold text-foreground">تم التغيير بنجاح</h2>
-                <p className="text-sm text-muted-foreground mt-2">جاري تحويلك لتسجيل الدخول...</p>
+                <h2 className="text-lg font-bold text-foreground">{t.profilePage.passwordChanged}</h2>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {isRTL ? 'جاري تحويلك لتسجيل الدخول...' : 'Redirecting to sign in...'}
+                </p>
               </motion.div>
             ) : (
               <>
@@ -93,13 +112,15 @@ export default function ResetPassword() {
                   <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Lock className="h-6 w-6 text-primary-foreground" />
                   </div>
-                  <h2 className="text-xl font-bold text-foreground">إعادة تعيين كلمة المرور</h2>
-                  <p className="text-xs text-muted-foreground mt-1">أدخل كلمة المرور الجديدة</p>
+                  <h2 className="text-xl font-bold text-foreground">{t.auth.resetPassword}</h2>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isRTL ? 'أدخل كلمة المرور الجديدة' : 'Enter your new password'}
+                  </p>
                 </div>
 
                 <form onSubmit={handleReset} className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-muted-foreground text-xs">كلمة المرور الجديدة</Label>
+                    <Label className="text-muted-foreground text-xs">{t.profilePage.newPassword}</Label>
                     <Input
                       type="password"
                       value={password}
@@ -111,7 +132,7 @@ export default function ResetPassword() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-muted-foreground text-xs">تأكيد كلمة المرور</Label>
+                    <Label className="text-muted-foreground text-xs">{t.profilePage.confirmPassword}</Label>
                     <Input
                       type="password"
                       value={confirmPassword}
@@ -127,23 +148,37 @@ export default function ResetPassword() {
                     disabled={loading}
                     className="w-full h-12 rounded-xl font-bold text-sm gradient-primary text-primary-foreground shadow-lg gap-2"
                   >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'تغيير كلمة المرور'}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                      <>
+                        {t.profilePage.changePasswordBtn}
+                        <ArrowIcon className="h-4 w-4" />
+                      </>
+                    )}
                   </Button>
                 </form>
 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full mt-4 text-xs text-muted-foreground"
+                  className="w-full mt-4 text-xs text-muted-foreground gap-2"
                   onClick={() => navigate('/auth')}
                 >
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                  العودة لتسجيل الدخول
+                  <ArrowIcon className="h-3 w-3" />
+                  {t.auth.backToLogin}
                 </Button>
               </>
             )}
           </div>
         </div>
+
+        <motion.p 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          transition={{ delay: 0.9 }} 
+          className="text-center text-muted-foreground/60 text-[11px] mt-6"
+        >
+          © {new Date().getFullYear()} {sysName} — {isRTL ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
+        </motion.p>
       </motion.div>
     </div>
   );
