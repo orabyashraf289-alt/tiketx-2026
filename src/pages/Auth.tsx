@@ -14,7 +14,7 @@ import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useLanguage } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-function LoginForm({ onForgot }: { onForgot: () => void }) {
+const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
   const { signIn } = useAuth();
   const { toast } = useToast();
   const { t, isRTL } = useLanguage();
@@ -91,9 +91,9 @@ function LoginForm({ onForgot }: { onForgot: () => void }) {
       </motion.div>
     </form>
   );
-}
+};
 
-function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
@@ -151,9 +151,9 @@ function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
       <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground mt-4 mx-auto block transition-colors">{t.auth.backToLogin}</button>
     </motion.div>
   );
-}
+};
 
-function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: string; logoSrc: string }) {
+const BrandingPanel = ({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: string; logoSrc: string }) => {
   const { t } = useLanguage();
 
   const features = [
@@ -278,7 +278,7 @@ function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: 
       </div>
     </div>
   );
-}
+};
 
 export default function AuthPage() {
   const sysSettings = useSystemSettings();

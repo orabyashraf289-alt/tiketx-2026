@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTickets, statusLabels, priorityLabels, Ticket } from '@/lib/api';
+import { fetchTickets, Ticket } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, FileText, BookOpen, Clock, Loader2, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { Search, X, FileText, BookOpen, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TicketProgressTracker } from './TicketProgressTracker';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 interface SmartSearchProps {
   onTicketClick: (ticket: Ticket) => void;
@@ -26,10 +26,11 @@ interface KBArticle {
 
 export function SmartSearch({ onTicketClick, className }: SmartSearchProps) {
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t, isRTL } = useLanguage();
+  const { statusLabels } = useLocalizedLabels();
 
   const { data: tickets = [] } = useQuery({
     queryKey: ['tickets'],
@@ -52,10 +53,10 @@ export function SmartSearch({ onTicketClick, className }: SmartSearchProps) {
   });
 
   const filteredTickets = query.length >= 2
-    ? tickets.filter(t =>
-        t.title.toLowerCase().includes(query.toLowerCase()) ||
-        t.code?.toLowerCase().includes(query.toLowerCase()) ||
-        t.description?.toLowerCase().includes(query.toLowerCase())
+    ? tickets.filter(tick =>
+        tick.title.toLowerCase().includes(query.toLowerCase()) ||
+        tick.code?.toLowerCase().includes(query.toLowerCase()) ||
+        tick.description?.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 5)
     : [];
 
@@ -83,22 +84,41 @@ export function SmartSearch({ onTicketClick, className }: SmartSearchProps) {
     reopened: 'bg-rose-500/15 text-rose-700 dark:text-rose-300',
   };
 
+  const placeholder = isRTL
+    ? 'بحث في التذاكر وقاعدة المعرفة...'
+    : 'Search tickets & knowledge base...';
+
+  const noResultsLabel = isRTL
+    ? `لا توجد نتائج لـ "${query}"`
+    : `No results for "${query}"`;
+
+  const ticketsLabel = isRTL
+    ? `تذاكر (${filteredTickets.length})`
+    : `Tickets (${filteredTickets.length})`;
+
+  const kbLabel = isRTL
+    ? `قاعدة المعرفة (${articles.length})`
+    : `Knowledge Base (${articles.length})`;
+
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div ref={containerRef} className={cn("relative", className)} dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Search className={cn("absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none", isRTL ? "right-3" : "left-3")} />
         <Input
           ref={inputRef}
-          placeholder="بحث في التذاكر وقاعدة المعرفة..."
+          placeholder={placeholder}
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
-          className="pr-9 pl-9 rounded-xl bg-muted/50 border-muted-foreground/10 focus:bg-background transition-colors"
+          className={cn(
+            "rounded-xl bg-muted/50 border-muted-foreground/10 focus:bg-background transition-colors",
+            isRTL ? "pr-9 pl-9" : "pl-9 pr-9"
+          )}
         />
         {query && (
           <button
             onClick={() => { setQuery(''); inputRef.current?.focus(); }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className={cn("absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground", isRTL ? "left-3" : "right-3")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -117,21 +137,21 @@ export function SmartSearch({ onTicketClick, className }: SmartSearchProps) {
               {!hasResults && !articlesLoading && (
                 <div className="p-6 text-center text-muted-foreground">
                   <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">لا توجد نتائج لـ "{query}"</p>
+                  <p className="text-sm">{noResultsLabel}</p>
                 </div>
               )}
 
               {filteredTickets.length > 0 && (
                 <div>
-                  <div className="px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 flex items-center gap-1.5">
+                  <div className={cn("px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 flex items-center gap-1.5")}>
                     <FileText className="h-3 w-3" />
-                    تذاكر ({filteredTickets.length})
+                    {ticketsLabel}
                   </div>
                   {filteredTickets.map(ticket => (
                     <button
                       key={ticket.id}
                       onClick={() => { onTicketClick(ticket); setFocused(false); setQuery(''); }}
-                      className="w-full text-right px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0"
+                      className={cn("w-full px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0", isRTL ? "text-right" : "text-left")}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] font-mono text-muted-foreground">{ticket.code}</span>
@@ -150,13 +170,13 @@ export function SmartSearch({ onTicketClick, className }: SmartSearchProps) {
                 <div>
                   <div className="px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 flex items-center gap-1.5">
                     <BookOpen className="h-3 w-3" />
-                    قاعدة المعرفة ({articles.length})
+                    {kbLabel}
                   </div>
                   {articles.map(article => (
                     <a
                       key={article.id}
                       href="/knowledge-base"
-                      className="block w-full text-right px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0"
+                      className={cn("block w-full px-4 py-3 hover:bg-muted/50 transition-colors border-b border-border/30 last:border-0", isRTL ? "text-right" : "text-left")}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="outline" className="text-[10px]">{article.category}</Badge>
