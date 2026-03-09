@@ -91,7 +91,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
       </motion.div>
     </form>
   );
-}
+};
 
 function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   const { toast } = useToast();
