@@ -47,8 +47,9 @@ export default function AdminReports() {
   const [dateTo, setDateTo] = useState('');
   const [activePreset, setActivePreset] = useState(t.admin.datePresets.all);
   const [filterDept, setFilterDept] = useState('all');
-
+  const [filterSystem, setFilterSystem] = useState('all');
   const [filterService, setFilterService] = useState('all');
+
 
   // Quick date range presets
   const datePresets = [
