@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
@@ -17,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import logoImg from '@/assets/logo-icon.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-export function AppSidebar() {
+export const AppSidebar = memo(function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
@@ -35,32 +36,32 @@ export function AppSidebar() {
     developer: t.roles.developer,
   };
 
-  const mainItems = [
+  const mainItems = useMemo(() => [
     { title: t.sidebar.dashboard, url: '/', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
-  ];
+  ], [t]);
 
-  const requesterItems = [
+  const requesterItems = useMemo(() => [
     { title: t.sidebar.followUpBoard, url: '/portal', icon: LayoutDashboard },
     { title: t.sidebar.myTickets, url: '/portal/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
-  ];
+  ], [t]);
 
-  const developerItems = [
+  const developerItems = useMemo(() => [
     { title: t.sidebar.developerBoard, url: '/developer', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
-  ];
+  ], [t]);
 
-  const adminItems = [
+  const adminItems = useMemo(() => [
     { title: t.sidebar.executiveDashboard, url: '/admin/executive', icon: BarChart3 },
     { title: t.sidebar.serviceCatalog, url: '/admin/services', icon: BookOpen },
     { title: t.sidebar.serviceFields, url: '/admin/service-fields', icon: FormInput },
@@ -83,7 +84,7 @@ export function AppSidebar() {
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
     { title: t.sidebar.emailManagement, url: '/admin/email', icon: Mail },
     { title: t.sidebar.systemSettings, url: '/admin/settings', icon: Settings },
-  ];
+  ], [t]);
 
   return (
     <Sidebar collapsible="icon" side={lang === 'ar' ? 'right' : 'left'}>
@@ -198,4 +199,4 @@ export function AppSidebar() {
       </SidebarFooter>
     </Sidebar>
   );
-}
+});
