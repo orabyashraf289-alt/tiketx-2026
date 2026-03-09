@@ -188,11 +188,11 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم تحديث المستخدم ✅' });
+      toast({ title: t.admin.userUpdated });
       setEditOpen(false);
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -206,10 +206,10 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم حذف المستخدم ✅' });
+      toast({ title: t.admin.userDeleted });
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     }
   };
 
@@ -243,7 +243,7 @@ export default function AdminUsers() {
   const clearAllAccess = async (devId: string) => {
     await supabase.from('developer_access').delete().eq('developer_id', devId);
     refetchAccess();
-    toast({ title: 'تم مسح جميع القيود - المطور يصل لكل الأنظمة الآن' });
+    toast({ title: t.admin.allAccessCleared });
   };
 
   const filteredUsers = users.filter((u: any) => {
