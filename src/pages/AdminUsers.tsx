@@ -336,7 +336,7 @@ export default function AdminUsers() {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-semibold text-foreground">{u.full_name || 'بدون اسم'}</p>
-                                {!u.is_active && <Badge variant="destructive" className="text-[10px]">معطّل</Badge>}
+                            {!u.is_active && <Badge variant="destructive" className="text-[10px]">{t.admin.disabled}</Badge>}
                               </div>
                               <p className="text-sm text-muted-foreground truncate">{u.email}</p>
                               <div className="flex items-center gap-3 flex-wrap">
@@ -357,11 +357,11 @@ export default function AdminUsers() {
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {u.role === 'developer' && (
-                              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openAccessDialog(u)} title="صلاحيات المطور">
+                              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openAccessDialog(u)} title={t.admin.devPermissions}>
                                 <Settings2 className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)} title="تعديل">
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)} title={t.common.edit}>
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Select value={u.role} onValueChange={v => roleMut.mutate({ userId: u.id, role: v as AppRole })}>
@@ -370,21 +370,21 @@ export default function AdminUsers() {
                             </Select>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="حذف">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title={t.common.delete}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent dir="rtl">
+                              <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>حذف المستخدم</AlertDialogTitle>
+                                  <AlertDialogTitle>{t.admin.deleteUser}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    هل أنت متأكد من حذف <strong>{u.full_name}</strong>؟ سيتم حذف الحساب نهائياً ولا يمكن التراجع.
+                                    {t.admin.deleteUserConfirm}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className="gap-2">
-                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                  <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                                   <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteUser(u.id)}>
-                                    حذف نهائي
+                                    {t.common.delete}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
