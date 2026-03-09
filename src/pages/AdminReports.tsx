@@ -43,10 +43,11 @@ export default function AdminReports() {
   const { t, isRTL, lang } = useLanguage();
   const { statusLabels, priorityLabels } = useLocalizedLabels();
   
+  const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [activePreset, setActivePreset] = useState(t.admin.datePresets.all);
   const [filterDept, setFilterDept] = useState('all');
-  const [filterSystem, setFilterSystem] = useState('all');
+
   const [filterService, setFilterService] = useState('all');
 
   // Quick date range presets
