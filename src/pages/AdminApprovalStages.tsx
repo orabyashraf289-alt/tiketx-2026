@@ -320,7 +320,7 @@ export default function AdminApprovalStages() {
                                     <div className="flex flex-wrap gap-1.5 mt-0.5">
                                       <Badge variant="outline" className="text-[10px] rounded-lg">
                                         {stage.stage_type === 'parallel' ? <GitBranch className="h-2.5 w-2.5 ml-1" /> : <ArrowDown className="h-2.5 w-2.5 ml-1" />}
-                                        {stageTypeLabels[stage.stage_type]}
+                                        {stage.stage_type === 'sequential' ? t.admin.sequential : t.admin.parallel}
                                       </Badge>
                                       <Badge variant="outline" className="text-[10px] rounded-lg">{roleLabels[stage.approver_role]}</Badge>
                                       {stage.approver_profile?.full_name && (
