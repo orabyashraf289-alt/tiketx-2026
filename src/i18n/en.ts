@@ -972,7 +972,6 @@ const en: Translations = {
 
     // Security Dashboard
     securityDashboardTitle: 'Security & Governance Dashboard',
-    exportPDF: 'Export PDF',
     securityAlerts: 'Security Alerts',
     totalUsers: 'Total Users',
     activeAccounts: 'Active Accounts',

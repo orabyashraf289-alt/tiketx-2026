@@ -983,7 +983,6 @@ const ar = {
 
     // Security Dashboard
     securityDashboardTitle: 'لوحة الأمان والحوكمة',
-    exportPDF: 'تصدير PDF',
     securityAlerts: 'التنبيهات الأمنية',
     totalUsers: 'إجمالي المستخدمين',
     activeAccounts: 'حسابات نشطة',
