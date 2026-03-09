@@ -191,11 +191,9 @@ export default function NewTicket() {
   const roleLabel = role ? roleLabels[role] : '';
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b bg-card px-4 gap-3 shrink-0">
+    <PageLayout>
+      <header className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30">
+        <SidebarTrigger />
             <SidebarTrigger />
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className={`h-5 w-5 ${!isRTL ? 'rotate-180' : ''}`} />
