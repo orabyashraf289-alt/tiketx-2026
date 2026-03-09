@@ -119,12 +119,23 @@ serve(async (req) => {
 
             case "send_notification": {
               const recipientId = action.recipient_id || ticket.requester_id;
+              const titleAr = action.title || "إشعار تلقائي";
+              const messageAr = action.message || `تم تنفيذ إجراء تلقائي على التذكرة #${ticket.ticket_number}`;
+              const titleEn = action.title || "Automation notification";
+              const messageEn = action.message || `An automated action was executed on ticket #${ticket.ticket_number}`;
+
               await supabase.from("notifications").insert({
                 user_id: recipientId,
                 ticket_id: ticket.id,
-                title: action.title || "إشعار تلقائي",
-                message: action.message || `تم تنفيذ إجراء تلقائي على التذكرة #${ticket.ticket_number}`,
+                title: titleAr,
+                message: messageAr,
                 type: "automation",
+                data: {
+                  title_ar: titleAr,
+                  title_en: titleEn,
+                  message_ar: messageAr,
+                  message_en: messageEn,
+                },
               });
               actionsExecuted.push({ type: action.type, success: true });
               break;

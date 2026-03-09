@@ -171,12 +171,22 @@ Deno.serve(async (req) => {
       else console.warn(`⚠️ Resend send failed or not configured for ${recipient_email}`);
     }
 
-    // Insert notification
+    // Insert notification (bilingual payload)
     const { data: profile } = await adminClient.from("profiles").select("id").eq("email", recipient_email).single();
     if (profile) {
+      const message = details || subject;
       await adminClient.from("notifications").insert({
-        user_id: profile.id, ticket_id, title: subject,
-        message: details || subject, type: event_type,
+        user_id: profile.id,
+        ticket_id,
+        title: subject,
+        message,
+        type: event_type,
+        data: {
+          title_ar: subject,
+          title_en: subject,
+          message_ar: message,
+          message_en: message,
+        },
       });
     }
 

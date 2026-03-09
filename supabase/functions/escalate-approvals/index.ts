@@ -102,6 +102,12 @@ Deno.serve(async (req) => {
           title: "تصعيد مرحلة اعتماد",
           message: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} بسبب تأخر الاعتماد`,
           type: "approval_escalated",
+          data: {
+            title_ar: "تصعيد مرحلة اعتماد",
+            title_en: "Approval stage escalated",
+            message_ar: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} بسبب تأخر الاعتماد`,
+            message_en: `Stage "${stage?.stage_name}" for ticket #${ticket.ticket_number} was escalated due to overdue approval.`,
+          },
         });
 
         // Email to requester

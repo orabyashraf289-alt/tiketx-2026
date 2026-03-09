@@ -92,7 +92,7 @@ serve(async (req) => {
         avgResolutionHours = Math.round(totalHours / resolvedTickets.length);
       }
 
-      const reportSummary = `📊 التقرير الأسبوعي - ${profile.full_name}
+      const reportSummaryAr = `📊 التقرير الأسبوعي - ${profile.full_name}
 ━━━━━━━━━━━━━━━━━━━━━━
 📋 التذاكر الجديدة: ${totalAssigned || 0}
 ✅ التذاكر المحلولة: ${resolvedCount || 0}
@@ -103,12 +103,29 @@ serve(async (req) => {
 🔴 عاجل: ${priorityBreakdown.urgent} | 🟠 عالي: ${priorityBreakdown.high}
 🟡 متوسط: ${priorityBreakdown.medium} | 🟢 منخفض: ${priorityBreakdown.low}`;
 
-      // Store as notification
+      const reportSummaryEn = `📊 Weekly report - ${profile.full_name}
+━━━━━━━━━━━━━━━━━━━━━━
+📋 New assigned tickets: ${totalAssigned || 0}
+✅ Resolved tickets: ${resolvedCount || 0}
+📂 Open tickets: ${openCount || 0}
+💬 Comments: ${commentsCount || 0}
+⏱️ Avg resolution time: ${avgResolutionHours}h
+━━━━━━━━━━━━━━━━━━━━━━
+🔴 Urgent: ${priorityBreakdown.urgent} | 🟠 High: ${priorityBreakdown.high}
+🟡 Medium: ${priorityBreakdown.medium} | 🟢 Low: ${priorityBreakdown.low}`;
+
+      // Store as notification (bilingual payload)
       await supabase.from("notifications").insert({
         user_id: dev.user_id,
         title: "📊 التقرير الأسبوعي",
-        message: reportSummary,
+        message: reportSummaryAr,
         type: "weekly_report",
+        data: {
+          title_ar: "📊 التقرير الأسبوعي",
+          title_en: "📊 Weekly report",
+          message_ar: reportSummaryAr,
+          message_en: reportSummaryEn,
+        },
       });
 
       // Log email
