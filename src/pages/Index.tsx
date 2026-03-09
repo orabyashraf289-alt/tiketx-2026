@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTickets, fetchTicketStats, fetchDepartments, fetchReportData, TicketStatus } from '@/lib/api';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,7 +13,6 @@ import {
 import { DashboardSkeleton } from '@/components/SkeletonLoaders';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardCharts } from '@/components/DashboardCharts';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
