@@ -47,6 +47,7 @@ export function AppSidebar() {
     { title: t.sidebar.followUpBoard, url: '/portal', icon: LayoutDashboard },
     { title: t.sidebar.myTickets, url: '/portal/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];
 
