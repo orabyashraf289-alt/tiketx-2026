@@ -1,8 +1,9 @@
 import { useLanguage, Language } from '@/i18n';
-import { useAuth } from '@/hooks/useAuth';
+import { useContext } from 'react';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   size?: 'default' | 'icon';
@@ -11,14 +12,18 @@ interface Props {
 
 export function LanguageSwitcher({ size = 'icon', variant = 'ghost' }: Props) {
   const { lang, setLanguage, t } = useLanguage();
-  const { updateLanguagePreference, user } = useAuth();
 
   const toggle = async () => {
     const next: Language = lang === 'ar' ? 'en' : 'ar';
     setLanguage(next);
-    // Save to database if user is logged in
-    if (user) {
-      await updateLanguagePreference(next);
+    
+    // Save to database if user is logged in (check session directly)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await supabase
+        .from('profiles')
+        .update({ preferred_language: next })
+        .eq('id', session.user.id);
     }
   };
 
