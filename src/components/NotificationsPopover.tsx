@@ -8,8 +8,9 @@ import { Bell, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/i18n';
 
 const typeIcons: Record<string, string> = {
   ticket_created: '🎫',
@@ -17,12 +18,38 @@ const typeIcons: Record<string, string> = {
   comment_added: '💬',
   status_changed: '🔄',
   priority_changed: '⚡',
+  weekly_report: '📊',
+  approval_escalated: '⚠️',
+  sla_warning: '⏰',
+  automation: '🤖',
+};
+
+type NotificationI18nData = {
+  title_ar?: string;
+  title_en?: string;
+  message_ar?: string;
+  message_en?: string;
 };
 
 export function NotificationsPopover() {
   const { user } = useAuth();
+  const { lang, isRTL } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const copy = lang === 'ar'
+    ? {
+        title: 'الإشعارات',
+        unread: 'غير مقروءة',
+        markAll: 'قراءة الكل',
+        empty: 'لا توجد إشعارات',
+      }
+    : {
+        title: 'Notifications',
+        unread: 'unread',
+        markAll: 'Mark all read',
+        empty: 'No notifications',
+      };
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -56,12 +83,27 @@ export function NotificationsPopover() {
     };
   }, [user, queryClient]);
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  const handleClick = async (n: typeof notifications[0]) => {
+  const getLocalizedText = (n: any) => {
+    const data = (n?.data || {}) as NotificationI18nData;
+    const title = lang === 'ar'
+      ? (data.title_ar || n.title)
+      : (data.title_en || n.title);
+
+    const message = lang === 'ar'
+      ? (data.message_ar || n.message)
+      : (data.message_en || n.message);
+
+    return { title, message };
+  };
+
+  const handleClick = async (n: (typeof notifications)[0]) => {
+    if (!user) return;
+
     if (!n.is_read) {
       await markNotificationRead(n.id);
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
     }
     if (n.ticket_id) {
       navigate(`/tickets/${n.ticket_id}`);
@@ -69,10 +111,13 @@ export function NotificationsPopover() {
   };
 
   const markAllRead = async () => {
-    const unread = notifications.filter(n => !n.is_read);
-    await Promise.all(unread.map(n => markNotificationRead(n.id)));
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    if (!user) return;
+    const unread = notifications.filter((n) => !n.is_read);
+    await Promise.all(unread.map((n) => markNotificationRead(n.id)));
+    queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
   };
+
+  const dateLocale = lang === 'ar' ? ar : enUS;
 
   return (
     <Popover>
@@ -93,16 +138,21 @@ export function NotificationsPopover() {
           </AnimatePresence>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0" align="end" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="p-3 border-b font-semibold text-sm flex items-center justify-between">
-          <span>الإشعارات</span>
+          <span>{copy.title}</span>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <>
-                <span className="text-xs text-muted-foreground">{unreadCount} غير مقروءة</span>
-                <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={markAllRead}>
-                  <Check className="h-3 w-3 ml-1" />
-                  قراءة الكل
+                <span className="text-xs text-muted-foreground">{unreadCount} {copy.unread}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[10px] px-2"
+                  onClick={markAllRead}
+                >
+                  <Check className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                  {copy.markAll}
                 </Button>
               </>
             )}
@@ -112,37 +162,42 @@ export function NotificationsPopover() {
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
               <Bell className="h-8 w-8 mb-2 opacity-30" />
-              <p className="text-sm">لا توجد إشعارات</p>
+              <p className="text-sm">{copy.empty}</p>
             </div>
           ) : (
-            notifications.map((n, i) => (
-              <motion.button
-                key={n.id}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                onClick={() => handleClick(n)}
-                className={`w-full text-right p-3 border-b last:border-0 hover:bg-muted/50 transition-colors ${!n.is_read ? 'bg-primary/5' : ''}`}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="text-sm mt-0.5">{typeIcons[n.type || ''] || '🔔'}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{n.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ar })}
-                    </p>
+            notifications.map((n, i) => {
+              const { title, message } = getLocalizedText(n);
+              return (
+                <motion.button
+                  key={n.id}
+                  initial={{ opacity: 0, x: isRTL ? -10 : 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => handleClick(n)}
+                  className={`w-full ${isRTL ? 'text-right' : 'text-left'} p-3 border-b last:border-0 hover:bg-muted/50 transition-colors ${
+                    !n.is_read ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm mt-0.5">{typeIcons[n.type || ''] || '🔔'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: dateLocale })}
+                      </p>
+                    </div>
+                    {!n.is_read && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5"
+                      />
+                    )}
                   </div>
-                  {!n.is_read && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5"
-                    />
-                  )}
-                </div>
-              </motion.button>
-            ))
+                </motion.button>
+              );
+            })
           )}
         </div>
       </PopoverContent>

@@ -124,10 +124,13 @@ export interface Notification {
   ticket_id: string | null;
   title: string;
   message: string;
+  body?: string | null;
+  data?: any;
   is_read: boolean;
   type: string | null;
   created_at: string;
 }
+
 
 export const statusLabels: Record<TicketStatus, string> = {
   new: 'جديدة',

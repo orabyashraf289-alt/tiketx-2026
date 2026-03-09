@@ -40,7 +40,7 @@ const fadeUp = {
 };
 
 export default function AdminReports() {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
   const { statusLabels, priorityLabels } = useLocalizedLabels();
   
   const [dateFrom, setDateFrom] = useState('');
@@ -49,6 +49,7 @@ export default function AdminReports() {
   const [filterDept, setFilterDept] = useState('all');
   const [filterSystem, setFilterSystem] = useState('all');
   const [filterService, setFilterService] = useState('all');
+
 
   // Quick date range presets
   const datePresets = [
@@ -236,7 +237,12 @@ export default function AdminReports() {
             </div>
             <div className="flex gap-2 items-center">
               <NotificationsPopover />
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportReportPDF(r, activePreset || `${dateFrom} - ${dateTo}`)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => exportReportPDF(r, activePreset || `${dateFrom} - ${dateTo}`, { lang, statusLabels, priorityLabels })}
+              >
                 <FileText className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{t.admin.exportPDF}</span>
               </Button>
