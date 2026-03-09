@@ -277,49 +277,46 @@ export default function TicketsInbox() {
 
   const defaultTab = isAgentOrAdmin ? 'unassigned' : 'my';
 
+  const headerActions = (
+    <>
+      {isAgentOrAdmin && (
+        <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+          <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+            <List className="h-4 w-4" />
+          </button>
+          <button onClick={() => { setViewMode('table'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+            <TableProperties className="h-4 w-4" />
+          </button>
+          <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+      <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
+        <Plus className="h-4 w-4" />
+        <span className="hidden sm:inline">{t.tickets.createNewTicket}</span>
+      </Button>
+    </>
+  );
+
+  const liveBadge = (
+    <div className="flex items-center gap-1.5">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+      </span>
+      <span className="text-[10px] text-success font-medium hidden sm:inline">{t.common.live}</span>
+    </div>
+  );
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-4 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold hidden sm:block text-foreground">{t.tickets.inbox}</h1>
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                </span>
-                <span className="text-[10px] text-success font-medium hidden sm:inline">{t.common.live}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {isAgentOrAdmin && (
-                <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-                  <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-                    <List className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => { setViewMode('table'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-                    <TableProperties className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-                    <LayoutGrid className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-              <NotificationsPopover />
-              <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.tickets.createNewTicket}</span>
-              </Button>
-            </div>
-          </motion.header>
+    <PageLayout>
+      <PageHeader
+        title={t.tickets.inbox}
+        icon={<Inbox className="h-5 w-5" />}
+        badge={liveBadge}
+        actions={headerActions}
+      />
 
           <main className="flex-1 overflow-auto">
             <motion.div
