@@ -151,7 +151,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
       <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground mt-4 mx-auto block transition-colors">{t.auth.backToLogin}</button>
     </motion.div>
   );
-}
+};
 
 function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: string; logoSrc: string }) {
   const { t } = useLanguage();
