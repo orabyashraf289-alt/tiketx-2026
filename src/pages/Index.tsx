@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTickets, fetchTicketStats, fetchDepartments, fetchReportData, TicketStatus } from '@/lib/api';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,7 +13,6 @@ import {
 import { DashboardSkeleton } from '@/components/SkeletonLoaders';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardCharts } from '@/components/DashboardCharts';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
@@ -114,46 +112,43 @@ export default function Dashboard() {
 
   const isAdmin = role === 'admin' || role === 'agent' || role === 'developer';
 
+  const headerActions = (
+    <>
+      <div className="relative hidden md:block">
+        <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-8 w-48 text-xs rounded-full" />
+      </div>
+      <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
+        <Plus className="h-4 w-4" />
+        <span className="hidden sm:inline">{t.sidebar.newTicket}</span>
+      </Button>
+    </>
+  );
+
+  const dateBadge = (
+    <div className="flex gap-1">
+      {datePresets.map(p => (
+        <button
+          key={p.days}
+          onClick={() => setDateRange(p.days)}
+          className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
+            dateRange === p.days ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-3 sm:px-4 gap-2 sm:gap-4 shrink-0 no-print sticky top-0 z-30"
-            role="banner"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold hidden sm:block text-foreground">{t.dashboard.title}</h1>
-              <div className="flex gap-1 ltr:ml-2 rtl:mr-2">
-                {datePresets.map(p => (
-                  <button
-                    key={p.days}
-                    onClick={() => setDateRange(p.days)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
-                      dateRange === p.days ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative hidden md:block">
-                <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-8 w-48 text-xs rounded-full" />
-              </div>
-              <NotificationsPopover />
-              <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.sidebar.newTicket}</span>
-              </Button>
-            </div>
-          </motion.header>
+    <PageLayout>
+      <PageHeader
+        title={t.dashboard.title}
+        icon={<BarChart3 className="h-5 w-5" />}
+        badge={dateBadge}
+        actions={headerActions}
+      />
 
           <main className="flex-1 overflow-auto" role="main">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 space-y-6">
@@ -256,9 +251,7 @@ export default function Dashboard() {
               </motion.div>
             </motion.div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
 

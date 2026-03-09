@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, forwardRef } from 'react';
 import { Ticket } from '@/lib/api';
 import { StatusBadge, PriorityBadge, SLABadge } from '@/components/TicketBadges';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,7 +12,7 @@ interface Props {
   onClick: () => void;
 }
 
-export const TicketListItem = memo(function TicketListItem({ ticket, index, onClick }: Props) {
+export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, index, onClick }, ref) {
   const { t, lang, isRTL } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
   const dateLocale = lang === 'ar' ? ar : enUS;
@@ -21,6 +21,7 @@ export const TicketListItem = memo(function TicketListItem({ ticket, index, onCl
 
   return (
     <button
+      ref={ref}
       onClick={onClick}
       className={`w-full text-start px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
         isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
@@ -71,4 +72,4 @@ export const TicketListItem = memo(function TicketListItem({ ticket, index, onCl
       </div>
     </button>
   );
-});
+}));

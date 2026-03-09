@@ -6,8 +6,8 @@ import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceC
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeError } from '@/lib/errorHandler';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout } from '@/components/layout';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -191,11 +191,9 @@ export default function NewTicket() {
   const roleLabel = role ? roleLabels[role] : '';
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b bg-card px-4 gap-3 shrink-0">
+    <PageLayout>
+      <header className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30">
+        <SidebarTrigger />
             <SidebarTrigger />
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className={`h-5 w-5 ${!isRTL ? 'rotate-180' : ''}`} />
@@ -435,8 +433,6 @@ export default function NewTicket() {
               </Card>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
