@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { TicketStatus, TicketPriority } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -18,7 +19,7 @@ const priorityStyles: Record<TicketPriority, string> = {
   low: 'bg-muted text-muted-foreground border-border',
   medium: 'bg-info/15 text-info border-info/30',
   high: 'bg-warning/15 text-warning border-warning/30',
-  urgent: 'bg-destructive/15 text-destructive border-destructive/30',
+  urgent: 'bg-destructive/15 text-destructive border-destructive/30 animate-pulse',
 };
 
 function useStatusLabels(): Record<TicketStatus, string> {
@@ -44,27 +45,27 @@ function usePriorityLabels(): Record<TicketPriority, string> {
   };
 }
 
-export function StatusBadge({ status }: { status: TicketStatus }) {
+export const StatusBadge = memo(function StatusBadge({ status }: { status: TicketStatus }) {
   const labels = useStatusLabels();
   return (
-    <Badge variant="outline" className={cn('text-xs font-medium', statusStyles[status])}>
+    <Badge variant="outline" className={cn('text-xs font-medium transition-colors', statusStyles[status])}>
       {labels[status]}
     </Badge>
   );
-}
+});
 
-export function PriorityBadge({ priority }: { priority: TicketPriority }) {
+export const PriorityBadge = memo(function PriorityBadge({ priority }: { priority: TicketPriority }) {
   const labels = usePriorityLabels();
   return (
-    <Badge variant="outline" className={cn('text-xs font-medium', priorityStyles[priority])}>
+    <Badge variant="outline" className={cn('text-xs font-medium transition-colors', priorityStyles[priority])}>
       {labels[priority]}
     </Badge>
   );
-}
+});
 
 type SLAStatus = 'achieved' | 'breached' | 'on_track' | 'at_risk';
 
-export function SLABadge({ slaResolutionDueAt, resolvedAt }: { slaResolutionDueAt: string | null; resolvedAt: string | null }) {
+export const SLABadge = memo(function SLABadge({ slaResolutionDueAt, resolvedAt }: { slaResolutionDueAt: string | null; resolvedAt: string | null }) {
   const { t } = useLanguage();
 
   if (!slaResolutionDueAt) return <span className="text-xs text-muted-foreground">—</span>;
@@ -97,9 +98,9 @@ export function SLABadge({ slaResolutionDueAt, resolvedAt }: { slaResolutionDueA
   const { label, icon: Icon, className } = config[status];
 
   return (
-    <Badge variant="outline" className={cn('text-[10px] font-semibold gap-1', className)}>
+    <Badge variant="outline" className={cn('text-[10px] font-semibold gap-1 transition-colors', className)}>
       <Icon className="h-3 w-3" />
       {label}
     </Badge>
   );
-}
+});
