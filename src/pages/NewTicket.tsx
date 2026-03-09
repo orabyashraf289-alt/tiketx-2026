@@ -433,8 +433,6 @@ export default function NewTicket() {
               </Card>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
