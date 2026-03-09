@@ -1066,6 +1066,48 @@ const ar = {
 
     // Approval Kanban
     approvalKanbanTitle: 'لوحة الاعتمادات',
+
+    // Security Settings Page
+    passwordPolicySaved: 'تم حفظ سياسة كلمات المرور ✅',
+    broadcastFieldsRequired: 'يرجى تعبئة الموضوع والمحتوى',
+    broadcastSent: 'تم إرسال الإشعار بنجاح ✅',
+    sentToCount: 'تم الإرسال إلى',
+    usersLabel: 'مستخدم',
+    broadcastError: 'خطأ في الإرسال',
+    passwordPolicyTab: 'سياسة كلمات المرور',
+    broadcastTab: 'إشعار جماعي',
+    customizationTab: 'التخصيص',
+    passwordPolicyTitle: 'سياسة كلمات المرور',
+    passwordPolicyDesc: 'تحكم في متطلبات كلمات المرور للمستخدمين الجدد',
+    minPasswordLength: 'الحد الأدنى لطول كلمة المرور',
+    minAllowed6: 'الحد الأدنى المسموح: 6 أحرف',
+    sessionTimeoutLabel: 'مهلة انتهاء الجلسة (بالدقائق)',
+    sessionTimeoutHint: '480 دقيقة = 8 ساعات',
+    complexityRequirements: 'متطلبات التعقيد',
+    uppercaseLetters: 'أحرف كبيرة (A-Z)',
+    numbersRequired: 'أرقام (0-9)',
+    specialCharsRequired: 'رموز خاصة (!@#$%)',
+    importantNote: 'ملاحظة مهمة',
+    passwordPolicyNote: 'هذه الإعدادات تُطبق على نموذج إنشاء المستخدمين في النظام. يتم التحقق من متطلبات كلمة المرور عند إنشاء حسابات جديدة.',
+    savePasswordPolicy: 'حفظ سياسة كلمات المرور',
+    broadcastTitle: 'إرسال إشعار جماعي بالبريد',
+    broadcastDesc: 'أرسل بريداً إلكترونياً لجميع المستخدمين أو فئة محددة لإبلاغهم بالتحديثات',
+    targetAudience: 'الفئة المستهدفة',
+    allUsersTarget: 'جميع المستخدمين',
+    adminsOnly: 'المشرفين فقط',
+    agentsOnly: 'الدعم الفني فقط',
+    developersOnly: 'المطورين فقط',
+    requestersOnly: 'العملاء فقط',
+    emailSubjectLabel: 'موضوع البريد *',
+    emailSubjectPlaceholder: 'مثال: تحديث مهم على النظام',
+    emailBodyLabel: 'محتوى الرسالة *',
+    emailBodyPlaceholder: 'اكتب محتوى الرسالة هنا...',
+    charsLabel: 'حرف',
+    broadcastWarning: 'سيتم إرسال البريد لجميع المستخدمين النشطين في الفئة المحددة. تأكد من مراجعة المحتوى قبل الإرسال.',
+    sendBroadcast: 'إرسال الإشعار',
+
+    // Developer Access
+    devAccessDesc: 'اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.',
   },
 };
 
