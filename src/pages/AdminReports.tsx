@@ -611,8 +611,6 @@ export default function AdminReports() {
               </motion.div>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
