@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchReportData } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, BarChart3, Clock, ShieldCheck, AlertTriangle, Download, Timer, Printer, CalendarDays, Filter, TrendingUp, TrendingDown, FileText, Building2, Monitor, Layers } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { motion } from 'framer-motion';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { exportReportPDF } from '@/components/ReportPDFExport';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
@@ -136,14 +134,11 @@ export default function AdminReports() {
 
   if (isLoading || !filteredReport) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+      <PageLayout>
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </SidebarProvider>
+      </PageLayout>
     );
   }
 
@@ -221,47 +216,40 @@ export default function AdminReports() {
 
   const textAlign = isRTL ? 'text-right' : 'text-left';
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 no-print sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold">{t.admin.reportsTitle}</h1>
-            </div>
-            <div className="flex gap-2 items-center">
-              <NotificationsPopover />
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs"
-                onClick={() => exportReportPDF(r, activePreset || `${dateFrom} - ${dateTo}`, { lang, statusLabels, priorityLabels })}
-              >
-                <FileText className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t.admin.exportPDF}</span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handlePrint}>
-                <Printer className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t.common.print}</span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleExportAll}>
-                <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t.admin.exportCSV}</span>
-              </Button>
-            </div>
-          </motion.header>
+  const headerActions = (
+    <div className="flex gap-2 items-center">
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5 text-xs rounded-xl"
+        onClick={() => exportReportPDF(r, activePreset || `${dateFrom} - ${dateTo}`, { lang, statusLabels, priorityLabels })}
+      >
+        <FileText className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">{t.admin.exportPDF}</span>
+      </Button>
+      <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={handlePrint}>
+        <Printer className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">{t.common.print}</span>
+      </Button>
+      <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-xl" onClick={handleExportAll}>
+        <Download className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">{t.admin.exportCSV}</span>
+      </Button>
+    </div>
+  );
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto" id="report-content">
-            <div className="max-w-6xl mx-auto space-y-6">
-              {/* Date Filters */}
-              <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
-                <Card>
+  return (
+    <PageLayout>
+      <PageHeader
+        title={t.admin.reportsTitle}
+        icon={<BarChart3 className="h-5 w-5" />}
+        actions={headerActions}
+      />
+      <main className="flex-1 p-4 md:p-6 overflow-auto" id="report-content">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Date Filters */}
+          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
+            <Card className="rounded-2xl border-border/50 shadow-card">
                   <CardContent className="pt-5 pb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Filter className="h-4 w-4 text-primary" />
@@ -623,8 +611,6 @@ export default function AdminReports() {
               </motion.div>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
