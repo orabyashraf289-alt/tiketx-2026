@@ -265,7 +265,7 @@ export default function AdminUsers() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <Users className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold text-foreground">إدارة المستخدمين</h1>
+              <h1 className="text-lg font-bold text-foreground">{t.admin.userManagement}</h1>
               <Badge variant="secondary" className="text-xs">{users.length}</Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -273,25 +273,25 @@ export default function AdminUsers() {
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-1.5">
                     <UserPlus className="h-4 w-4" />
-                    مستخدم جديد
+                    {t.admin.newUser}
                   </Button>
                 </DialogTrigger>
-                <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
-                  <DialogHeader><DialogTitle>إنشاء مستخدم جديد</DialogTitle></DialogHeader>
+                <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-lg max-h-[85vh] overflow-auto">
+                  <DialogHeader><DialogTitle>{t.admin.createNewUser}</DialogTitle></DialogHeader>
                   <form onSubmit={handleCreateUser} className="space-y-4 mt-2">
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>الاسم الكامل *</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="أحمد محمد" required /></div>
-                      <div><Label>الوظيفة</Label><Input value={newJobTitle} onChange={e => setNewJobTitle(e.target.value)} placeholder="مهندس برمجيات" /></div>
+                      <div><Label>{t.admin.fullName}</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t.admin.fullNamePlaceholder} required /></div>
+                      <div><Label>{t.admin.jobTitleLabel}</Label><Input value={newJobTitle} onChange={e => setNewJobTitle(e.target.value)} placeholder={t.admin.jobTitlePlaceholder} /></div>
                     </div>
-                    <div><Label>البريد الإلكتروني *</Label><Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" /></div>
-                    <div><Label>كلمة المرور *</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6 أحرف على الأقل" required dir="ltr" minLength={6} /></div>
+                    <div><Label>{t.admin.emailRequired}</Label><Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" /></div>
+                    <div><Label>{t.admin.passwordRequired}</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6+" required dir="ltr" minLength={6} /></div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>رقم الهاتف</Label><Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
-                      <div><Label>رقم الجوال</Label><Input value={newMobile} onChange={e => setNewMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                      <div><Label>{t.admin.phoneLabel}</Label><Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                      <div><Label>{t.admin.mobileLabel}</Label><Input value={newMobile} onChange={e => setNewMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>رقم الموظف</Label><Input value={newEmployeeNumber} onChange={e => setNewEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
-                      <div><Label>الدور</Label>
+                      <div><Label>{t.admin.employeeNumberLabel}</Label><Input value={newEmployeeNumber} onChange={e => setNewEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                      <div><Label>{t.admin.roleLabel}</Label>
                         <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}</SelectContent>
@@ -299,7 +299,7 @@ export default function AdminUsers() {
                       </div>
                     </div>
                     <Button type="submit" className="w-full" disabled={creating}>
-                      {creating && <Loader2 className="h-4 w-4 animate-spin ml-2" />}إنشاء المستخدم
+                      {creating && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}{t.admin.createUser}
                     </Button>
                   </form>
                 </DialogContent>
@@ -312,8 +312,8 @@ export default function AdminUsers() {
             <div className="max-w-4xl mx-auto space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم أو البريد أو الوظيفة..." className="pr-10" />
+                <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.admin.searchByNameEmailJob} className={isRTL ? 'pr-10' : 'pl-10'} />
               </div>
 
               {isLoading ? (
@@ -321,7 +321,7 @@ export default function AdminUsers() {
               ) : filteredUsers.length === 0 ? (
                 <div className="flex flex-col items-center py-20 text-muted-foreground">
                   <Users className="h-12 w-12 mb-3 opacity-30" />
-                  <p>{search ? 'لا توجد نتائج' : 'لا يوجد مستخدمين'}</p>
+                  <p>{search ? t.common.noResults : t.admin.noUsers}</p>
                 </div>
               ) : (
                 <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-3">
