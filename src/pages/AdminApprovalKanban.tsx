@@ -9,7 +9,7 @@ export default function AdminApprovalKanban() {
   return (
     <PageLayout>
       <PageHeader
-        title={t.admin.approvalKanban}
+        title={t.admin.approvalKanbanTitle}
         icon={<ShieldCheck className="h-5 w-5" />}
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
