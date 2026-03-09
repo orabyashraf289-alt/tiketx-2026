@@ -488,8 +488,29 @@ const ar = {
   // Notifications
   notifications: {
     title: 'الإشعارات',
-    markAllRead: 'تحديد الكل كمقروء',
+    markAllRead: 'قراءة الكل',
     noNotifications: 'لا توجد إشعارات',
+    allTypes: 'كل الأنواع',
+    unreadCount: 'غير مقروءة',
+    allRead: 'جميع الإشعارات مقروءة',
+    filterByType: 'النوع',
+    readStatus: 'الحالة',
+    allNotifications: 'الكل',
+    unreadOnly: 'غير المقروءة',
+    readOnly: 'المقروءة',
+    empty: 'لا توجد إشعارات',
+    emptyDesc: 'ستظهر هنا الإشعارات الجديدة',
+    new: 'جديد',
+    types: {
+      ticketCreated: 'تذكرة جديدة',
+      assigned: 'تعيين تذكرة',
+      commentAdded: 'تعليق جديد',
+      statusChanged: 'تغيير حالة',
+      priorityChanged: 'تغيير أولوية',
+      slaWarning: 'تنبيه SLA',
+      approvalEscalated: 'تصعيد اعتماد',
+      weeklyReport: 'تقرير أسبوعي',
+    },
   },
 
   // Profile

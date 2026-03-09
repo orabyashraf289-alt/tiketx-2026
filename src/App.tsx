@@ -45,6 +45,7 @@ const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog'));
 const AdminSecurityDashboard = lazy(() => import('./pages/AdminSecurityDashboard'));
 const AdminSecuritySettings = lazy(() => import('./pages/AdminSecuritySettings'));
 const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
+const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient({

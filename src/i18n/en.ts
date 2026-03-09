@@ -479,8 +479,29 @@ const en: Translations = {
 
   notifications: {
     title: 'Notifications',
-    markAllRead: 'Mark all as read',
+    markAllRead: 'Mark all read',
     noNotifications: 'No notifications',
+    allTypes: 'All types',
+    unreadCount: 'unread',
+    allRead: 'All notifications read',
+    filterByType: 'Type',
+    readStatus: 'Status',
+    allNotifications: 'All',
+    unreadOnly: 'Unread only',
+    readOnly: 'Read only',
+    empty: 'No notifications',
+    emptyDesc: 'New notifications will appear here',
+    new: 'New',
+    types: {
+      ticketCreated: 'New ticket',
+      assigned: 'Ticket assigned',
+      commentAdded: 'New comment',
+      statusChanged: 'Status changed',
+      priorityChanged: 'Priority changed',
+      slaWarning: 'SLA warning',
+      approvalEscalated: 'Approval escalated',
+      weeklyReport: 'Weekly report',
+    },
   },
 
   profilePage: {
