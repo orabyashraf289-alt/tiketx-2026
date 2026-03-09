@@ -755,8 +755,6 @@ export default function TicketDetailPage() {
               </div>
             </motion.div>
           </main>
-        </div>
-      </div>
 
       {/* AI Chat Panel */}
       <AiChatPanel ticketId={ticket.id} ticketTitle={ticket.title} />
@@ -792,6 +790,6 @@ export default function TicketDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
