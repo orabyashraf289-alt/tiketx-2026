@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
-  Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send,
+  Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send, Bell,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,6 +39,7 @@ export function AppSidebar() {
     { title: t.sidebar.dashboard, url: '/', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];
 
@@ -46,6 +47,7 @@ export function AppSidebar() {
     { title: t.sidebar.followUpBoard, url: '/portal', icon: LayoutDashboard },
     { title: t.sidebar.myTickets, url: '/portal/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];
 
@@ -53,6 +55,7 @@ export function AppSidebar() {
     { title: t.sidebar.developerBoard, url: '/developer', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];

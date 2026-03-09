@@ -45,6 +45,7 @@ const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog'));
 const AdminSecurityDashboard = lazy(() => import('./pages/AdminSecurityDashboard'));
 const AdminSecuritySettings = lazy(() => import('./pages/AdminSecuritySettings'));
 const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
+const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient({
@@ -129,6 +130,7 @@ const App = () => (
                     <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
                     <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
                     <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
+                    <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
