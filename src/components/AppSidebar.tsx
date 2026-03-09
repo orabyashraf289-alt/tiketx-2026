@@ -199,4 +199,4 @@ export const AppSidebar = memo(function AppSidebar() {
       </SidebarFooter>
     </Sidebar>
   );
-}
+});
