@@ -1055,6 +1055,48 @@ const en: Translations = {
 
     // Approval Kanban
     approvalKanbanTitle: 'Approval Board',
+
+    // Security Settings Page
+    passwordPolicySaved: 'Password policy saved ✅',
+    broadcastFieldsRequired: 'Please fill in subject and content',
+    broadcastSent: 'Notification sent successfully ✅',
+    sentToCount: 'Sent to',
+    usersLabel: 'user(s)',
+    broadcastError: 'Error sending broadcast',
+    passwordPolicyTab: 'Password Policy',
+    broadcastTab: 'Broadcast Notification',
+    customizationTab: 'Customization',
+    passwordPolicyTitle: 'Password Policy',
+    passwordPolicyDesc: 'Control password requirements for new users',
+    minPasswordLength: 'Minimum Password Length',
+    minAllowed6: 'Minimum allowed: 6 characters',
+    sessionTimeoutLabel: 'Session Timeout (minutes)',
+    sessionTimeoutHint: '480 minutes = 8 hours',
+    complexityRequirements: 'Complexity Requirements',
+    uppercaseLetters: 'Uppercase Letters (A-Z)',
+    numbersRequired: 'Numbers (0-9)',
+    specialCharsRequired: 'Special Characters (!@#$%)',
+    importantNote: 'Important Note',
+    passwordPolicyNote: 'These settings apply to the user creation form. Password requirements are verified when creating new accounts.',
+    savePasswordPolicy: 'Save Password Policy',
+    broadcastTitle: 'Broadcast Email Notification',
+    broadcastDesc: 'Send an email to all users or a specific group to notify them of updates',
+    targetAudience: 'Target Audience',
+    allUsersTarget: 'All Users',
+    adminsOnly: 'Admins Only',
+    agentsOnly: 'Agents Only',
+    developersOnly: 'Developers Only',
+    requestersOnly: 'Requesters Only',
+    emailSubjectLabel: 'Email Subject *',
+    emailSubjectPlaceholder: 'e.g. Important System Update',
+    emailBodyLabel: 'Message Content *',
+    emailBodyPlaceholder: 'Write the message content here...',
+    charsLabel: 'characters',
+    broadcastWarning: 'The email will be sent to all active users in the selected group. Please review the content before sending.',
+    sendBroadcast: 'Send Notification',
+
+    // Developer Access
+    devAccessDesc: 'Select the systems and services the developer can access. If none are selected, they can access everything.',
   },
 };
 
