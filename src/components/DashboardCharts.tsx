@@ -1,13 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, CartesianGrid, Legend, LineChart, Line
+  PieChart, Pie, Cell, CartesianGrid, Legend
 } from 'recharts';
 import { BarChart3, Download, PieChart as PieIcon, TrendingUp, Activity } from 'lucide-react';
-import { statusLabels, TicketStatus } from '@/lib/api';
+import { TicketStatus } from '@/lib/api';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/i18n';
 
 const COLORS = [
   'hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)',
@@ -24,9 +25,11 @@ interface DashboardChartsProps {
   trendData: Array<{ date: string; created: number; resolved: number }>;
 }
 
-export function exportToCSV(report: any) {
+export function exportToCSV(report: any, lang: string = 'ar') {
   if (!report?.rawTickets?.length) return;
-  const headers = ['رقم التذكرة', 'العنوان', 'الحالة', 'الأولوية', 'القسم', 'النظام', 'الخدمة', 'تاريخ الإنشاء', 'تاريخ الحل', 'ساعات الحل'];
+  const headers = lang === 'ar'
+    ? ['رقم التذكرة', 'العنوان', 'الحالة', 'الأولوية', 'القسم', 'النظام', 'الخدمة', 'تاريخ الإنشاء', 'تاريخ الحل', 'ساعات الحل']
+    : ['Ticket #', 'Title', 'Status', 'Priority', 'Department', 'System', 'Service', 'Created', 'Resolved', 'Resolution Hours'];
   const rows = report.rawTickets.map((t: any) => [
     t.ticket_number, `"${t.title}"`, t.status, t.priority, t.department, t.system, t.service,
     t.created_at?.slice(0, 10), t.resolved_at?.slice(0, 10) || '', t.resolutionHours ?? ''
@@ -40,14 +43,61 @@ export function exportToCSV(report: any) {
   link.click();
 }
 
-export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
+export const DashboardCharts = memo(function DashboardCharts({ report, trendData }: DashboardChartsProps) {
+  const { t, lang } = useLanguage();
+
+  const statusLabelMap: Record<string, string> = {
+    new: t.tickets.new,
+    open: t.tickets.open,
+    in_progress: t.tickets.inProgress,
+    waiting_on_customer: t.tickets.waitingOnCustomer,
+    resolved: t.tickets.resolved,
+    closed: t.tickets.closed,
+    reopened: t.tickets.reopened,
+  };
+
+  const priorityLabelMap: Record<string, string> = {
+    low: t.tickets.priority.low,
+    medium: t.tickets.priority.medium,
+    high: t.tickets.priority.high,
+    urgent: t.tickets.priority.urgent,
+  };
+
+  const copy = lang === 'ar' ? {
+    trend: 'اتجاه التذاكر اليومي',
+    exportCSV: 'تصدير CSV',
+    created: 'تم إنشاؤها',
+    resolved: 'تم حلها',
+    noData: 'لا توجد بيانات',
+    noDataPeriod: 'لا توجد بيانات في هذه الفترة',
+    byStatus: 'حسب الحالة',
+    byPriority: 'حسب الأولوية',
+    bySource: 'حسب المصدر',
+    tickets: 'التذاكر',
+    slaByService: 'التزام SLA حسب الخدمة',
+    compliancePercent: 'نسبة الالتزام %',
+  } : {
+    trend: 'Daily Ticket Trend',
+    exportCSV: 'Export CSV',
+    created: 'Created',
+    resolved: 'Resolved',
+    noData: 'No data',
+    noDataPeriod: 'No data in this period',
+    byStatus: 'By Status',
+    byPriority: 'By Priority',
+    bySource: 'By Source',
+    tickets: 'Tickets',
+    slaByService: 'SLA Compliance by Service',
+    compliancePercent: 'Compliance %',
+  };
+
   const statusPieData = useMemo(() => {
     if (!report?.byStatus) return [];
     return Object.entries(report.byStatus).map(([k, v]) => ({
-      name: statusLabels[k as TicketStatus] || k,
+      name: statusLabelMap[k] || k,
       value: v as number,
     })).filter(d => d.value > 0);
-  }, [report]);
+  }, [report, lang]);
 
   const sourceData = useMemo(() => {
     if (!report?.bySystem) return [];
@@ -59,12 +109,11 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
 
   const priorityData = useMemo(() => {
     if (!report?.byPriority) return [];
-    const labels: Record<string, string> = { low: 'منخفضة', medium: 'متوسطة', high: 'عالية', urgent: 'عاجلة' };
     return Object.entries(report.byPriority).map(([k, v]) => ({
-      name: labels[k] || k,
+      name: priorityLabelMap[k] || k,
       value: v as number,
     })).filter(d => d.value > 0);
-  }, [report]);
+  }, [report, lang]);
 
   const slaServiceData = useMemo(() => {
     if (!report?.slaByService) return [];
@@ -75,6 +124,8 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
     }));
   }, [report]);
 
+  const tooltipStyle = { borderRadius: '0.75rem', fontSize: '12px', background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' };
+
   return (
     <div className="space-y-4">
       {/* Row 1: Trend Chart */}
@@ -83,11 +134,11 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              اتجاه التذاكر اليومي
+              {copy.trend}
             </CardTitle>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportToCSV(report)}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportToCSV(report, lang)}>
               <Download className="h-3.5 w-3.5" />
-              تصدير CSV
+              {copy.exportCSV}
             </Button>
           </CardHeader>
           <CardContent>
@@ -107,14 +158,14 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} />
                   <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
+                  <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name="تم إنشاؤها" stroke="hsl(217, 72%, 50%)" fill="url(#gradCreated)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="resolved" name="تم حلها" stroke="hsl(199, 89%, 48%)" fill="url(#gradResolved)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(217, 72%, 50%)" fill="url(#gradCreated)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(199, 89%, 48%)" fill="url(#gradResolved)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات في هذه الفترة</div>
+              <div className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">{copy.noDataPeriod}</div>
             )}
           </CardContent>
         </Card>
@@ -127,7 +178,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <PieIcon className="h-4 w-4 text-primary" />
-                حسب الحالة
+                {copy.byStatus}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -137,12 +188,12 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                     <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
                       {statusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
+                    <Tooltip contentStyle={tooltipStyle} />
                     <Legend wrapperStyle={{ fontSize: '10px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
+                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">{copy.noData}</div>
               )}
             </CardContent>
           </Card>
@@ -153,7 +204,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Activity className="h-4 w-4 text-warning" />
-                حسب الأولوية
+                {copy.byPriority}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -162,8 +213,8 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <BarChart data={priorityData} layout="vertical">
                     <XAxis type="number" tick={{ fontSize: 10 }} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={60} />
-                    <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
-                    <Bar dataKey="value" name="التذاكر" radius={[0, 6, 6, 0]}>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="value" name={copy.tickets} radius={[0, 6, 6, 0]}>
                       {priorityData.map((_, i) => (
                         <Cell key={i} fill={['hsl(217, 72%, 50%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
@@ -171,7 +222,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
+                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">{copy.noData}</div>
               )}
             </CardContent>
           </Card>
@@ -182,7 +233,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-info" />
-                حسب المصدر
+                {copy.bySource}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -191,12 +242,12 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <BarChart data={sourceData}>
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
-                    <Bar dataKey="value" name="التذاكر" fill="hsl(222, 60%, 42%)" radius={[6, 6, 0, 0]} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="value" name={copy.tickets} fill="hsl(222, 60%, 42%)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">لا توجد بيانات</div>
+                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">{copy.noData}</div>
               )}
             </CardContent>
           </Card>
@@ -208,7 +259,7 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
         <motion.div variants={fadeUp}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">التزام SLA حسب الخدمة</CardTitle>
+              <CardTitle className="text-sm">{copy.slaByService}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
@@ -216,9 +267,9 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                   <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} />
-                  <Tooltip contentStyle={{ borderRadius: '0.75rem', fontSize: '12px' }} />
+                  <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name="نسبة الالتزام %" fill="hsl(217, 72%, 50%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(217, 72%, 50%)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -227,4 +278,4 @@ export function DashboardCharts({ report, trendData }: DashboardChartsProps) {
       )}
     </div>
   );
-}
+});

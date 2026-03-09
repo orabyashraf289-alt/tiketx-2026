@@ -1,19 +1,28 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Home, ArrowRight, Search, HelpCircle } from "lucide-react";
+import { Home, ArrowRight, ArrowLeft, Search, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/i18n";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, role } = useAuth();
+  const { t, lang, isRTL } = useLanguage();
   const [countdown, setCountdown] = useState(15);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  const getHomeRoute = () => {
+    if (!user) return "/auth";
+    if (role === "requester") return "/portal";
+    if (role === "developer") return "/developer";
+    return "/";
+  };
 
   // Auto-redirect countdown
   useEffect(() => {
@@ -28,23 +37,36 @@ const NotFound = () => {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [navigate, role, user]);
 
-  const getHomeRoute = () => {
-    if (!user) return "/auth";
-    if (role === "requester") return "/portal";
-    if (role === "developer") return "/developer";
-    return "/";
+  const copy = lang === 'ar' ? {
+    title: 'الصفحة غير موجودة',
+    description: 'عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
+    home: 'الصفحة الرئيسية',
+    tickets: 'صندوق التذاكر',
+    kb: 'قاعدة المعرفة',
+    back: 'العودة للرئيسية',
+    redirect: 'إعادة توجيه تلقائي خلال',
+  } : {
+    title: 'Page Not Found',
+    description: 'Sorry, the page you are looking for does not exist or has been moved.',
+    home: 'Home Page',
+    tickets: 'Ticket Inbox',
+    kb: 'Knowledge Base',
+    back: 'Back to Home',
+    redirect: 'Auto-redirect in',
   };
 
   const suggestions = [
-    { label: "الصفحة الرئيسية", path: getHomeRoute(), icon: Home },
-    { label: "صندوق التذاكر", path: user ? "/tickets" : "/auth", icon: Search },
-    { label: "قاعدة المعرفة", path: user ? "/knowledge-base" : "/auth", icon: HelpCircle },
+    { label: copy.home, path: getHomeRoute(), icon: Home },
+    { label: copy.tickets, path: user ? "/tickets" : "/auth", icon: Search },
+    { label: copy.kb, path: user ? "/knowledge-base" : "/auth", icon: HelpCircle },
   ];
 
+  const BackArrow = isRTL ? ArrowLeft : ArrowRight;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4" dir="rtl">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="text-center max-w-lg w-full">
         {/* Animated 404 */}
         <motion.div
@@ -71,10 +93,10 @@ const NotFound = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <h1 className="text-2xl font-bold text-foreground mb-3">
-            الصفحة غير موجودة
+            {copy.title}
           </h1>
           <p className="text-muted-foreground mb-2">
-            عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.
+            {copy.description}
           </p>
           <p className="text-xs text-muted-foreground/60 mb-8 font-mono" dir="ltr">
             {location.pathname}
@@ -113,12 +135,12 @@ const NotFound = () => {
             onClick={() => navigate(getHomeRoute())}
             className="gradient-accent text-accent-foreground gap-2 shadow-lg shadow-primary/20"
           >
-            <ArrowRight className="h-4 w-4" />
-            العودة للرئيسية
+            <BackArrow className="h-4 w-4" />
+            {copy.back}
           </Button>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
-              إعادة توجيه تلقائي خلال
+              {copy.redirect}
             </span>
             <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full min-w-[24px]">
               {countdown}

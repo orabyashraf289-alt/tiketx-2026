@@ -67,7 +67,7 @@ export default function Dashboard() {
     d.setDate(d.getDate() - dateRange);
     return d.toISOString().slice(0, 10);
   }, [dateRange]);
-  const rangeTo = new Date().toISOString().slice(0, 10);
+  const rangeTo = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['tickets'],

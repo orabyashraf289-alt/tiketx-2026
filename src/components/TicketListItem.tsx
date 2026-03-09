@@ -1,9 +1,9 @@
+import { memo } from 'react';
 import { Ticket } from '@/lib/api';
 import { StatusBadge, PriorityBadge, SLABadge } from '@/components/TicketBadges';
 import { formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
-import { enUS } from 'date-fns/locale';
-import { User, Clock } from 'lucide-react';
+import { ar, enUS } from 'date-fns/locale';
+import { User, Clock, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
 interface Props {
@@ -12,15 +12,19 @@ interface Props {
   onClick: () => void;
 }
 
-export function TicketListItem({ ticket, index, onClick }: Props) {
-  const { t, lang } = useLanguage();
+export const TicketListItem = memo(function TicketListItem({ ticket, index, onClick }: Props) {
+  const { t, lang, isRTL } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
   const dateLocale = lang === 'ar' ? ar : enUS;
+
+  const AssignArrow = isRTL ? ArrowRight : ArrowLeft;
 
   return (
     <button
       onClick={onClick}
-      className={`w-full ltr:text-left rtl:text-right px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 ${isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive' : ''}`}
+      className={`w-full text-start px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
+        isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
+      }`}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
@@ -55,7 +59,8 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
           </span>
           {ticket.agent?.full_name && (
             <span className="hidden sm:flex items-center gap-1 text-primary">
-              ← {ticket.agent.full_name}
+              <AssignArrow className="h-3 w-3" />
+              {ticket.agent.full_name}
             </span>
           )}
         </div>
@@ -66,4 +71,4 @@ export function TicketListItem({ ticket, index, onClick }: Props) {
       </div>
     </button>
   );
-}
+});
