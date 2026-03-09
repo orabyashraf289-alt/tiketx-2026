@@ -1,27 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, ApprovalStageType, AppRole } from '@/lib/api';
+import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, type ApprovalStage } from '@/lib/api';
 import { sanitizeError } from '@/lib/errorHandler';
 import { PageLayout, PageHeader } from '@/components/layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Loader2, ShieldCheck, ArrowDown, GitBranch, User, Clock, AlertTriangle, Server } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Plus, Loader2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
-import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { ApprovalStageForm, type StageFormData } from '@/components/approval-stages/ApprovalStageForm';
+import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
 
 const pageVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
-
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
@@ -31,236 +27,104 @@ export default function AdminApprovalStages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, isRTL } = useLanguage();
-  const { roleLabels } = useLocalizedLabels();
-  const [open, setOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<StageFormData> | undefined>();
   const [filterDept, setFilterDept] = useState<string>('all');
+  const [deleteTarget, setDeleteTarget] = useState<ApprovalStage | null>(null);
 
-  const [departmentId, setDepartmentId] = useState('');
-  const [stageName, setStageName] = useState('');
-  const [stageOrder, setStageOrder] = useState(1);
-  const [stageType, setStageType] = useState<ApprovalStageType>('sequential');
-  const [approverRole, setApproverRole] = useState<AppRole>('agent');
-  const [approverId, setApproverId] = useState<string>('none');
-  const [serviceId, setServiceId] = useState<string>('none');
-  const [deadlineHours, setDeadlineHours] = useState<string>('');
-  const [escalationTo, setEscalationTo] = useState<string>('none');
-
-  const { data: stages = [], isLoading } = useQuery({
-    queryKey: ['approval-stages'],
-    queryFn: () => fetchApprovalStages(),
-  });
-
-  const { data: departments = [] } = useQuery({
-    queryKey: ['departments'],
-    queryFn: fetchDepartments,
-  });
-
-  const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
-    queryFn: fetchAgents,
-  });
-
-  const { data: services = [] } = useQuery({
-    queryKey: ['services'],
-    queryFn: () => fetchServices(),
-  });
+  const { data: stages = [], isLoading } = useQuery({ queryKey: ['approval-stages'], queryFn: () => fetchApprovalStages() });
+  const { data: departments = [] } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
+  const { data: agents = [] } = useQuery({ queryKey: ['agents'], queryFn: fetchAgents });
+  const { data: services = [] } = useQuery({ queryKey: ['services'], queryFn: () => fetchServices() });
 
   const createMut = useMutation({
-    mutationFn: () => createApprovalStage({
-      department_id: departmentId,
-      stage_name: stageName.trim(),
-      stage_order: stageOrder,
-      stage_type: stageType,
-      approver_role: approverRole,
-      approver_id: approverId !== 'none' ? approverId : null,
-      service_id: serviceId !== 'none' ? serviceId : null,
-      deadline_hours: deadlineHours ? Number(deadlineHours) : null,
-      escalation_to: escalationTo !== 'none' ? escalationTo : null,
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
-      toast({ title: 'تم إنشاء مرحلة الاعتماد' });
-      resetForm();
-    },
-    onError: (err: any) => toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' }),
+    mutationFn: (data: StageFormData) => createApprovalStage(data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['approval-stages'] }); toast({ title: t.admin.stageCreated }); setFormOpen(false); },
+    onError: (err: any) => toast({ title: '❌', description: sanitizeError(err), variant: 'destructive' }),
   });
 
   const updateMut = useMutation({
-    mutationFn: () => updateApprovalStage(editId!, {
-      department_id: departmentId,
-      stage_name: stageName.trim(),
-      stage_order: stageOrder,
-      stage_type: stageType,
-      approver_role: approverRole,
-      approver_id: approverId !== 'none' ? approverId : null,
-      service_id: serviceId !== 'none' ? serviceId : null,
-      deadline_hours: deadlineHours ? Number(deadlineHours) : null,
-      escalation_to: escalationTo !== 'none' ? escalationTo : null,
-    } as any),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
-      toast({ title: 'تم تحديث المرحلة' });
-      resetForm();
-    },
+    mutationFn: ({ id, data }: { id: string; data: StageFormData }) => updateApprovalStage(id, data as any),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['approval-stages'] }); toast({ title: t.admin.stageUpdated }); setFormOpen(false); setEditId(null); },
+    onError: (err: any) => toast({ title: '❌', description: sanitizeError(err), variant: 'destructive' }),
   });
 
   const deleteMut = useMutation({
     mutationFn: deleteApprovalStage,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
-      toast({ title: 'تم حذف المرحلة' });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['approval-stages'] }); toast({ title: t.admin.stageDeleted }); setDeleteTarget(null); },
   });
 
-  const resetForm = () => {
-    setStageName('');
-    setDepartmentId('');
-    setStageOrder(1);
-    setStageType('sequential');
-    setApproverRole('agent');
-    setApproverId('none');
-    setServiceId('none');
-    setDeadlineHours('');
-    setEscalationTo('none');
-    setEditId(null);
-    setOpen(false);
-  };
+  const handleSubmit = useCallback((data: StageFormData) => {
+    if (editId) updateMut.mutate({ id: editId, data });
+    else createMut.mutate(data);
+  }, [editId, createMut, updateMut]);
 
-  const startEdit = (stage: any) => {
+  const handleEdit = useCallback((stage: ApprovalStage) => {
     setEditId(stage.id);
-    setDepartmentId(stage.department_id);
-    setStageName(stage.stage_name);
-    setStageOrder(stage.stage_order);
-    setStageType(stage.stage_type);
-    setApproverRole(stage.approver_role);
-    setApproverId(stage.approver_id || 'none');
-    setServiceId(stage.service_id || 'none');
-    setDeadlineHours(stage.deadline_hours?.toString() || '');
-    setEscalationTo(stage.escalation_to || 'none');
-    setOpen(true);
-  };
+    setEditData({
+      department_id: stage.department_id,
+      stage_name: stage.stage_name,
+      stage_order: stage.stage_order,
+      stage_type: stage.stage_type,
+      approver_role: stage.approver_role,
+      approver_id: stage.approver_id,
+      service_id: stage.service_id,
+      deadline_hours: stage.deadline_hours,
+      escalation_to: stage.escalation_to,
+    });
+    setFormOpen(true);
+  }, []);
 
-  const filtered = filterDept === 'all' ? stages : stages.filter(s => s.department_id === filterDept);
-  const grouped = filtered.reduce((acc, s) => {
-    const deptName = s.departments?.name || 'بدون قسم';
-    if (!acc[deptName]) acc[deptName] = [];
-    acc[deptName].push(s);
-    return acc;
-  }, {} as Record<string, typeof stages>);
+  const handleDuplicate = useCallback((stage: ApprovalStage) => {
+    const maxOrder = stages.filter(s => s.department_id === stage.department_id).reduce((max, s) => Math.max(max, s.stage_order), 0);
+    createMut.mutate({
+      department_id: stage.department_id,
+      stage_name: `${stage.stage_name} (${t.admin.duplicateStage})`,
+      stage_order: maxOrder + 1,
+      stage_type: stage.stage_type,
+      approver_role: stage.approver_role,
+      approver_id: stage.approver_id,
+      service_id: stage.service_id,
+      deadline_hours: stage.deadline_hours,
+      escalation_to: stage.escalation_to,
+    });
+  }, [stages, createMut, t]);
 
-  const stageDialog = (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
-      <DialogTrigger asChild>
-        <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl">
-          <Plus className="h-4 w-4" /> {t.admin.newStage}
-        </Button>
-      </DialogTrigger>
-      <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{editId ? t.admin.editStage : t.admin.createStageTitle}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <Label>{t.admin.departmentRequired}</Label>
-            <Select value={departmentId} onValueChange={setDepartmentId}>
-              <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.selectDepartment} /></SelectTrigger>
-              <SelectContent>
-                {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>{t.admin.stageName} *</Label>
-            <Input value={stageName} onChange={e => setStageName(e.target.value)} placeholder={t.admin.stageNamePlaceholder} className="rounded-xl" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>{t.admin.stageOrder}</Label>
-              <Input type="number" min={1} value={stageOrder} onChange={e => setStageOrder(Number(e.target.value))} className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label>{t.admin.stageType}</Label>
-              <Select value={stageType} onValueChange={v => setStageType(v as ApprovalStageType)}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sequential">{t.admin.sequential}</SelectItem>
-                  <SelectItem value="parallel">{t.admin.parallel}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t.admin.approverRole}</Label>
-            <Select value={approverRole} onValueChange={v => setApproverRole(v as AppRole)}>
-              <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="agent">{roleLabels.agent}</SelectItem>
-                <SelectItem value="admin">{roleLabels.admin}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> {t.admin.specificApprover}</Label>
-            <Select value={approverId} onValueChange={setApproverId}>
-              <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.anyPersonWithRole} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t.admin.anyPersonWithRole}</SelectItem>
-                {agents.map(a => <SelectItem key={a.user_id} value={a.user_id}>{a.profiles?.full_name} ({a.profiles?.email})</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><Server className="h-3.5 w-3.5" /> {t.admin.linkToService}</Label>
-            <Select value={serviceId} onValueChange={setServiceId}>
-              <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.allServicesOption} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t.admin.allServicesOption}</SelectItem>
-                {services.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {t.admin.deadlineHours}</Label>
-              <Input type="number" min={1} value={deadlineHours} onChange={e => setDeadlineHours(e.target.value)} placeholder={t.admin.noDeadline} className="rounded-xl" />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> {t.admin.escalateTo}</Label>
-              <Select value={escalationTo} onValueChange={setEscalationTo}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.admin.noEscalation} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t.admin.noEscalation}</SelectItem>
-                  {agents.map(a => <SelectItem key={a.user_id} value={a.user_id}>{a.profiles?.full_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button
-            className="w-full gradient-accent text-accent-foreground rounded-xl"
-            disabled={!stageName.trim() || !departmentId || createMut.isPending || updateMut.isPending}
-            onClick={() => editId ? updateMut.mutate() : createMut.mutate()}
-          >
-            {(createMut.isPending || updateMut.isPending) && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
-            {editId ? t.common.update : t.common.create}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
+  const openNewForm = useCallback(() => {
+    setEditId(null);
+    setEditData(undefined);
+    setFormOpen(true);
+  }, []);
+
+  const filtered = useMemo(() => filterDept === 'all' ? stages : stages.filter(s => s.department_id === filterDept), [stages, filterDept]);
+  const grouped = useMemo(() => {
+    return filtered.reduce((acc, s) => {
+      const key = s.department_id;
+      const name = s.departments?.name || '—';
+      if (!acc[key]) acc[key] = { name, stages: [] };
+      acc[key].stages.push(s);
+      return acc;
+    }, {} as Record<string, { name: string; stages: ApprovalStage[] }>);
+  }, [filtered]);
 
   return (
     <PageLayout>
       <PageHeader
         title={t.admin.approvalStagesTitle}
         icon={<ShieldCheck className="h-5 w-5" />}
-        actions={stageDialog}
+        actions={
+          <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl" onClick={openNewForm}>
+            <Plus className="h-4 w-4" /> {t.admin.newStage}
+          </Button>
+        }
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
         <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-3xl mx-auto">
-          <motion.div variants={fadeUp} className="mb-6">
+          {/* Toolbar */}
+          <motion.div variants={fadeUp} className="mb-5 flex items-center gap-3 flex-wrap">
             <Select value={filterDept} onValueChange={setFilterDept}>
-              <SelectTrigger className="w-48 rounded-xl">
+              <SelectTrigger className="w-48 rounded-xl h-9">
                 <SelectValue placeholder={t.common.all} />
               </SelectTrigger>
               <SelectContent>
@@ -268,8 +132,12 @@ export default function AdminApprovalStages() {
                 {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
+            <Badge variant="secondary" className="rounded-full text-xs px-3 py-1">
+              {t.admin.totalStages}: {filtered.length}
+            </Badge>
           </motion.div>
 
+          {/* Content */}
           {isLoading ? (
             <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : Object.keys(grouped).length === 0 ? (
@@ -278,88 +146,55 @@ export default function AdminApprovalStages() {
               <p>{t.admin.noStagesYet}</p>
             </motion.div>
           ) : (
-            <div className="space-y-6">
-              {Object.entries(grouped).map(([deptName, deptStages]) => (
-                <motion.div key={deptName} variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/50 shadow-card">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                          <ShieldCheck className="h-4 w-4 text-primary" />
-                        </div>
-                        {deptName}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {deptStages.sort((a, b) => a.stage_order - b.stage_order).map((stage, i) => (
-                        <div key={stage.id}>
-                          <motion.div
-                            whileHover={{ scale: 1.01 }}
-                            className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
-                                {stage.stage_order}
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">{stage.stage_name}</p>
-                                <div className="flex flex-wrap gap-1.5 mt-0.5">
-                                  <Badge variant="outline" className="text-[10px] rounded-lg">
-                                    {stage.stage_type === 'parallel' ? <GitBranch className={`h-2.5 w-2.5 ${isRTL ? 'ml-1' : 'mr-1'}`} /> : <ArrowDown className={`h-2.5 w-2.5 ${isRTL ? 'ml-1' : 'mr-1'}`} />}
-                                    {stage.stage_type === 'sequential' ? t.admin.sequential : t.admin.parallel}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-[10px] rounded-lg">{roleLabels[stage.approver_role]}</Badge>
-                                  {stage.approver_profile?.full_name && (
-                                    <Badge variant="secondary" className="text-[10px] rounded-lg gap-0.5">
-                                      <User className="h-2.5 w-2.5" />
-                                      {stage.approver_profile.full_name}
-                                    </Badge>
-                                  )}
-                                  {stage.services?.name && (
-                                    <Badge variant="secondary" className="text-[10px] rounded-lg gap-0.5">
-                                      <Server className="h-2.5 w-2.5" />
-                                      {stage.services.name}
-                                    </Badge>
-                                  )}
-                                  {stage.deadline_hours && (
-                                    <Badge variant="outline" className="text-[10px] rounded-lg gap-0.5 text-warning border-warning/30">
-                                      <Clock className="h-2.5 w-2.5" />
-                                      {stage.deadline_hours} {t.admin.hoursUnit}
-                                    </Badge>
-                                  )}
-                                  {stage.escalation_profile?.full_name && (
-                                    <Badge variant="outline" className="text-[10px] rounded-lg gap-0.5 text-destructive border-destructive/30">
-                                      <AlertTriangle className="h-2.5 w-2.5" />
-                                      {t.admin.escalation} {stage.escalation_profile.full_name}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => startEdit(stage)}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => deleteMut.mutate(stage.id)} disabled={deleteMut.isPending}>
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                              </Button>
-                            </div>
-                          </motion.div>
-                          {i < deptStages.length - 1 && (
-                            <div className="flex justify-center py-1">
-                              <ArrowDown className="h-3 w-3 text-muted-foreground/40" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+            <div className="space-y-4">
+              {Object.entries(grouped).map(([deptId, { name, stages: deptStages }]) => (
+                <motion.div key={deptId} variants={fadeUp}>
+                  <DepartmentStageGroup
+                    deptName={name}
+                    stages={deptStages}
+                    onEdit={handleEdit}
+                    onDelete={setDeleteTarget}
+                    onDuplicate={handleDuplicate}
+                  />
                 </motion.div>
               ))}
             </div>
           )}
         </motion.div>
       </main>
+
+      {/* Form Dialog */}
+      <ApprovalStageForm
+        open={formOpen}
+        onOpenChange={(v) => { if (!v) { setEditId(null); setEditData(undefined); } setFormOpen(v); }}
+        editId={editId}
+        initialData={editData}
+        departments={departments}
+        agents={agents}
+        services={services}
+        onSubmit={handleSubmit}
+        isPending={createMut.isPending || updateMut.isPending}
+      />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.admin.deleteStageConfirm}</AlertDialogTitle>
+            <AlertDialogDescription>{t.admin.deleteStageDesc}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+              disabled={deleteMut.isPending}
+            >
+              {deleteMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t.common.delete}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageLayout>
   );
 }
