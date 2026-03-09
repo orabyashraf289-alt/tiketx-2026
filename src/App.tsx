@@ -130,6 +130,7 @@ const App = () => (
                     <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
                     <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
                     <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
+                    <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
