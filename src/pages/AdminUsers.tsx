@@ -401,41 +401,41 @@ export default function AdminUsers() {
 
           {/* Edit User Dialog */}
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
-              <DialogHeader><DialogTitle>تعديل المستخدم</DialogTitle></DialogHeader>
+            <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-lg max-h-[85vh] overflow-auto">
+              <DialogHeader><DialogTitle>{t.admin.editUser}</DialogTitle></DialogHeader>
               {editUser && (
                 <div className="space-y-4 mt-2">
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>الاسم الكامل</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
-                    <div><Label>البريد الإلكتروني</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
+                    <div><Label>{t.admin.fullName}</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
+                    <div><Label>{t.admin.emailRequired}</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>الوظيفة</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder="مهندس برمجيات" /></div>
-                    <div><Label>رقم الموظف</Label><Input value={editEmployeeNumber} onChange={e => setEditEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                    <div><Label>{t.admin.jobTitleLabel}</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder={t.admin.jobTitlePlaceholder} /></div>
+                    <div><Label>{t.admin.employeeNumberLabel}</Label><Input value={editEmployeeNumber} onChange={e => setEditEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>رقم الهاتف</Label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
-                    <div><Label>رقم الجوال</Label><Input value={editMobile} onChange={e => setEditMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                    <div><Label>{t.admin.phoneLabel}</Label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                    <div><Label>{t.admin.mobileLabel}</Label><Input value={editMobile} onChange={e => setEditMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>المدينة</Label><Input value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="الرياض" /></div>
-                    <div><Label>الدولة</Label><Input value={editCountry} onChange={e => setEditCountry(e.target.value)} placeholder="السعودية" /></div>
+                    <div><Label>{t.admin.cityLabel}</Label><Input value={editCity} onChange={e => setEditCity(e.target.value)} /></div>
+                    <div><Label>{t.admin.countryLabel}</Label><Input value={editCountry} onChange={e => setEditCountry(e.target.value)} /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>القسم</Label>
+                    <div><Label>{t.admin.departmentLabel}</Label>
                       <Select value={editDeptId} onValueChange={setEditDeptId}>
-                        <SelectTrigger><SelectValue placeholder="بدون قسم" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t.common.none} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">بدون قسم</SelectItem>
+                          <SelectItem value="none">{t.common.none}</SelectItem>
                           {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div><Label>المدير المباشر</Label>
+                    <div><Label>{t.admin.managerLabel}</Label>
                       <Select value={editManagerId} onValueChange={setEditManagerId}>
-                        <SelectTrigger><SelectValue placeholder="بدون مدير" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t.common.none} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">بدون مدير</SelectItem>
+                          <SelectItem value="none">{t.common.none}</SelectItem>
                           {users.filter((u: any) => u.id !== editUser?.id).map((u: any) => (
                             <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
                           ))}
@@ -444,11 +444,11 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>الحساب نشط</Label>
+                    <Label>{t.admin.activeStatus}</Label>
                     <Switch checked={editActive} onCheckedChange={setEditActive} />
                   </div>
                   <Button className="w-full" onClick={handleUpdateUser} disabled={saving}>
-                    {saving && <Loader2 className="h-4 w-4 animate-spin ml-2" />}حفظ التغييرات
+                    {saving && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}{t.common.saveChanges}
                   </Button>
                 </div>
               )}
@@ -457,25 +457,25 @@ export default function AdminUsers() {
 
           {/* Developer Access Dialog */}
           <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-md">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Settings2 className="h-5 w-5 text-primary" />
-                  صلاحيات المطور: {selectedDev?.full_name}
+                  {t.admin.devAccessTitle}: {selectedDev?.full_name}
                 </DialogTitle>
               </DialogHeader>
               {selectedDev && (
                 <div className="space-y-4 mt-2 max-h-[60vh] overflow-auto">
                   <p className="text-xs text-muted-foreground">
-                    اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.
+                    {lang === 'ar' ? 'اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.' : 'Select the systems and services the developer can access. If none are selected, they can access everything.'}
                   </p>
                   {devAccessForUser(selectedDev.id).length > 0 && (
                     <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => clearAllAccess(selectedDev.id)}>
-                      <X className="h-3 w-3" />مسح جميع القيود
+                      <X className="h-3 w-3" />{t.admin.clearAllAccess}
                     </Button>
                   )}
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">الأنظمة</Label>
+                    <Label className="text-sm font-semibold">{t.admin.systemAccess}</Label>
                     {systems.map(sys => {
                       const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.system_id === sys.id && !a.service_id);
                       return (
@@ -487,7 +487,7 @@ export default function AdminUsers() {
                     })}
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">الخدمات</Label>
+                    <Label className="text-sm font-semibold">{t.admin.serviceAccess}</Label>
                     {services.map(svc => {
                       const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.service_id === svc.id);
                       return (
