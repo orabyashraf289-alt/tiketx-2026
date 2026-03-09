@@ -105,21 +105,21 @@ export default function AdminUsers() {
     mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => updateUserRole(userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      toast({ title: 'تم تحديث الدور' });
+      toast({ title: t.admin.roleUpdated });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) {
-      toast({ title: 'جميع الحقول مطلوبة', variant: 'destructive' });
+      toast({ title: t.admin.allFieldsRequired, variant: 'destructive' });
       return;
     }
     if (newPassword.length < 6) {
-      toast({ title: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', variant: 'destructive' });
+      toast({ title: t.admin.passwordMinLength, variant: 'destructive' });
       return;
     }
 
@@ -136,13 +136,13 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم إنشاء المستخدم بنجاح ✅' });
+      toast({ title: t.admin.userCreated });
       setOpen(false);
       setNewName(''); setNewEmail(''); setNewPassword(''); setNewRole('requester');
       setNewJobTitle(''); setNewPhone(''); setNewMobile(''); setNewEmployeeNumber('');
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ في إنشاء المستخدم', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.admin.userCreateError, description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setCreating(false);
     }
