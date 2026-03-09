@@ -816,6 +816,16 @@ const en: Translations = {
     noStagesYet: 'No approval stages yet',
     escalation: 'Escalate:',
     hoursUnit: 'hours',
+    duplicateStage: 'Duplicate Stage',
+    editStageDesc: 'Edit approval stage details',
+    createStageDesc: 'Add a new approval stage to a department',
+    deleteStageConfirm: 'Are you sure you want to delete this stage?',
+    deleteStageDesc: 'This action cannot be undone',
+    stageDuplicated: 'Stage duplicated',
+    stageCreated: 'Approval stage created',
+    stageUpdated: 'Stage updated',
+    stageDeleted: 'Stage deleted',
+    totalStages: 'Total Stages',
 
     // Automation
     automationTitle: 'Workflow Automation',

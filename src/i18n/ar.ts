@@ -827,6 +827,16 @@ const ar = {
     noStagesYet: 'لا توجد مراحل اعتماد بعد',
     escalation: 'تصعيد:',
     hoursUnit: 'ساعة',
+    duplicateStage: 'تكرار المرحلة',
+    editStageDesc: 'عدّل بيانات مرحلة الاعتماد',
+    createStageDesc: 'أضف مرحلة اعتماد جديدة لقسم محدد',
+    deleteStageConfirm: 'هل أنت متأكد من حذف هذه المرحلة؟',
+    deleteStageDesc: 'لا يمكن التراجع عن هذا الإجراء',
+    stageDuplicated: 'تم تكرار المرحلة',
+    stageCreated: 'تم إنشاء مرحلة الاعتماد',
+    stageUpdated: 'تم تحديث المرحلة',
+    stageDeleted: 'تم حذف المرحلة',
+    totalStages: 'إجمالي المراحل',
 
     // Automation
     automationTitle: 'سير العمل التلقائي',
