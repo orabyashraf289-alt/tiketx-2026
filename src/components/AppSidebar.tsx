@@ -39,6 +39,7 @@ export function AppSidebar() {
     { title: t.sidebar.dashboard, url: '/', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];
 
