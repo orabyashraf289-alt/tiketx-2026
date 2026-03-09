@@ -72,4 +72,4 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
       </div>
     </button>
   );
-});
+}));
