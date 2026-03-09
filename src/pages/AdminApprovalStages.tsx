@@ -150,20 +150,11 @@ export default function AdminApprovalStages() {
   }, {} as Record<string, typeof stages>);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold text-foreground">مراحل الاعتماد</h1>
-            </div>
+    <PageLayout>
+      <PageHeader
+        title={t.admin.approvalStages || 'مراحل الاعتماد'}
+        icon={<ShieldCheck className="h-5 w-5" />}
+        actions={
             <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); setOpen(v); }}>
               <DialogTrigger asChild>
                 <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl">
