@@ -14,7 +14,7 @@ import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useLanguage } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-function LoginForm({ onForgot }: { onForgot: () => void }) {
+const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
   const { signIn } = useAuth();
   const { toast } = useToast();
   const { t, isRTL } = useLanguage();
