@@ -261,10 +261,10 @@ export default function AdminApprovalStages() {
           <motion.div variants={fadeUp} className="mb-6">
             <Select value={filterDept} onValueChange={setFilterDept}>
               <SelectTrigger className="w-48 rounded-xl">
-                <SelectValue placeholder={t.tickets.filters.allDepartments} />
+                <SelectValue placeholder={t.common.all} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t.tickets.filters.allDepartments}</SelectItem>
+                <SelectItem value="all">{t.common.all}</SelectItem>
                 {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
