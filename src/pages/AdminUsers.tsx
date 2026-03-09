@@ -35,7 +35,7 @@ const fadeUp = {
 };
 
 export default function AdminUsers() {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
   const { roleLabels } = useLocalizedLabels();
   const { toast } = useToast();
   const queryClient = useQueryClient();
