@@ -30,6 +30,8 @@ const fadeUp = {
 export default function AdminApprovalStages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t, isRTL } = useLanguage();
+  const { roleLabels } = useLocalizedLabels();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [filterDept, setFilterDept] = useState<string>('all');
