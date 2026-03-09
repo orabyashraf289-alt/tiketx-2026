@@ -55,6 +55,7 @@ export function AppSidebar() {
     { title: t.sidebar.developerBoard, url: '/developer', icon: LayoutDashboard },
     { title: t.sidebar.tickets, url: '/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
+    { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
   ];
