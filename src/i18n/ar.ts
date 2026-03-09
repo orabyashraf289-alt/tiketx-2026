@@ -147,6 +147,7 @@ const ar = {
     securityNotifications: 'الأمان والإشعارات',
     emailManagement: 'إدارة البريد الإلكتروني',
     systemSettings: 'إعدادات النظام',
+    notificationsInbox: 'صندوق الإشعارات',
   },
 
   // Dashboard

@@ -145,6 +145,7 @@ const en: Translations = {
     securityNotifications: 'Security & Notifications',
     emailManagement: 'Email Management',
     systemSettings: 'System Settings',
+    notificationsInbox: 'Notifications Inbox',
   },
 
   dashboard: {
