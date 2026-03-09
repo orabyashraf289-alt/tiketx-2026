@@ -315,23 +315,18 @@ export default function TicketDetailPage() {
 
   const isAgentOrAdmin = role === 'agent' || role === 'admin' || role === 'developer';
 
+  const backButton = (
+    <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+      <ArrowRight className="h-5 w-5" />
+    </Button>
+  );
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <SidebarTrigger />
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className="h-5 w-5" />
-            </Button>
-            <h1 className="text-lg font-bold truncate text-foreground">{t.tickets.ticketLabel} {ticket.code || `#${ticket.ticket_number}`}</h1>
-          </motion.header>
+    <PageLayout>
+      <PageHeader
+        title={`${t.tickets.ticketLabel} ${ticket.code || `#${ticket.ticket_number}`}`}
+        actions={backButton}
+      />
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <motion.div
