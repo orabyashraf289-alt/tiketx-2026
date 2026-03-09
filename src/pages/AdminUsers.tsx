@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole, roleLabels } from '@/lib/api';
+import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -19,6 +19,8 @@ import { sanitizeError } from '@/lib/errorHandler';
 import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const roles: AppRole[] = ['requester', 'agent', 'developer', 'admin'];
 
@@ -33,6 +35,8 @@ const fadeUp = {
 };
 
 export default function AdminUsers() {
+  const { t, isRTL } = useLanguage();
+  const { roleLabels } = useLocalizedLabels();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
