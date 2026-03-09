@@ -1,4 +1,5 @@
 import { useLanguage, Language } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,10 +11,15 @@ interface Props {
 
 export function LanguageSwitcher({ size = 'icon', variant = 'ghost' }: Props) {
   const { lang, setLanguage, t } = useLanguage();
+  const { updateLanguagePreference, user } = useAuth();
 
-  const toggle = () => {
+  const toggle = async () => {
     const next: Language = lang === 'ar' ? 'en' : 'ar';
     setLanguage(next);
+    // Save to database if user is logged in
+    if (user) {
+      await updateLanguagePreference(next);
+    }
   };
 
   return (

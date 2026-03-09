@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,6 +21,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateLanguagePreference: (lang: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,7 +38,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.from('profiles').select('*').eq('id', userId).single(),
       supabase.from('user_roles').select('role').eq('user_id', userId).single(),
     ]);
-    if (profileRes.data) setProfile(profileRes.data as Profile);
+    if (profileRes.data) {
+      const profileData = profileRes.data as Profile;
+      setProfile(profileData);
+      // Sync language preference from DB to localStorage
+      if (profileData.preferred_language) {
+        localStorage.setItem('app_language', profileData.preferred_language);
+        // Trigger storage event for LanguageProvider
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'app_language',
+          newValue: profileData.preferred_language,
+        }));
+      }
+    }
     if (roleRes.data) setRole(roleRes.data.role as AppRole);
   };
 
@@ -88,8 +101,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
   };
 
+  const updateLanguagePreference = useCallback(async (lang: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ preferred_language: lang })
+      .eq('id', user.id);
+    if (!error && profile) {
+      setProfile({ ...profile, preferred_language: lang });
+    }
+  }, [user, profile]);
+
   return (
-    <AuthContext.Provider value={{ user, session, profile, role, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, role, loading, signIn, signUp, signOut, updateLanguagePreference }}>
       {children}
     </AuthContext.Provider>
   );
