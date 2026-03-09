@@ -21,6 +21,7 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
 
   return (
     <button
+      ref={ref}
       onClick={onClick}
       className={`w-full text-start px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
         isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
