@@ -438,8 +438,6 @@ export default function TicketsInbox() {
               )}
             </motion.div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
