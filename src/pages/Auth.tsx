@@ -93,7 +93,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
   );
 };
 
-function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
