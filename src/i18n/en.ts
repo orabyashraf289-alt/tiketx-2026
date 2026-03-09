@@ -806,7 +806,7 @@ const en: Translations = {
     webhookNamePlaceholder: 'e.g. ERP Notification',
     webhookUrl: 'URL',
     webhookUrlPlaceholder: 'https://example.com/webhook',
-    webhookEvents: 'Events',
+    webhookEventsLabel: 'Events',
     webhookSecret: 'Secret Key (optional)',
     webhookSecretPlaceholder: 'secret_key',
     webhookActive: 'Active',

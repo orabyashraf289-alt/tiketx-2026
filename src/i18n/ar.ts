@@ -817,7 +817,7 @@ const ar = {
     webhookNamePlaceholder: 'مثال: إشعار ERP',
     webhookUrl: 'رابط URL',
     webhookUrlPlaceholder: 'https://example.com/webhook',
-    webhookEvents: 'الأحداث',
+    webhookEventsLabel: 'الأحداث',
     webhookSecret: 'مفتاح التوقيع (اختياري)',
     webhookSecretPlaceholder: 'secret_key',
     webhookActive: 'مفعّل',
@@ -830,7 +830,7 @@ const ar = {
     endpointsTab: 'نقاط النهاية',
     deliveryLogsTab: 'سجل التسليم',
     selectWebhookFirst: 'اختر Webhook من التبويب الأول لعرض سجلاته',
-    webhookEvents: {
+    webhookEventsList: {
       ticketCreated: 'إنشاء تذكرة',
       statusChanged: 'تغيير حالة',
       assigned: 'تعيين وكيل',
