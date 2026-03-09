@@ -53,13 +53,19 @@ Deno.serve(async (req) => {
 
       // Notify escalation target (in-app + email)
       if (escalationTo && ticket) {
-        // In-app notification
+        // In-app notification (bilingual payload)
         await supabase.from("notifications").insert({
           user_id: escalationTo,
           ticket_id: approval.ticket_id,
           title: "تصعيد اعتماد ⚠️",
           message: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} إليك بسبب تأخر الاعتماد`,
           type: "approval_escalated",
+          data: {
+            title_ar: "تصعيد اعتماد ⚠️",
+            title_en: "Approval escalation ⚠️",
+            message_ar: `تم تصعيد مرحلة "${stage?.stage_name}" للتذكرة #${ticket.ticket_number} إليك بسبب تأخر الاعتماد`,
+            message_en: `Stage "${stage?.stage_name}" for ticket #${ticket.ticket_number} was escalated to you due to overdue approval.`,
+          },
         });
 
         // Send email notification
