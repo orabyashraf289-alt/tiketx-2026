@@ -251,9 +251,7 @@ export default function Dashboard() {
               </motion.div>
             </motion.div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
 
