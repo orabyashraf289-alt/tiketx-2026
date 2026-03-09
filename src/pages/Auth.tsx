@@ -153,7 +153,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
-function BrandingPanel({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: string; logoSrc: string }) {
+const BrandingPanel = ({ sysName, sysSub, logoSrc }: { sysName: string; sysSub: string; logoSrc: string }) => {
   const { t } = useLanguage();
 
   const features = [
