@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole, roleLabels } from '@/lib/api';
+import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -19,6 +19,8 @@ import { sanitizeError } from '@/lib/errorHandler';
 import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { NotificationsPopover } from '@/components/NotificationsPopover';
+import { useLanguage } from '@/i18n';
+import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
 const roles: AppRole[] = ['requester', 'agent', 'developer', 'admin'];
 
@@ -33,6 +35,8 @@ const fadeUp = {
 };
 
 export default function AdminUsers() {
+  const { t, isRTL, lang } = useLanguage();
+  const { roleLabels } = useLocalizedLabels();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -101,21 +105,21 @@ export default function AdminUsers() {
     mutationFn: ({ userId, role }: { userId: string; role: AppRole }) => updateUserRole(userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      toast({ title: 'تم تحديث الدور' });
+      toast({ title: t.admin.roleUpdated });
     },
     onError: (err: any) => {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     },
   });
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newEmail.trim() || !newPassword.trim()) {
-      toast({ title: 'جميع الحقول مطلوبة', variant: 'destructive' });
+      toast({ title: t.admin.allFieldsRequired, variant: 'destructive' });
       return;
     }
     if (newPassword.length < 6) {
-      toast({ title: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', variant: 'destructive' });
+      toast({ title: t.admin.passwordMinLength, variant: 'destructive' });
       return;
     }
 
@@ -132,13 +136,13 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم إنشاء المستخدم بنجاح ✅' });
+      toast({ title: t.admin.userCreated });
       setOpen(false);
       setNewName(''); setNewEmail(''); setNewPassword(''); setNewRole('requester');
       setNewJobTitle(''); setNewPhone(''); setNewMobile(''); setNewEmployeeNumber('');
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ في إنشاء المستخدم', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.admin.userCreateError, description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setCreating(false);
     }
@@ -184,11 +188,11 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم تحديث المستخدم ✅' });
+      toast({ title: t.admin.userUpdated });
       setEditOpen(false);
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -202,10 +206,10 @@ export default function AdminUsers() {
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast({ title: 'تم حذف المستخدم ✅' });
+      toast({ title: t.admin.userDeleted });
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
     } catch (err: any) {
-      toast({ title: 'خطأ', description: sanitizeError(err), variant: 'destructive' });
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     }
   };
 
@@ -239,7 +243,7 @@ export default function AdminUsers() {
   const clearAllAccess = async (devId: string) => {
     await supabase.from('developer_access').delete().eq('developer_id', devId);
     refetchAccess();
-    toast({ title: 'تم مسح جميع القيود - المطور يصل لكل الأنظمة الآن' });
+    toast({ title: t.admin.allAccessCleared });
   };
 
   const filteredUsers = users.filter((u: any) => {
@@ -261,7 +265,7 @@ export default function AdminUsers() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <Users className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold text-foreground">إدارة المستخدمين</h1>
+              <h1 className="text-lg font-bold text-foreground">{t.admin.userManagement}</h1>
               <Badge variant="secondary" className="text-xs">{users.length}</Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -269,25 +273,25 @@ export default function AdminUsers() {
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-1.5">
                     <UserPlus className="h-4 w-4" />
-                    مستخدم جديد
+                    {t.admin.newUser}
                   </Button>
                 </DialogTrigger>
-                <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
-                  <DialogHeader><DialogTitle>إنشاء مستخدم جديد</DialogTitle></DialogHeader>
+                <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-lg max-h-[85vh] overflow-auto">
+                  <DialogHeader><DialogTitle>{t.admin.createNewUser}</DialogTitle></DialogHeader>
                   <form onSubmit={handleCreateUser} className="space-y-4 mt-2">
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>الاسم الكامل *</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="أحمد محمد" required /></div>
-                      <div><Label>الوظيفة</Label><Input value={newJobTitle} onChange={e => setNewJobTitle(e.target.value)} placeholder="مهندس برمجيات" /></div>
+                      <div><Label>{t.admin.fullName}</Label><Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t.admin.fullNamePlaceholder} required /></div>
+                      <div><Label>{t.admin.jobTitleLabel}</Label><Input value={newJobTitle} onChange={e => setNewJobTitle(e.target.value)} placeholder={t.admin.jobTitlePlaceholder} /></div>
                     </div>
-                    <div><Label>البريد الإلكتروني *</Label><Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" /></div>
-                    <div><Label>كلمة المرور *</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6 أحرف على الأقل" required dir="ltr" minLength={6} /></div>
+                    <div><Label>{t.admin.emailRequired}</Label><Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="user@example.com" required dir="ltr" /></div>
+                    <div><Label>{t.admin.passwordRequired}</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="6+" required dir="ltr" minLength={6} /></div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>رقم الهاتف</Label><Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
-                      <div><Label>رقم الجوال</Label><Input value={newMobile} onChange={e => setNewMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                      <div><Label>{t.admin.phoneLabel}</Label><Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                      <div><Label>{t.admin.mobileLabel}</Label><Input value={newMobile} onChange={e => setNewMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>رقم الموظف</Label><Input value={newEmployeeNumber} onChange={e => setNewEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
-                      <div><Label>الدور</Label>
+                      <div><Label>{t.admin.employeeNumberLabel}</Label><Input value={newEmployeeNumber} onChange={e => setNewEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                      <div><Label>{t.admin.roleLabel}</Label>
                         <Select value={newRole} onValueChange={v => setNewRole(v as AppRole)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}</SelectContent>
@@ -295,7 +299,7 @@ export default function AdminUsers() {
                       </div>
                     </div>
                     <Button type="submit" className="w-full" disabled={creating}>
-                      {creating && <Loader2 className="h-4 w-4 animate-spin ml-2" />}إنشاء المستخدم
+                      {creating && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}{t.admin.createUser}
                     </Button>
                   </form>
                 </DialogContent>
@@ -308,8 +312,8 @@ export default function AdminUsers() {
             <div className="max-w-4xl mx-auto space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم أو البريد أو الوظيفة..." className="pr-10" />
+                <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.admin.searchByNameEmailJob} className={isRTL ? 'pr-10' : 'pl-10'} />
               </div>
 
               {isLoading ? (
@@ -317,7 +321,7 @@ export default function AdminUsers() {
               ) : filteredUsers.length === 0 ? (
                 <div className="flex flex-col items-center py-20 text-muted-foreground">
                   <Users className="h-12 w-12 mb-3 opacity-30" />
-                  <p>{search ? 'لا توجد نتائج' : 'لا يوجد مستخدمين'}</p>
+                  <p>{search ? t.common.noResults : t.admin.noUsers}</p>
                 </div>
               ) : (
                 <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-3">
@@ -332,7 +336,7 @@ export default function AdminUsers() {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-semibold text-foreground">{u.full_name || 'بدون اسم'}</p>
-                                {!u.is_active && <Badge variant="destructive" className="text-[10px]">معطّل</Badge>}
+                            {!u.is_active && <Badge variant="destructive" className="text-[10px]">{t.admin.disabled}</Badge>}
                               </div>
                               <p className="text-sm text-muted-foreground truncate">{u.email}</p>
                               <div className="flex items-center gap-3 flex-wrap">
@@ -353,11 +357,11 @@ export default function AdminUsers() {
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {u.role === 'developer' && (
-                              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openAccessDialog(u)} title="صلاحيات المطور">
+                              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openAccessDialog(u)} title={t.admin.devPermissions}>
                                 <Settings2 className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)} title="تعديل">
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => openEditDialog(u)} title={t.common.edit}>
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Select value={u.role} onValueChange={v => roleMut.mutate({ userId: u.id, role: v as AppRole })}>
@@ -366,21 +370,21 @@ export default function AdminUsers() {
                             </Select>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title="حذف">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" title={t.common.delete}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent dir="rtl">
+                              <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>حذف المستخدم</AlertDialogTitle>
+                                  <AlertDialogTitle>{t.admin.deleteUser}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    هل أنت متأكد من حذف <strong>{u.full_name}</strong>؟ سيتم حذف الحساب نهائياً ولا يمكن التراجع.
+                                    {t.admin.deleteUserConfirm}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className="gap-2">
-                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                  <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                                   <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteUser(u.id)}>
-                                    حذف نهائي
+                                    {t.common.delete}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -397,41 +401,41 @@ export default function AdminUsers() {
 
           {/* Edit User Dialog */}
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogContent dir="rtl" className="max-w-lg max-h-[85vh] overflow-auto">
-              <DialogHeader><DialogTitle>تعديل المستخدم</DialogTitle></DialogHeader>
+            <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-lg max-h-[85vh] overflow-auto">
+              <DialogHeader><DialogTitle>{t.admin.editUser}</DialogTitle></DialogHeader>
               {editUser && (
                 <div className="space-y-4 mt-2">
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>الاسم الكامل</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
-                    <div><Label>البريد الإلكتروني</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
+                    <div><Label>{t.admin.fullName}</Label><Input value={editName} onChange={e => setEditName(e.target.value)} /></div>
+                    <div><Label>{t.admin.emailRequired}</Label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} dir="ltr" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>الوظيفة</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder="مهندس برمجيات" /></div>
-                    <div><Label>رقم الموظف</Label><Input value={editEmployeeNumber} onChange={e => setEditEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
+                    <div><Label>{t.admin.jobTitleLabel}</Label><Input value={editJobTitle} onChange={e => setEditJobTitle(e.target.value)} placeholder={t.admin.jobTitlePlaceholder} /></div>
+                    <div><Label>{t.admin.employeeNumberLabel}</Label><Input value={editEmployeeNumber} onChange={e => setEditEmployeeNumber(e.target.value)} placeholder="EMP-001" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>رقم الهاتف</Label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
-                    <div><Label>رقم الجوال</Label><Input value={editMobile} onChange={e => setEditMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
+                    <div><Label>{t.admin.phoneLabel}</Label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="+966 1x xxx xxxx" dir="ltr" /></div>
+                    <div><Label>{t.admin.mobileLabel}</Label><Input value={editMobile} onChange={e => setEditMobile(e.target.value)} placeholder="+966 5x xxx xxxx" dir="ltr" /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>المدينة</Label><Input value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="الرياض" /></div>
-                    <div><Label>الدولة</Label><Input value={editCountry} onChange={e => setEditCountry(e.target.value)} placeholder="السعودية" /></div>
+                    <div><Label>{t.admin.cityLabel}</Label><Input value={editCity} onChange={e => setEditCity(e.target.value)} /></div>
+                    <div><Label>{t.admin.countryLabel}</Label><Input value={editCountry} onChange={e => setEditCountry(e.target.value)} /></div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>القسم</Label>
+                    <div><Label>{t.admin.departmentLabel}</Label>
                       <Select value={editDeptId} onValueChange={setEditDeptId}>
-                        <SelectTrigger><SelectValue placeholder="بدون قسم" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t.common.none} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">بدون قسم</SelectItem>
+                          <SelectItem value="none">{t.common.none}</SelectItem>
                           {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div><Label>المدير المباشر</Label>
+                    <div><Label>{t.admin.managerLabel}</Label>
                       <Select value={editManagerId} onValueChange={setEditManagerId}>
-                        <SelectTrigger><SelectValue placeholder="بدون مدير" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t.common.none} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">بدون مدير</SelectItem>
+                          <SelectItem value="none">{t.common.none}</SelectItem>
                           {users.filter((u: any) => u.id !== editUser?.id).map((u: any) => (
                             <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
                           ))}
@@ -440,11 +444,11 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label>الحساب نشط</Label>
+                    <Label>{t.admin.activeStatus}</Label>
                     <Switch checked={editActive} onCheckedChange={setEditActive} />
                   </div>
                   <Button className="w-full" onClick={handleUpdateUser} disabled={saving}>
-                    {saving && <Loader2 className="h-4 w-4 animate-spin ml-2" />}حفظ التغييرات
+                    {saving && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}{t.common.saveChanges}
                   </Button>
                 </div>
               )}
@@ -453,25 +457,25 @@ export default function AdminUsers() {
 
           {/* Developer Access Dialog */}
           <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={isRTL ? 'rtl' : 'ltr'} className="max-w-md">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Settings2 className="h-5 w-5 text-primary" />
-                  صلاحيات المطور: {selectedDev?.full_name}
+                  {t.admin.devAccessTitle}: {selectedDev?.full_name}
                 </DialogTitle>
               </DialogHeader>
               {selectedDev && (
                 <div className="space-y-4 mt-2 max-h-[60vh] overflow-auto">
                   <p className="text-xs text-muted-foreground">
-                    اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.
+                    {lang === 'ar' ? 'اختر الأنظمة والخدمات التي يمكن للمطور الوصول إليها. إذا لم يتم تحديد أي خيار، سيتمكن من الوصول لكل شيء.' : 'Select the systems and services the developer can access. If none are selected, they can access everything.'}
                   </p>
                   {devAccessForUser(selectedDev.id).length > 0 && (
                     <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => clearAllAccess(selectedDev.id)}>
-                      <X className="h-3 w-3" />مسح جميع القيود
+                      <X className="h-3 w-3" />{t.admin.clearAllAccess}
                     </Button>
                   )}
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">الأنظمة</Label>
+                    <Label className="text-sm font-semibold">{t.admin.systemAccess}</Label>
                     {systems.map(sys => {
                       const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.system_id === sys.id && !a.service_id);
                       return (
@@ -483,7 +487,7 @@ export default function AdminUsers() {
                     })}
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">الخدمات</Label>
+                    <Label className="text-sm font-semibold">{t.admin.serviceAccess}</Label>
                     {services.map(svc => {
                       const checked = devAccess.some((a: any) => a.developer_id === selectedDev.id && a.service_id === svc.id);
                       return (

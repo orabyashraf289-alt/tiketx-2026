@@ -16,45 +16,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Zap, Plus, Trash2, Play, ArrowDown, CheckCircle, XCircle } from 'lucide-react';
+import { Zap, Plus, Trash2, ArrowDown, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
-
-const TRIGGER_EVENTS = [
-  { value: 'ticket.created', label: 'عند إنشاء تذكرة' },
-  { value: 'ticket.status_changed', label: 'عند تغيير الحالة' },
-  { value: 'ticket.assigned', label: 'عند تعيين وكيل' },
-  { value: 'ticket.priority_changed', label: 'عند تغيير الأولوية' },
-];
-
-const CONDITION_FIELDS = [
-  { value: 'priority', label: 'الأولوية' },
-  { value: 'status', label: 'الحالة' },
-  { value: 'source_system', label: 'النظام المصدر' },
-  { value: 'title', label: 'العنوان' },
-];
-
-const OPERATORS = [
-  { value: 'equals', label: 'يساوي' },
-  { value: 'not_equals', label: 'لا يساوي' },
-  { value: 'contains', label: 'يحتوي على' },
-];
-
-const ACTION_TYPES = [
-  { value: 'change_priority', label: 'تغيير الأولوية' },
-  { value: 'change_status', label: 'تغيير الحالة' },
-  { value: 'assign_agent', label: 'تعيين وكيل' },
-  { value: 'assign_department', label: 'تعيين قسم' },
-  { value: 'send_notification', label: 'إرسال إشعار' },
-  { value: 'send_email', label: 'إرسال بريد إلكتروني' },
-  { value: 'webhook', label: 'تشغيل Webhook' },
-  { value: 'send_slack', label: 'إرسال لـ Slack' },
-];
+import { ar, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/i18n';
 
 interface Condition { field: string; operator: string; value: string; }
 interface Action { type: string; value?: string; message?: string; channel?: string; title?: string; recipient_email?: string; }
 
 export default function AdminAutomation() {
+  const { t, isRTL, lang } = useLanguage();
+  const dateLocale = lang === 'ar' ? ar : enUS;
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -62,6 +34,37 @@ export default function AdminAutomation() {
   const [trigger, setTrigger] = useState('');
   const [conditions, setConditions] = useState<Condition[]>([{ field: '', operator: 'equals', value: '' }]);
   const [actions, setActions] = useState<Action[]>([{ type: '' }]);
+
+  const TRIGGER_EVENTS = [
+    { value: 'ticket.created', label: t.admin.triggers.ticketCreated },
+    { value: 'ticket.status_changed', label: t.admin.triggers.statusChanged },
+    { value: 'ticket.assigned', label: t.admin.triggers.assigned },
+    { value: 'ticket.priority_changed', label: t.admin.triggers.priorityChanged },
+  ];
+
+  const CONDITION_FIELDS = [
+    { value: 'priority', label: t.admin.conditionFields.priority },
+    { value: 'status', label: t.admin.conditionFields.status },
+    { value: 'source_system', label: t.admin.conditionFields.sourceSystem },
+    { value: 'title', label: t.admin.conditionFields.title },
+  ];
+
+  const OPERATORS = [
+    { value: 'equals', label: t.admin.operators.equals },
+    { value: 'not_equals', label: t.admin.operators.notEquals },
+    { value: 'contains', label: t.admin.operators.contains },
+  ];
+
+  const ACTION_TYPES = [
+    { value: 'change_priority', label: t.admin.actionTypes.changePriority },
+    { value: 'change_status', label: t.admin.actionTypes.changeStatus },
+    { value: 'assign_agent', label: t.admin.actionTypes.assignAgent },
+    { value: 'assign_department', label: t.admin.actionTypes.assignDepartment },
+    { value: 'send_notification', label: t.admin.actionTypes.sendNotification },
+    { value: 'send_email', label: t.admin.actionTypes.sendEmail },
+    { value: 'webhook', label: t.admin.actionTypes.webhook },
+    { value: 'send_slack', label: t.admin.actionTypes.sendSlack },
+  ];
 
   const { data: rules = [], isLoading } = useQuery({
     queryKey: ['automation-rules'],
@@ -100,7 +103,7 @@ export default function AdminAutomation() {
       qc.invalidateQueries({ queryKey: ['automation-rules'] });
       setOpen(false);
       resetForm();
-      toast({ title: 'تم إنشاء القاعدة ✅' });
+      toast({ title: t.admin.ruleCreated });
     },
   });
 
@@ -119,7 +122,7 @@ export default function AdminAutomation() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['automation-rules'] });
-      toast({ title: 'تم الحذف' });
+      toast({ title: t.admin.ruleDeleted });
     },
   });
 
@@ -147,54 +150,51 @@ export default function AdminAutomation() {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <Zap className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">سير العمل التلقائي</h1>
+              <h1 className="text-lg font-bold">{t.admin.automationTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
               <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-4 w-4 ml-1" />قاعدة جديدة</Button>
+                  <Button size="sm"><Plus className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />{t.admin.addRule}</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-                  <DialogHeader><DialogTitle>إنشاء قاعدة أتمتة</DialogTitle></DialogHeader>
+                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
+                  <DialogHeader><DialogTitle>{t.admin.createRule}</DialogTitle></DialogHeader>
                   <div className="space-y-5 mt-2">
-                    {/* Basic Info */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div><Label>اسم القاعدة</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="مثال: تصعيد التذاكر العاجلة" /></div>
-                      <div><Label>الوصف</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder="اختياري" /></div>
+                      <div><Label>{t.admin.ruleName}</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder={t.admin.ruleNamePlaceholder} /></div>
+                      <div><Label>{t.admin.ruleDesc}</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder={t.admin.ruleDescPlaceholder} /></div>
                     </div>
 
-                    {/* Trigger */}
                     <div className="p-3 rounded-xl border bg-primary/5">
-                      <Label className="text-xs font-bold text-primary mb-2 block">⚡ المحفّز (Trigger)</Label>
+                      <Label className="text-xs font-bold text-primary mb-2 block">⚡ {t.admin.triggerLabel}</Label>
                       <Select value={trigger} onValueChange={setTrigger}>
-                        <SelectTrigger><SelectValue placeholder="اختر الحدث" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t.admin.selectEvent} /></SelectTrigger>
                         <SelectContent>
-                          {TRIGGER_EVENTS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                          {TRIGGER_EVENTS.map(te => <SelectItem key={te.value} value={te.value}>{te.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
 
                     <ArrowDown className="h-5 w-5 mx-auto text-muted-foreground" />
 
-                    {/* Conditions */}
                     <div className="p-3 rounded-xl border bg-accent/30">
                       <div className="flex items-center justify-between mb-2">
-                        <Label className="text-xs font-bold">🔍 الشروط (Conditions)</Label>
+                        <Label className="text-xs font-bold">🔍 {t.admin.conditionsLabel}</Label>
                         <Button variant="ghost" size="sm" onClick={() => setConditions(c => [...c, { field: '', operator: 'equals', value: '' }])}>
-                          <Plus className="h-3 w-3 ml-1" />شرط
+                          <Plus className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />{t.admin.addCondition}
                         </Button>
                       </div>
                       {conditions.map((cond, i) => (
                         <div key={i} className="flex items-center gap-2 mb-2">
                           <Select value={cond.field} onValueChange={v => updateCondition(i, 'field', v)}>
-                            <SelectTrigger className="flex-1"><SelectValue placeholder="الحقل" /></SelectTrigger>
+                            <SelectTrigger className="flex-1"><SelectValue placeholder={t.admin.fieldLabel} /></SelectTrigger>
                             <SelectContent>{CONDITION_FIELDS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
                           </Select>
                           <Select value={cond.operator} onValueChange={v => updateCondition(i, 'operator', v)}>
                             <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
                             <SelectContent>{OPERATORS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                           </Select>
-                          <Input className="flex-1" value={cond.value} onChange={e => updateCondition(i, 'value', e.target.value)} placeholder="القيمة" />
+                          <Input className="flex-1" value={cond.value} onChange={e => updateCondition(i, 'value', e.target.value)} placeholder={t.admin.valueLabel} />
                           {conditions.length > 1 && (
                             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setConditions(c => c.filter((_, idx) => idx !== i))}>
                               <Trash2 className="h-3 w-3" />
@@ -206,19 +206,18 @@ export default function AdminAutomation() {
 
                     <ArrowDown className="h-5 w-5 mx-auto text-muted-foreground" />
 
-                    {/* Actions */}
                     <div className="p-3 rounded-xl border bg-success/5">
                       <div className="flex items-center justify-between mb-2">
-                        <Label className="text-xs font-bold text-success">🚀 الإجراءات (Actions)</Label>
+                        <Label className="text-xs font-bold text-success">🚀 {t.admin.actionsLabel}</Label>
                         <Button variant="ghost" size="sm" onClick={() => setActions(a => [...a, { type: '' }])}>
-                          <Plus className="h-3 w-3 ml-1" />إجراء
+                          <Plus className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />{t.admin.addAction}
                         </Button>
                       </div>
                       {actions.map((act, i) => (
                         <div key={i} className="mb-3 p-2 rounded-lg border bg-background">
                           <div className="flex items-center gap-2 mb-2">
                             <Select value={act.type} onValueChange={v => updateAction(i, 'type', v)}>
-                              <SelectTrigger className="flex-1"><SelectValue placeholder="نوع الإجراء" /></SelectTrigger>
+                              <SelectTrigger className="flex-1"><SelectValue placeholder={t.admin.actionType} /></SelectTrigger>
                               <SelectContent>{ACTION_TYPES.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}</SelectContent>
                             </Select>
                             {actions.length > 1 && (
@@ -228,34 +227,32 @@ export default function AdminAutomation() {
                             )}
                           </div>
                           {(act.type === 'change_priority') && (
-                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
-                              placeholder="low | medium | high | urgent" className="text-xs" />
+                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)} placeholder={t.admin.actionPlaceholders.priority} className="text-xs" />
                           )}
                           {(act.type === 'change_status') && (
-                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
-                              placeholder="new | open | in_progress | resolved | closed" className="text-xs" />
+                            <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)} placeholder={t.admin.actionPlaceholders.status} className="text-xs" />
                           )}
                           {(act.type === 'assign_agent' || act.type === 'assign_department') && (
                             <Input value={act.value || ''} onChange={e => updateAction(i, 'value', e.target.value)}
-                              placeholder={act.type === 'assign_agent' ? 'معرف الوكيل (UUID)' : 'معرف القسم (UUID)'} dir="ltr" className="text-xs" />
+                              placeholder={act.type === 'assign_agent' ? t.admin.actionPlaceholders.agentId : t.admin.actionPlaceholders.deptId} dir="ltr" className="text-xs" />
                           )}
                           {act.type === 'send_notification' && (
                             <div className="space-y-2">
-                              <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder="عنوان الإشعار" className="text-xs" />
-                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder="نص الإشعار" className="text-xs" rows={2} />
+                              <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder={t.admin.actionPlaceholders.notificationTitle} className="text-xs" />
+                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder={t.admin.actionPlaceholders.notificationMessage} className="text-xs" rows={2} />
                             </div>
                           )}
                           {act.type === 'send_email' && (
                             <div className="space-y-2">
-                              <Input value={act.recipient_email || ''} onChange={e => updateAction(i, 'recipient_email', e.target.value)} placeholder="البريد الإلكتروني للمستلم (اختياري - افتراضي: مقدم الطلب)" dir="ltr" className="text-xs" />
-                              <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder="عنوان البريد" className="text-xs" />
-                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder="نص البريد" className="text-xs" rows={2} />
+                              <Input value={act.recipient_email || ''} onChange={e => updateAction(i, 'recipient_email', e.target.value)} placeholder={t.admin.actionPlaceholders.emailRecipient} dir="ltr" className="text-xs" />
+                              <Input value={act.title || ''} onChange={e => updateAction(i, 'title', e.target.value)} placeholder={t.admin.actionPlaceholders.emailSubject} className="text-xs" />
+                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder={t.admin.actionPlaceholders.emailBody} className="text-xs" rows={2} />
                             </div>
                           )}
                           {act.type === 'send_slack' && (
                             <div className="space-y-2">
-                              <Input value={act.channel || ''} onChange={e => updateAction(i, 'channel', e.target.value)} placeholder="#channel-name" dir="ltr" className="text-xs" />
-                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder="نص الرسالة" className="text-xs" rows={2} />
+                              <Input value={act.channel || ''} onChange={e => updateAction(i, 'channel', e.target.value)} placeholder={t.admin.actionPlaceholders.slackChannel} dir="ltr" className="text-xs" />
+                              <Textarea value={act.message || ''} onChange={e => updateAction(i, 'message', e.target.value)} placeholder={t.admin.actionPlaceholders.slackMessage} className="text-xs" rows={2} />
                             </div>
                           )}
                         </div>
@@ -264,7 +261,7 @@ export default function AdminAutomation() {
 
                     <Button className="w-full" disabled={!name || !trigger || actions.every(a => !a.type)}
                       onClick={() => createMutation.mutate()}>
-                      إنشاء القاعدة
+                      {t.admin.createRule}
                     </Button>
                   </div>
                 </DialogContent>
@@ -275,8 +272,8 @@ export default function AdminAutomation() {
 
           <main className="flex-1 overflow-auto p-4 md:p-6">
             <div className="max-w-5xl mx-auto">
-              <Tabs defaultValue="rules" dir="rtl">
-                <TabsList><TabsTrigger value="rules">القواعد</TabsTrigger><TabsTrigger value="logs">سجل التنفيذ</TabsTrigger></TabsList>
+              <Tabs defaultValue="rules" dir={isRTL ? 'rtl' : 'ltr'}>
+                <TabsList><TabsTrigger value="rules">{t.admin.rulesTab}</TabsTrigger><TabsTrigger value="logs">{t.admin.logsTab}</TabsTrigger></TabsList>
 
                 <TabsContent value="rules" className="space-y-3 mt-4">
                   {rules.map((rule: any) => (
@@ -286,14 +283,14 @@ export default function AdminAutomation() {
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <Zap className="h-4 w-4 text-primary shrink-0" />
                             <h3 className="font-semibold text-sm">{rule.name}</h3>
-                            <Badge variant={rule.is_active ? "default" : "secondary"} className="text-[10px]">{rule.is_active ? 'مفعّل' : 'معطّل'}</Badge>
-                            <Badge variant="outline" className="text-[10px]">{TRIGGER_EVENTS.find(t => t.value === rule.trigger_event)?.label || rule.trigger_event}</Badge>
+                            <Badge variant={rule.is_active ? "default" : "secondary"} className="text-[10px]">{rule.is_active ? t.admin.ruleActive : t.admin.ruleInactive}</Badge>
+                            <Badge variant="outline" className="text-[10px]">{TRIGGER_EVENTS.find(te => te.value === rule.trigger_event)?.label || rule.trigger_event}</Badge>
                           </div>
                           {rule.description && <p className="text-xs text-muted-foreground mb-1">{rule.description}</p>}
                           <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                            <span>الشروط: {(rule.conditions as any[])?.length || 0}</span>
-                            <span>الإجراءات: {(rule.actions as any[])?.length || 0}</span>
-                            <span>تنفيذ: {rule.execution_count} مرة</span>
+                            <span>{t.admin.conditions}: {(rule.conditions as any[])?.length || 0}</span>
+                            <span>{t.admin.ruleActions}: {(rule.actions as any[])?.length || 0}</span>
+                            <span>{t.admin.executionCount}: {rule.execution_count} {t.admin.executionTimes}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -308,7 +305,7 @@ export default function AdminAutomation() {
                   {!isLoading && rules.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
                       <Zap className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">لا توجد قواعد أتمتة بعد</p>
+                      <p className="text-sm">{t.admin.noRules}</p>
                     </div>
                   )}
                 </TabsContent>
@@ -318,11 +315,9 @@ export default function AdminAutomation() {
                     <div key={log.id} className="flex items-center gap-3 text-xs border rounded-xl px-3 py-2">
                       {log.success ? <CheckCircle className="h-4 w-4 text-success shrink-0" /> : <XCircle className="h-4 w-4 text-destructive shrink-0" />}
                       <Badge variant="outline" className="text-[10px]">{log.trigger_event}</Badge>
-                      <span className="flex-1 truncate text-muted-foreground">{log.error_message || 'تم التنفيذ بنجاح'}</span>
-                      <span className="text-muted-foreground">{format(new Date(log.created_at), 'dd/MM HH:mm', { locale: ar })}</span>
+                      <span className="text-muted-foreground flex-1 truncate">{format(new Date(log.created_at), 'dd/MM HH:mm:ss', { locale: dateLocale })}</span>
                     </div>
                   ))}
-                  {logs.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">لا توجد سجلات بعد</p>}
                 </TabsContent>
               </Tabs>
             </div>
