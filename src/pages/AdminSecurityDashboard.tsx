@@ -183,7 +183,7 @@ th{background:#f0faf5;font-weight:700;color:#2d8b6e}
 @media print{body{padding:20px}}
 </style></head><body>
 <div class="header"><div><h1>🛡️ ${t.admin.securityReportTitle}</h1><p style="color:#888;font-size:12px">${t.admin.last30DaysReport}</p></div>
-<div class="meta"><p>${t.admin.exportDate}: ${new Date().toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</p><p>TicketFlow System</p></div></div>
+<div class="meta"><p>${t.admin.exportDate}: ${new Date().toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</p><p>Ticket-X System</p></div></div>
 
 <div class="kpi-grid">
 <div class="kpi-card"><div class="value">${totalUsers}</div><div class="label">${t.admin.totalUsers}</div></div>
