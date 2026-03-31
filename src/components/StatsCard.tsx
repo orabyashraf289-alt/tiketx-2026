@@ -11,25 +11,25 @@ interface StatsCardProps {
 }
 
 const variantStyles = {
-  default: "bg-card",
+  default: "bg-card border border-border/40",
   primary: "gradient-primary text-primary-foreground",
-  accent: "gradient-accent text-accent-foreground",
+  accent: "gradient-brand text-accent-foreground",
   success: "bg-success text-success-foreground",
   warning: "bg-warning text-warning-foreground",
 };
 
 const iconVariantStyles = {
   default: "bg-muted text-muted-foreground",
-  primary: "bg-primary-foreground/20 text-primary-foreground",
-  accent: "bg-accent-foreground/20 text-accent-foreground",
-  success: "bg-success-foreground/20 text-success-foreground",
-  warning: "bg-warning-foreground/20 text-warning-foreground",
+  primary: "bg-primary-foreground/15 text-primary-foreground",
+  accent: "bg-accent-foreground/15 text-accent-foreground",
+  success: "bg-success-foreground/15 text-success-foreground",
+  warning: "bg-warning-foreground/15 text-warning-foreground",
 };
 
 export const StatsCard = memo(function StatsCard({ title, value, icon: Icon, trend, variant = "default" }: StatsCardProps) {
   return (
     <div className={cn(
-      "rounded-lg p-5 shadow-card transition-all duration-200 hover:shadow-card-hover animate-fade-in",
+      "rounded-2xl p-5 shadow-card transition-all duration-200 hover:shadow-card-hover animate-fade-in",
       variantStyles[variant]
     )}>
       <div className="flex items-center justify-between">
@@ -44,7 +44,7 @@ export const StatsCard = memo(function StatsCard({ title, value, icon: Icon, tre
             </p>
           )}
         </div>
-        <div className={cn("rounded-lg p-3", iconVariantStyles[variant])}>
+        <div className={cn("rounded-xl p-3", iconVariantStyles[variant])}>
           <Icon className="h-6 w-6" />
         </div>
       </div>
