@@ -13,53 +13,41 @@ import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useLanguage } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-/* ─── Typewriter Hook ─── */
-const useTypewriter = (texts: string[], speed = 80, pause = 2000) => {
-  const [display, setDisplay] = useState('');
-  const [textIndex, setTextIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-
-  useState(() => {
-    // Initialize
-  });
-
-  // Use useCallback-free approach with refs
-  import('react').then(() => {}); // no-op to keep hooks order
-
-  // Effect-based typewriter
-  const text = texts[textIndex] || '';
-
-  // We need useEffect but it's already imported via react
-  // Let's use a simpler approach with setTimeout in useEffect pattern
-  if (typeof window !== 'undefined') {
-    // handled below
-  }
-
-  return { display, cursor: true };
-};
-
 /* ─── Typewriter Component ─── */
 const TypewriterText = ({ texts, className }: { texts: string[]; className?: string }) => {
   const [display, setDisplay] = useState('');
   const [textIdx, setTextIdx] = useState(0);
   const [charIdx, setCharIdx] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
 
-  // Using useEffect for the typewriter logic
-  const currentText = texts[textIdx] || '';
+  useEffect(() => {
+    const currentText = texts[textIdx] || '';
 
-  useState(() => {
-    // no-op
-  });
+    if (!isDeleting && charIdx < currentText.length) {
+      const timer = setTimeout(() => setCharIdx(c => c + 1), 70);
+      return () => clearTimeout(timer);
+    }
 
-  // Manual timer approach
-  if (typeof window !== 'undefined' && !isPaused) {
-    setTimeout(() => {
-      // This won't work in React properly, need useEffect
-    }, 100);
-  }
+    if (!isDeleting && charIdx === currentText.length) {
+      const timer = setTimeout(() => setIsDeleting(true), 2500);
+      return () => clearTimeout(timer);
+    }
+
+    if (isDeleting && charIdx > 0) {
+      const timer = setTimeout(() => setCharIdx(c => c - 1), 40);
+      return () => clearTimeout(timer);
+    }
+
+    if (isDeleting && charIdx === 0) {
+      setIsDeleting(false);
+      setTextIdx(i => (i + 1) % texts.length);
+    }
+  }, [charIdx, isDeleting, textIdx, texts]);
+
+  useEffect(() => {
+    const currentText = texts[textIdx] || '';
+    setDisplay(currentText.slice(0, charIdx));
+  }, [charIdx, textIdx, texts]);
 
   return (
     <span className={className}>
@@ -67,7 +55,8 @@ const TypewriterText = ({ texts, className }: { texts: string[]; className?: str
       <motion.span
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.5, repeat: Infinity }}
-        className="inline-block w-[3px] h-[1em] bg-cyan-400 ml-1 align-middle"
+        className="inline-block w-[3px] h-[1em] bg-cyan-400 align-middle"
+        style={{ marginInlineStart: '2px' }}
       />
     </span>
   );
