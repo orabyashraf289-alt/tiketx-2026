@@ -30,7 +30,6 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
     >
       {/* Hover gradient line */}
       <div className="absolute top-0 ltr:left-0 rtl:right-0 w-0 h-full bg-gradient-to-b from-primary/10 via-accent/5 to-transparent group-hover:w-1 transition-all duration-300" />
-    >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
