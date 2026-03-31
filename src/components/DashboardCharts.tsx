@@ -174,8 +174,8 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(174, 72%, 36%)" fill="url(#gradCreated)" strokeWidth={2.5} />
-                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(230, 65%, 58%)" fill="url(#gradResolved)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(24, 95%, 53%)" fill="url(#gradCreated)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(340, 75%, 55%)" fill="url(#gradResolved)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
