@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 30% 14%;
+    --background: 210 20% 97%;
+    --foreground: 215 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 30% 14%;
+    --card-foreground: 215 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 30% 14%;
+    --popover-foreground: 215 30% 12%;
 
-    --primary: 217 72% 50%;
+    --primary: 192 82% 38%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 94%;
-    --secondary-foreground: 217 60% 40%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 192 60% 32%;
 
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 210 14% 95%;
+    --muted-foreground: 215 10% 46%;
 
-    --accent: 217 72% 50%;
+    --accent: 225 72% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
@@ -39,52 +39,52 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 217 72% 50%;
+    --border: 210 14% 90%;
+    --input: 210 14% 90%;
+    --ring: 192 82% 38%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 222 35% 16%;
-    --sidebar-foreground: 220 20% 78%;
-    --sidebar-primary: 217 72% 55%;
+    --sidebar-background: 215 40% 12%;
+    --sidebar-foreground: 210 20% 78%;
+    --sidebar-primary: 192 82% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 22%;
-    --sidebar-accent-foreground: 220 30% 95%;
-    --sidebar-border: 222 25% 24%;
-    --sidebar-ring: 217 72% 55%;
-    --sidebar-muted: 222 22% 26%;
+    --sidebar-accent: 215 35% 18%;
+    --sidebar-accent-foreground: 210 30% 95%;
+    --sidebar-border: 215 30% 20%;
+    --sidebar-ring: 192 82% 42%;
+    --sidebar-muted: 215 25% 22%;
   }
 
   .dark {
-    --background: 222 30% 7%;
-    --foreground: 220 18% 90%;
-    --card: 222 28% 11%;
-    --card-foreground: 220 18% 90%;
-    --popover: 222 28% 11%;
-    --popover-foreground: 220 18% 90%;
-    --primary: 217 72% 55%;
+    --background: 215 35% 7%;
+    --foreground: 210 18% 90%;
+    --card: 215 32% 11%;
+    --card-foreground: 210 18% 90%;
+    --popover: 215 32% 11%;
+    --popover-foreground: 210 18% 90%;
+    --primary: 192 82% 42%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 18% 16%;
-    --secondary-foreground: 220 18% 90%;
-    --muted: 222 14% 15%;
-    --muted-foreground: 220 10% 52%;
-    --accent: 217 72% 55%;
+    --secondary: 215 20% 16%;
+    --secondary-foreground: 210 18% 90%;
+    --muted: 215 16% 15%;
+    --muted-foreground: 210 10% 52%;
+    --accent: 225 72% 58%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 32%;
     --destructive-foreground: 210 40% 98%;
-    --border: 222 14% 18%;
-    --input: 222 14% 18%;
-    --ring: 217 72% 55%;
-    --sidebar-background: 222 35% 8%;
-    --sidebar-foreground: 220 18% 78%;
-    --sidebar-primary: 217 72% 58%;
+    --border: 215 16% 18%;
+    --input: 215 16% 18%;
+    --ring: 192 82% 42%;
+    --sidebar-background: 215 40% 8%;
+    --sidebar-foreground: 210 18% 78%;
+    --sidebar-primary: 192 82% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 28% 14%;
-    --sidebar-accent-foreground: 220 18% 90%;
-    --sidebar-border: 222 22% 14%;
-    --sidebar-ring: 217 72% 58%;
-    --sidebar-muted: 222 20% 16%;
+    --sidebar-accent: 215 32% 14%;
+    --sidebar-accent-foreground: 210 18% 90%;
+    --sidebar-border: 215 25% 14%;
+    --sidebar-ring: 192 82% 45%;
+    --sidebar-muted: 215 22% 16%;
   }
 }
 
@@ -112,10 +112,10 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(222 60% 42%));
+    background: linear-gradient(135deg, hsl(192 82% 38%), hsl(225 72% 50%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(217 72% 58%));
+    background: linear-gradient(135deg, hsl(192 82% 38%), hsl(192 82% 48%));
   }
   .shadow-card {
     box-shadow: 0 1px 3px hsl(222 30% 14% / 0.06), 0 1px 2px hsl(222 30% 14% / 0.04);
