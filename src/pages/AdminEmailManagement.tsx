@@ -387,7 +387,7 @@ export default function AdminEmailManagement() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>اسم المرسل</Label>
-                            <Input value={senderName} onChange={e => setSenderName(e.target.value)} placeholder="TicketFlow" />
+                            <Input value={senderName} onChange={e => setSenderName(e.target.value)} placeholder="Ticket-X" />
                             <p className="text-xs text-muted-foreground">الاسم الذي يظهر في صندوق الوارد</p>
                           </div>
                           <div className="space-y-2">
