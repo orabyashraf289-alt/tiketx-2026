@@ -452,7 +452,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <div className="text-center mb-6">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb)' }}>
+          style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}>
           <Mail className="h-6 w-6 text-white" />
         </div>
         <h3 className="text-lg font-bold text-foreground">{t.auth.forgotPasswordTitle}</h3>
