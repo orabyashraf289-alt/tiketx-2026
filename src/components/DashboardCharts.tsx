@@ -289,7 +289,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                   <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(174, 72%, 36%)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(24, 95%, 53%)" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

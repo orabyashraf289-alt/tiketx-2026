@@ -14,8 +14,8 @@ interface SystemSettingsState {
 const defaults = {
   system_name: 'Ticket-X',
   system_subtitle: 'SMART HELPDESK',
-  primary_color: '174 72% 36%',
-  accent_color: '230 65% 58%',
+  primary_color: '24 95% 53%',
+  accent_color: '340 75% 55%',
   logo_url: '',
 };
 

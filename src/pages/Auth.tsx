@@ -509,7 +509,7 @@ export default function AuthPage() {
           {/* Mobile Logo */}
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 lg:hidden">
             <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb)' }}>
+              style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}>
               <img src={logoSrc} alt={sysName} className="h-10 w-10 object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-foreground mt-3">{sysName}</h1>
