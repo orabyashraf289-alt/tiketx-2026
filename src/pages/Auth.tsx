@@ -199,7 +199,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           >
             {/* Glow ring */}
             <motion.div
-              className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-cyan-500/30 to-blue-500/30 blur-lg"
+              className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-orange-500/30 to-pink-500/30 blur-lg"
               animate={{ opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 3, repeat: Infinity }}
             />
