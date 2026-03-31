@@ -30,7 +30,7 @@ export const RecoveryEmail = ({
     <Preview>إعادة تعيين كلمة المرور في {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="TicketFlow" width="140" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Ticket-X" width="140" height="40" style={logo} />
         <Heading style={h1}>إعادة تعيين كلمة المرور</Heading>
         <Text style={text}>
           تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك في {siteName}. اضغط على الزر أدناه لاختيار كلمة مرور جديدة.

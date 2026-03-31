@@ -74,8 +74,8 @@ export default function AdminEmailManagement() {
   const queryClient = useQueryClient();
 
   // Email config state
-  const [senderName, setSenderName] = useState('TicketFlow');
-  const [senderEmail, setSenderEmail] = useState('notify@ticketflow.a.com');
+  const [senderName, setSenderName] = useState('Ticket-X');
+  const [senderEmail, setSenderEmail] = useState('notify@ticket-x.com');
   const [emailProvider, setEmailProvider] = useState<string>('resend');
   const [smtpHost, setSmtpHost] = useState('');
   const [smtpPort, setSmtpPort] = useState('587');
@@ -115,8 +115,8 @@ export default function AdminEmailManagement() {
         ]);
       if (data) {
         data.forEach((s: any) => {
-          if (s.key === 'email_sender_name') setSenderName(s.value || 'TicketFlow');
-          if (s.key === 'email_sender_address') setSenderEmail(s.value || 'notify@ticketflow.a.com');
+           if (s.key === 'email_sender_name') setSenderName(s.value || 'Ticket-X');
+           if (s.key === 'email_sender_address') setSenderEmail(s.value || 'notify@ticket-x.com');
           if (s.key === 'email_provider') setEmailProvider(s.value || 'resend');
           if (s.key === 'smtp_host') setSmtpHost(s.value || '');
           if (s.key === 'smtp_port') setSmtpPort(s.value || '587');
@@ -387,7 +387,7 @@ export default function AdminEmailManagement() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label>اسم المرسل</Label>
-                            <Input value={senderName} onChange={e => setSenderName(e.target.value)} placeholder="TicketFlow" />
+                            <Input value={senderName} onChange={e => setSenderName(e.target.value)} placeholder="Ticket-X" />
                             <p className="text-xs text-muted-foreground">الاسم الذي يظهر في صندوق الوارد</p>
                           </div>
                           <div className="space-y-2">
@@ -684,7 +684,7 @@ export default function AdminEmailManagement() {
                             <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                             <div className="text-xs text-muted-foreground">
                               <p className="font-medium text-foreground mb-1">قوالب مخصصة بالكامل</p>
-                              <p>جميع قوالب المصادقة مُهيأة بتصميم عربي احترافي يدعم RTL مع خط Tajawal وألوان النظام. يتم إرسالها تلقائياً عبر نطاق <code className="bg-muted px-1 rounded">notify.ticketflow.a.com</code></p>
+                              <p>جميع قوالب المصادقة مُهيأة بتصميم عربي احترافي يدعم RTL مع خط Tajawal وألوان النظام. يتم إرسالها تلقائياً عبر نطاق <code className="bg-muted px-1 rounded">notify.ticket-x.com</code></p>
                             </div>
                           </div>
                         </div>

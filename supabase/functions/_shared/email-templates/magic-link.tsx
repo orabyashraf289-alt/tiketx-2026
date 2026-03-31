@@ -30,7 +30,7 @@ export const MagicLinkEmail = ({
     <Preview>رابط تسجيل الدخول إلى {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="TicketFlow" width="140" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Ticket-X" width="140" height="40" style={logo} />
         <Heading style={h1}>رابط تسجيل الدخول</Heading>
         <Text style={text}>
           اضغط على الزر أدناه لتسجيل الدخول إلى {siteName}. صلاحية هذا الرابط محدودة.

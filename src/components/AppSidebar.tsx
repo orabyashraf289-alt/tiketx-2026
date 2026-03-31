@@ -26,7 +26,7 @@ export const AppSidebar = memo(function AppSidebar() {
   const { t, lang } = useLanguage();
 
   const logoSrc = sysSettings.logo_url || logoImg;
-  const sysName = sysSettings.system_name || 'TicketFlow';
+  const sysName = sysSettings.system_name || 'Ticket-X';
   const sysSub = sysSettings.system_subtitle || 'HELPDESK';
 
   const roleLabels: Record<string, string> = {

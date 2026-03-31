@@ -633,7 +633,7 @@ const en: Translations = {
     systemIdentity: 'System Identity',
     systemIdentityDesc: 'Customize system name and subtitle',
     systemName: 'System Name',
-    systemNamePlaceholder: 'e.g. TicketFlow',
+    systemNamePlaceholder: 'e.g. Ticket-X',
     subtitle: 'Subtitle',
     subtitlePlaceholder: 'e.g. HELPDESK',
     logoTitle: 'Logo',

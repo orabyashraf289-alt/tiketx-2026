@@ -339,7 +339,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
 export default function AuthPage() {
   const sysSettings = useSystemSettings();
   const { t, isRTL } = useLanguage();
-  const sysName = sysSettings.system_name || 'Classera';
+  const sysName = sysSettings.system_name || 'Ticket-X';
   const sysSub = sysSettings.system_subtitle || 'SMART HELPDESK';
   const logoSrc = sysSettings.logo_url || logoImg;
   const [forgotMode, setForgotMode] = useState(false);

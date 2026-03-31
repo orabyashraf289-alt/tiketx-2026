@@ -17,8 +17,8 @@ async function getEmailConfig(adminClient: any) {
   (data || []).forEach((s: any) => { config[s.key] = s.value || ""; });
   return {
     provider: config.email_provider || "resend",
-    senderName: config.email_sender_name || "TicketFlow",
-    senderAddress: config.email_sender_address || "notify@ticketflow.a.com",
+    senderName: config.email_sender_name || "Ticket-X",
+    senderAddress: config.email_sender_address || "notify@ticket-x.com",
     smtp: {
       host: config.smtp_host || "",
       port: parseInt(config.smtp_port || "587"),

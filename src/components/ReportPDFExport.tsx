@@ -44,7 +44,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
         thResolution: 'زمن الحل',
         thTitle: 'العنوان',
         thNumber: '#',
-        footer: (iso: string) => `تم إنشاء هذا التقرير آلياً بواسطة نظام ${opts.systemName || 'TicketFlow'} — ${iso}`,
+        footer: (iso: string) => `تم إنشاء هذا التقرير آلياً بواسطة نظام ${opts.systemName || 'Ticket-X'} — ${iso}`,
       }
     : {
         docTitle: 'Tickets Report',
@@ -67,7 +67,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
         thResolution: 'Resolution',
         thTitle: 'Title',
         thNumber: '#',
-        footer: (iso: string) => `This report was generated automatically by ${opts.systemName || 'TicketFlow'} — ${iso}`,
+        footer: (iso: string) => `This report was generated automatically by ${opts.systemName || 'Ticket-X'} — ${iso}`,
       };
 
   const statusRows = Object.entries(report.byStatus)
@@ -137,7 +137,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
     </div>
     <div class="meta">
       <p>${copy.exportDate}: ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}</p>
-      <p>${opts.systemName || 'TicketFlow System'}</p>
+      <p>${opts.systemName || 'Ticket-X System'}</p>
     </div>
   </div>
 

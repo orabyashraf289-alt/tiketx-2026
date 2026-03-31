@@ -52,7 +52,7 @@ export function TicketPDFExport({ ticket, comments, attachments }: TicketPDFExpo
 <body>
   <div class="header">
     <div>
-      <h1>TicketFlow</h1>
+      <h1>Ticket-X</h1>
       <p style="font-size:12px;color:#666;margin-top:4px;">تقرير تذكرة</p>
     </div>
     <div class="meta">
@@ -111,7 +111,7 @@ export function TicketPDFExport({ ticket, comments, attachments }: TicketPDFExpo
   </div>` : ''}
 
   <div class="footer">
-    تم إنشاء هذا التقرير بواسطة TicketFlow • ${format(new Date(), 'd MMMM yyyy, HH:mm', { locale: ar })}
+    تم إنشاء هذا التقرير بواسطة Ticket-X • ${format(new Date(), 'd MMMM yyyy, HH:mm', { locale: ar })}
   </div>
 </body>
 </html>`;
