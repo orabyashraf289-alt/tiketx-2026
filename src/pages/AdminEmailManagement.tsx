@@ -74,8 +74,8 @@ export default function AdminEmailManagement() {
   const queryClient = useQueryClient();
 
   // Email config state
-  const [senderName, setSenderName] = useState('TicketFlow');
-  const [senderEmail, setSenderEmail] = useState('notify@ticketflow.a.com');
+  const [senderName, setSenderName] = useState('Ticket-X');
+  const [senderEmail, setSenderEmail] = useState('notify@ticket-x.com');
   const [emailProvider, setEmailProvider] = useState<string>('resend');
   const [smtpHost, setSmtpHost] = useState('');
   const [smtpPort, setSmtpPort] = useState('587');
