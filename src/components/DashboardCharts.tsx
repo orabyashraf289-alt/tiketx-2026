@@ -12,10 +12,10 @@ import { useLanguage } from '@/i18n';
 
 /* Updated brand-aligned palette */
 const COLORS = [
-  'hsl(174, 72%, 36%)',   /* primary teal */
-  'hsl(230, 65%, 58%)',   /* accent indigo */
-  'hsl(38, 92%, 50%)',    /* warning amber */
-  'hsl(200, 85%, 48%)',   /* info blue */
+  'hsl(24, 95%, 53%)',    /* primary orange */
+  'hsl(340, 75%, 55%)',   /* accent pink */
+  'hsl(45, 93%, 47%)',    /* warning gold */
+  'hsl(210, 80%, 52%)',   /* info blue */
   'hsl(0, 72%, 51%)',     /* destructive red */
   'hsl(280, 55%, 50%)',   /* purple */
   'hsl(158, 60%, 40%)',   /* success green */
