@@ -225,11 +225,14 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           className="mb-10"
         >
           <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
-            {isRTL ? (
-              <>حلول دعم فني<br /><span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">متطورة وذكية</span></>
-            ) : (
-              <>Advanced Support<br /><span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Solutions & Intelligence</span></>
-            )}
+            {isRTL ? 'حلول دعم فني' : 'Advanced Support'}<br />
+            <TypewriterText
+              texts={isRTL
+                ? ['متطورة وذكية', 'سريعة وفعّالة', 'آمنة وموثوقة']
+                : ['Solutions & Intelligence', 'Fast & Efficient', 'Secure & Reliable']
+              }
+              className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+            />
           </h2>
           <p className="text-sm text-white/50 mt-4 max-w-md leading-relaxed">
             {isRTL
