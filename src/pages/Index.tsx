@@ -281,10 +281,14 @@ function KPICard({ title, value, icon: Icon, variant, trend }: {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -2 }}
-      className="rounded-2xl border border-border/40 bg-card p-4 transition-all duration-200 hover:shadow-card-hover hover:border-border"
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="group relative rounded-2xl border border-border/40 bg-card p-4 transition-all duration-300 hover:shadow-card-hover hover:border-primary/30 overflow-hidden cursor-default"
     >
-      <div className="flex items-start justify-between">
+      {/* Hover gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+      <div className="relative flex items-start justify-between">
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground font-medium leading-tight">{title}</p>
           <div className="flex items-center gap-1.5">
@@ -293,7 +297,7 @@ function KPICard({ title, value, icon: Icon, variant, trend }: {
             {trend === 'down' && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
           </div>
         </div>
-        <div className={`w-10 h-10 rounded-xl ${v.iconBg} flex items-center justify-center ${v.color}`}>
+        <div className={`w-10 h-10 rounded-xl ${v.iconBg} flex items-center justify-center ${v.color} group-hover:scale-110 transition-transform duration-300`}>
           <Icon className="h-[18px] w-[18px]" />
         </div>
       </div>
