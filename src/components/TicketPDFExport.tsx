@@ -111,7 +111,7 @@ export function TicketPDFExport({ ticket, comments, attachments }: TicketPDFExpo
   </div>` : ''}
 
   <div class="footer">
-    تم إنشاء هذا التقرير بواسطة TicketFlow • ${format(new Date(), 'd MMMM yyyy, HH:mm', { locale: ar })}
+    تم إنشاء هذا التقرير بواسطة Ticket-X • ${format(new Date(), 'd MMMM yyyy, HH:mm', { locale: ar })}
   </div>
 </body>
 </html>`;

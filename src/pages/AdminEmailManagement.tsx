@@ -684,7 +684,7 @@ export default function AdminEmailManagement() {
                             <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                             <div className="text-xs text-muted-foreground">
                               <p className="font-medium text-foreground mb-1">قوالب مخصصة بالكامل</p>
-                              <p>جميع قوالب المصادقة مُهيأة بتصميم عربي احترافي يدعم RTL مع خط Tajawal وألوان النظام. يتم إرسالها تلقائياً عبر نطاق <code className="bg-muted px-1 rounded">notify.ticketflow.a.com</code></p>
+                              <p>جميع قوالب المصادقة مُهيأة بتصميم عربي احترافي يدعم RTL مع خط Tajawal وألوان النظام. يتم إرسالها تلقائياً عبر نطاق <code className="bg-muted px-1 rounded">notify.ticket-x.com</code></p>
                             </div>
                           </div>
                         </div>

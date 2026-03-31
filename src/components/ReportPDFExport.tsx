@@ -137,7 +137,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
     </div>
     <div class="meta">
       <p>${copy.exportDate}: ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}</p>
-      <p>${opts.systemName || 'TicketFlow System'}</p>
+      <p>${opts.systemName || 'Ticket-X System'}</p>
     </div>
   </div>
 

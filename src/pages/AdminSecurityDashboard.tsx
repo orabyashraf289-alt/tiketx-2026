@@ -201,7 +201,7 @@ ${alerts.length > 0 ? `<div class="section"><h2>⚠️ ${t.admin.securityAlerts}
 
 <div class="section"><h2>${t.admin.topActiveUsers}</h2><table><thead><tr><th>#</th><th>${t.admin.userName}</th><th>${t.admin.eventCount}</th></tr></thead><tbody>${topUsersHtml}</tbody></table></div>
 
-<div class="footer">TicketFlow System — ${new Date().toISOString()}</div>
+<div class="footer">Ticket-X System — ${new Date().toISOString()}</div>
 </body></html>`;
 
     const win = window.open('', '_blank');
