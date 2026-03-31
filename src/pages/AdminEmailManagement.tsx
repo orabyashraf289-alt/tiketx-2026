@@ -115,8 +115,8 @@ export default function AdminEmailManagement() {
         ]);
       if (data) {
         data.forEach((s: any) => {
-          if (s.key === 'email_sender_name') setSenderName(s.value || 'TicketFlow');
-          if (s.key === 'email_sender_address') setSenderEmail(s.value || 'notify@ticketflow.a.com');
+           if (s.key === 'email_sender_name') setSenderName(s.value || 'Ticket-X');
+           if (s.key === 'email_sender_address') setSenderEmail(s.value || 'notify@ticket-x.com');
           if (s.key === 'email_provider') setEmailProvider(s.value || 'resend');
           if (s.key === 'smtp_host') setSmtpHost(s.value || '');
           if (s.key === 'smtp_port') setSmtpPort(s.value || '587');
