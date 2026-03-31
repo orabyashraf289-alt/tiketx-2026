@@ -644,7 +644,7 @@ const ar = {
     systemIdentity: 'هوية النظام',
     systemIdentityDesc: 'تخصيص اسم النظام والعنوان الفرعي',
     systemName: 'اسم النظام',
-    systemNamePlaceholder: 'مثال: TicketFlow',
+    systemNamePlaceholder: 'مثال: Ticket-X',
     subtitle: 'العنوان الفرعي',
     subtitlePlaceholder: 'مثال: HELPDESK',
     logoTitle: 'الشعار',

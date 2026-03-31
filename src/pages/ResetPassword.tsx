@@ -18,7 +18,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   const sysSettings = useSystemSettings();
-  const sysName = sysSettings.system_name || 'TicketFlow';
+  const sysName = sysSettings.system_name || 'Ticket-X';
   const logoSrc = sysSettings.logo_url || logoImg;
   
   const [password, setPassword] = useState('');

@@ -12,7 +12,7 @@ interface SystemSettingsState {
 }
 
 const defaults = {
-  system_name: 'TicketFlow',
+  system_name: 'Ticket-X',
   system_subtitle: 'HELPDESK',
   primary_color: '217 72% 50%',
   accent_color: '217 72% 55%',
