@@ -10,14 +10,20 @@ import { TicketStatus } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 
+/* Updated brand-aligned palette */
 const COLORS = [
-  'hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)',
-  'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(152, 55%, 42%)'
+  'hsl(174, 72%, 36%)',   /* primary teal */
+  'hsl(230, 65%, 58%)',   /* accent indigo */
+  'hsl(38, 92%, 50%)',    /* warning amber */
+  'hsl(200, 85%, 48%)',   /* info blue */
+  'hsl(0, 72%, 51%)',     /* destructive red */
+  'hsl(280, 55%, 50%)',   /* purple */
+  'hsl(158, 60%, 40%)',   /* success green */
 ];
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 interface DashboardChartsProps {
@@ -124,19 +130,27 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
     }));
   }, [report]);
 
-  const tooltipStyle = { borderRadius: '0.75rem', fontSize: '12px', background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' };
+  const tooltipStyle = {
+    borderRadius: '12px',
+    fontSize: '12px',
+    background: 'hsl(var(--card))',
+    border: '1px solid hsl(var(--border))',
+    boxShadow: '0 4px 12px hsl(220 30% 10% / 0.1)',
+  };
 
   return (
     <div className="space-y-4">
-      {/* Row 1: Trend Chart */}
+      {/* Trend Chart */}
       <motion.div variants={fadeUp}>
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border-border/40 shadow-card">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm flex items-center gap-2 font-semibold">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              </div>
               {copy.trend}
             </CardTitle>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => exportToCSV(report, lang)}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-lg border-border/50 hover:border-primary/30" onClick={() => exportToCSV(report, lang)}>
               <Download className="h-3.5 w-3.5" />
               {copy.exportCSV}
             </Button>
@@ -147,21 +161,21 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="gradCreated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(217, 72%, 50%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(217, 72%, 50%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(199, 89%, 48%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} />
-                  <YAxis tick={{ fontSize: 10 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(217, 72%, 50%)" fill="url(#gradCreated)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(199, 89%, 48%)" fill="url(#gradResolved)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(174, 72%, 36%)" fill="url(#gradCreated)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(230, 65%, 58%)" fill="url(#gradResolved)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -174,10 +188,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
       {/* Row 2: Pie + Priority + Source */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <motion.div variants={fadeUp}>
-          <Card className="h-full">
+          <Card className="h-full border-border/40 shadow-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <PieIcon className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm flex items-center gap-2 font-semibold">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <PieIcon className="h-3.5 w-3.5 text-primary" />
+                </div>
                 {copy.byStatus}
               </CardTitle>
             </CardHeader>
@@ -185,7 +201,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
               {statusPieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
-                    <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
+                    <Pie data={statusPieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={42} strokeWidth={2} stroke="hsl(var(--card))">
                       {statusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
                     <Tooltip contentStyle={tooltipStyle} />
@@ -200,10 +216,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="h-full">
+          <Card className="h-full border-border/40 shadow-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Activity className="h-4 w-4 text-warning" />
+              <CardTitle className="text-sm flex items-center gap-2 font-semibold">
+                <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
+                  <Activity className="h-3.5 w-3.5 text-warning" />
+                </div>
                 {copy.byPriority}
               </CardTitle>
             </CardHeader>
@@ -211,12 +229,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
               {priorityData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={priorityData} layout="vertical">
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={60} />
+                    <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={60} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="value" name={copy.tickets} radius={[0, 6, 6, 0]}>
+                    <Bar dataKey="value" name={copy.tickets} radius={[0, 8, 8, 0]}>
                       {priorityData.map((_, i) => (
-                        <Cell key={i} fill={['hsl(217, 72%, 50%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
+                        <Cell key={i} fill={['hsl(174, 72%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -229,10 +247,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="h-full">
+          <Card className="h-full border-border/40 shadow-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-info" />
+              <CardTitle className="text-sm flex items-center gap-2 font-semibold">
+                <div className="w-7 h-7 rounded-lg bg-info/10 flex items-center justify-center">
+                  <BarChart3 className="h-3.5 w-3.5 text-info" />
+                </div>
                 {copy.bySource}
               </CardTitle>
             </CardHeader>
@@ -240,10 +260,10 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
               {sourceData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={sourceData}>
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="value" name={copy.tickets} fill="hsl(222, 60%, 42%)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="value" name={copy.tickets} fill="hsl(230, 65%, 58%)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -254,22 +274,22 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
         </motion.div>
       </div>
 
-      {/* Row 3: SLA by Service */}
+      {/* SLA by Service */}
       {slaServiceData.length > 0 && (
         <motion.div variants={fadeUp}>
-          <Card>
+          <Card className="border-border/40 shadow-card">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{copy.slaByService}</CardTitle>
+              <CardTitle className="text-sm font-semibold">{copy.slaByService}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={slaServiceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(217, 72%, 50%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(174, 72%, 36%)" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

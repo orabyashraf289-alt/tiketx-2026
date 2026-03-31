@@ -24,8 +24,8 @@ interface SettingsForm {
 const defaultSettings: SettingsForm = {
   system_name: 'Ticket-X',
   system_subtitle: 'SMART HELPDESK',
-  primary_color: '192 82% 38%',
-  accent_color: '225 72% 55%',
+  primary_color: '174 72% 36%',
+  accent_color: '230 65% 58%',
   logo_url: '',
 };
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import {
   Inbox, Clock, CheckCircle2, AlertTriangle, Search, Plus,
   Users, BarChart3, Shield, Timer, TrendingUp,
-  TrendingDown, BookOpen,
+  TrendingDown, BookOpen, ArrowUpRight,
 } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/SkeletonLoaders';
 import { Button } from '@/components/ui/button';
@@ -19,18 +19,18 @@ import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 import { useLanguage } from '@/i18n';
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 const staggerContainer = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
 };
 
 const listItem = {
-  hidden: { opacity: 0, x: 20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, x: 16 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
 export default function Dashboard() {
@@ -116,9 +116,9 @@ export default function Dashboard() {
     <>
       <div className="relative hidden md:block">
         <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-8 w-48 text-xs rounded-full" />
+        <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-9 w-52 text-xs rounded-xl bg-muted/60 border-0 focus:bg-background focus:ring-1 focus:ring-primary/30" />
       </div>
-      <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
+      <Button className="gradient-primary text-white gap-2 text-sm rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onClick={() => navigate('/tickets/new')}>
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">{t.sidebar.newTicket}</span>
       </Button>
@@ -126,13 +126,13 @@ export default function Dashboard() {
   );
 
   const dateBadge = (
-    <div className="flex gap-1">
+    <div className="flex gap-1 bg-muted/50 p-1 rounded-xl">
       {datePresets.map(p => (
         <button
           key={p.days}
           onClick={() => setDateRange(p.days)}
-          className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
-            dateRange === p.days ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          className={`px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 ${
+            dateRange === p.days ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
           }`}
         >
           {p.label}
@@ -150,137 +150,151 @@ export default function Dashboard() {
         actions={headerActions}
       />
 
-          <main className="flex-1 overflow-auto" role="main">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 space-y-6">
-              {/* KPI Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                <KPICard title={t.dashboard.unresolvedTickets} value={unresolvedCount} icon={Inbox} color="text-primary" bgGradient="from-primary/10 to-primary/5" />
-                <KPICard title={t.dashboard.pending} value={pendingCount} icon={Clock} color="text-warning" bgGradient="from-warning/10 to-warning/5" />
-                <KPICard title={t.dashboard.overdue} value={report?.overdueCount ?? 0} icon={AlertTriangle} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" />
-                <KPICard title={t.dashboard.slaBreaches} value={report?.slaBreaches ?? 0} icon={Shield} color="text-destructive" bgGradient="from-destructive/10 to-destructive/5" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
-                <KPICard title={t.dashboard.avgFirstResponse} value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} color="text-info" bgGradient="from-info/10 to-info/5" />
-                <KPICard title={t.dashboard.slaCompliance} value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} color="text-success" bgGradient="from-success/10 to-success/5" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
+      <main className="flex-1 overflow-auto" role="main">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 space-y-5">
+          {/* KPI Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <KPICard title={t.dashboard.unresolvedTickets} value={unresolvedCount} icon={Inbox} variant="primary" />
+            <KPICard title={t.dashboard.pending} value={pendingCount} icon={Clock} variant="warning" />
+            <KPICard title={t.dashboard.overdue} value={report?.overdueCount ?? 0} icon={AlertTriangle} variant="destructive" />
+            <KPICard title={t.dashboard.slaBreaches} value={report?.slaBreaches ?? 0} icon={Shield} variant="destructive" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
+            <KPICard title={t.dashboard.avgFirstResponse} value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} variant="info" />
+            <KPICard title={t.dashboard.slaCompliance} value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} variant="success" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
+          </div>
+
+          {isAdmin && <DashboardCharts report={report} trendData={trendData} />}
+
+          {isAdmin && (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { label: t.dashboard.quickActions.reports, icon: BarChart3, path: '/admin/reports' },
+                { label: t.dashboard.quickActions.users, icon: Users, path: '/admin/users' },
+                { label: t.dashboard.quickActions.ticketInbox, icon: Inbox, path: '/tickets' },
+                { label: t.dashboard.quickActions.knowledgeBase, icon: BookOpen, path: '/knowledge-base' },
+                { label: t.dashboard.quickActions.newTicket, icon: Plus, path: '/tickets/new' },
+              ].map((action) => (
+                <motion.button
+                  key={action.path}
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate(action.path)}
+                  className="group flex items-center gap-2.5 p-3.5 rounded-xl border border-border/40 bg-card hover:border-primary/30 hover:shadow-card-hover transition-all duration-200 text-sm font-medium text-foreground"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                    <action.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="flex-1 text-start">{action.label}</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.button>
+              ))}
+            </div>
+          )}
+
+          {/* Ticket List */}
+          <motion.div variants={fadeUp} initial="hidden" animate="visible" className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-card">
+            <div className="p-4 border-b border-border/40">
+              <div className="flex items-center gap-3 mb-3 md:hidden">
+                <div className="relative flex-1">
+                  <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder={t.tickets.searchTickets} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 rounded-xl" />
+                </div>
               </div>
-
-              {isAdmin && <DashboardCharts report={report} trendData={trendData} />}
-
-              {isAdmin && (
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {[
-                    { label: t.dashboard.quickActions.reports, icon: BarChart3, path: '/admin/reports' },
-                    { label: t.dashboard.quickActions.users, icon: Users, path: '/admin/users' },
-                    { label: t.dashboard.quickActions.ticketInbox, icon: Inbox, path: '/tickets' },
-                    { label: t.dashboard.quickActions.knowledgeBase, icon: BookOpen, path: '/knowledge-base' },
-                    { label: t.dashboard.quickActions.newTicket, icon: Plus, path: '/tickets/new' },
-                  ].map((action) => (
-                    <motion.button
-                      key={action.path}
-                      whileHover={{ scale: 1.03, y: -2 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => navigate(action.path)}
-                      className="flex items-center gap-2 p-3.5 rounded-xl border border-border/50 bg-card hover:shadow-card-hover transition-all text-sm font-medium text-foreground"
-                    >
-                      <action.icon className="h-4 w-4 text-primary" />
-                      {action.label}
-                    </motion.button>
+              <div className="flex gap-1.5 flex-wrap">
+                {statusFilters.map(f => (
+                  <button
+                    key={f.value}
+                    onClick={() => setStatusFilter(f.value)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      statusFilter === f.value
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              {isAdmin && departments.length > 0 && (
+                <div className="flex gap-1.5 flex-wrap mt-2">
+                  <button
+                    onClick={() => setDeptFilter('all')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${deptFilter === 'all' ? 'bg-accent text-accent-foreground' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}
+                  >{t.common.all}</button>
+                  {departments.map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => setDeptFilter(d.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${deptFilter === d.id ? 'bg-accent text-accent-foreground' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}
+                    >{d.name}</button>
                   ))}
                 </div>
               )}
+            </div>
 
-              {/* Ticket List */}
-              <motion.div variants={fadeUp} initial="hidden" animate="visible" className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-card">
-                <div className="p-4 border-b border-border/50">
-                  <div className="flex items-center gap-3 mb-3 md:hidden">
-                    <div className="relative flex-1">
-                      <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder={t.tickets.searchTickets} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 rounded-xl" />
-                    </div>
+            <AnimatePresence mode="wait">
+              {ticketsLoading ? (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <DashboardSkeleton />
+                </motion.div>
+              ) : filteredTickets.length === 0 ? (
+                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                  <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+                    <Inbox className="h-8 w-8 opacity-30" />
                   </div>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {statusFilters.map(f => (
-                      <button
-                        key={f.value}
-                        onClick={() => setStatusFilter(f.value)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                          statusFilter === f.value
-                            ? 'gradient-accent text-accent-foreground shadow-md shadow-primary/20'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                  {isAdmin && departments.length > 0 && (
-                    <div className="flex gap-1.5 flex-wrap mt-2">
-                      <button
-                        onClick={() => setDeptFilter('all')}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${deptFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                      >{t.common.all}</button>
-                      {departments.map(d => (
-                        <button
-                          key={d.id}
-                          onClick={() => setDeptFilter(d.id)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${deptFilter === d.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-                        >{d.name}</button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {ticketsLoading ? (
-                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <DashboardSkeleton />
+                  <p className="font-medium">{t.dashboard.noTickets}</p>
+                </motion.div>
+              ) : (
+                <motion.div key="list" variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-border/40">
+                  {filteredTickets.map((ticket, i) => (
+                    <motion.div key={ticket.id} variants={listItem}>
+                      <TicketListItem ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                     </motion.div>
-                  ) : filteredTickets.length === 0 ? (
-                    <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                      <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                      <p className="font-medium">{t.dashboard.noTickets}</p>
-                    </motion.div>
-                  ) : (
-                    <motion.div key="list" variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-border/50">
-                      {filteredTickets.map((ticket, i) => (
-                        <motion.div key={ticket.id} variants={listItem}>
-                          <TicketListItem ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </motion.div>
-          </main>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+      </main>
     </PageLayout>
   );
 }
 
-function KPICard({ title, value, icon: Icon, color, bgGradient, trend }: {
+/* ─── KPI Card ─── */
+const variantConfig = {
+  primary: { bg: 'bg-primary/8', iconBg: 'bg-primary/15', color: 'text-primary' },
+  warning: { bg: 'bg-warning/8', iconBg: 'bg-warning/15', color: 'text-warning' },
+  destructive: { bg: 'bg-destructive/8', iconBg: 'bg-destructive/15', color: 'text-destructive' },
+  success: { bg: 'bg-success/8', iconBg: 'bg-success/15', color: 'text-success' },
+  info: { bg: 'bg-info/8', iconBg: 'bg-info/15', color: 'text-info' },
+};
+
+function KPICard({ title, value, icon: Icon, variant, trend }: {
   title: string;
   value: number | string;
   icon: React.ElementType;
-  color: string;
-  bgGradient: string;
+  variant: keyof typeof variantConfig;
   trend?: 'up' | 'down';
 }) {
+  const v = variantConfig[variant];
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -3 }}
-      className={`rounded-2xl border border-border/50 bg-gradient-to-br ${bgGradient} p-4 transition-shadow hover:shadow-card-hover`}
+      whileHover={{ y: -2 }}
+      className="rounded-2xl border border-border/40 bg-card p-4 transition-all duration-200 hover:shadow-card-hover hover:border-border"
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[10px] text-muted-foreground font-medium">{title}</p>
-          <div className="flex items-center gap-1.5 mt-1">
+      <div className="flex items-start justify-between">
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-muted-foreground font-medium leading-tight">{title}</p>
+          <div className="flex items-center gap-1.5">
             <span className="text-xl font-bold text-foreground">{value}</span>
-            {trend === 'up' && <TrendingUp className="h-3 w-3 text-success" />}
-            {trend === 'down' && <TrendingDown className="h-3 w-3 text-destructive" />}
+            {trend === 'up' && <TrendingUp className="h-3.5 w-3.5 text-success" />}
+            {trend === 'down' && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
           </div>
         </div>
-        <div className={`w-9 h-9 rounded-xl bg-card/80 flex items-center justify-center ${color}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`w-10 h-10 rounded-xl ${v.iconBg} flex items-center justify-center ${v.color}`}>
+          <Icon className="h-[18px] w-[18px]" />
         </div>
       </div>
     </motion.div>
