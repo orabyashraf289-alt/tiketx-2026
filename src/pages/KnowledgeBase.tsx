@@ -100,11 +100,11 @@ export default function KnowledgeBase() {
   const canCreate = role === 'admin' || role === 'agent';
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
+    <PageLayout>
+      <PageHeader
+        title={t.admin.knowledgeBaseTitle}
+        icon={<BookOpen className="h-5 w-5" />}
+        actions={
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 no-print sticky top-0 z-30"

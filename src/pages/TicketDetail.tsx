@@ -678,8 +678,8 @@ export default function TicketDetailPage() {
                 {isAgentOrAdmin && (
                   <>
                     <motion.div variants={fadeScale}>
-                      <Card className="rounded-2xl border-border/50 shadow-card">
-                        <CardHeader><CardTitle className="text-sm">{t.tickets.actions}</CardTitle></CardHeader>
+                      <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                        <CardHeader className="border-b border-border/30"><CardTitle className="text-sm font-semibold">{t.tickets.actions}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-xs">{t.tickets.changeStatus}</Label>
