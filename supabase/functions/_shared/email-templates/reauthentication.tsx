@@ -25,7 +25,7 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
     <Preview>رمز التحقق الخاص بك</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt="TicketFlow" width="140" height="40" style={logo} />
+        <Img src={LOGO_URL} alt="Ticket-X" width="140" height="40" style={logo} />
         <Heading style={h1}>تأكيد الهوية</Heading>
         <Text style={text}>استخدم الرمز أدناه لتأكيد هويتك:</Text>
         <Text style={codeStyle}>{token}</Text>
