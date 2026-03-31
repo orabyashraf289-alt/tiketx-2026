@@ -44,7 +44,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
         thResolution: 'زمن الحل',
         thTitle: 'العنوان',
         thNumber: '#',
-        footer: (iso: string) => `تم إنشاء هذا التقرير آلياً بواسطة نظام ${opts.systemName || 'TicketFlow'} — ${iso}`,
+        footer: (iso: string) => `تم إنشاء هذا التقرير آلياً بواسطة نظام ${opts.systemName || 'Ticket-X'} — ${iso}`,
       }
     : {
         docTitle: 'Tickets Report',
