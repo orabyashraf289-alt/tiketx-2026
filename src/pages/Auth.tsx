@@ -468,7 +468,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
         </div>
         <Button type="submit" disabled={loading}
           className="w-full h-12 rounded-xl font-bold text-sm gap-2 border-0 text-white shadow-lg shadow-primary/25"
-          style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb, #6366f1)' }}>
+          style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #f43f5e)' }}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.auth.sendResetLink}
         </Button>
       </form>
