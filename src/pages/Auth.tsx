@@ -263,7 +263,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           ].map((s, i) => (
             <div key={i} className="text-center flex-1">
               <motion.p
-                className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+                className="text-lg font-bold bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.2 + i * 0.15, type: 'spring' }}
