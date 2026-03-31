@@ -12,10 +12,10 @@ import { useLanguage } from '@/i18n';
 
 /* Updated brand-aligned palette */
 const COLORS = [
-  'hsl(174, 72%, 36%)',   /* primary teal */
-  'hsl(230, 65%, 58%)',   /* accent indigo */
-  'hsl(38, 92%, 50%)',    /* warning amber */
-  'hsl(200, 85%, 48%)',   /* info blue */
+  'hsl(24, 95%, 53%)',    /* primary orange */
+  'hsl(340, 75%, 55%)',   /* accent pink */
+  'hsl(45, 93%, 47%)',    /* warning gold */
+  'hsl(210, 80%, 52%)',   /* info blue */
   'hsl(0, 72%, 51%)',     /* destructive red */
   'hsl(280, 55%, 50%)',   /* purple */
   'hsl(158, 60%, 40%)',   /* success green */
@@ -161,12 +161,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="gradCreated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
@@ -174,8 +174,8 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(174, 72%, 36%)" fill="url(#gradCreated)" strokeWidth={2.5} />
-                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(230, 65%, 58%)" fill="url(#gradResolved)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(24, 95%, 53%)" fill="url(#gradCreated)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(340, 75%, 55%)" fill="url(#gradResolved)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -234,7 +234,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="value" name={copy.tickets} radius={[0, 8, 8, 0]}>
                       {priorityData.map((_, i) => (
-                        <Cell key={i} fill={['hsl(174, 72%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
+                        <Cell key={i} fill={['hsl(24, 95%, 53%)', 'hsl(45, 93%, 47%)', 'hsl(340, 75%, 55%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -263,7 +263,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="value" name={copy.tickets} fill="hsl(230, 65%, 58%)" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="value" name={copy.tickets} fill="hsl(340, 75%, 55%)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -289,7 +289,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                   <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(174, 72%, 36%)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(24, 95%, 53%)" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

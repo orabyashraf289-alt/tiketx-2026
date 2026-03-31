@@ -55,7 +55,7 @@ const TypewriterText = ({ texts, className }: { texts: string[]; className?: str
       <motion.span
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.5, repeat: Infinity }}
-        className="inline-block w-[3px] h-[1em] bg-cyan-400 align-middle"
+        className="inline-block w-[3px] h-[1em] bg-primary align-middle"
         style={{ marginInlineStart: '2px' }}
       />
     </span>
@@ -67,14 +67,14 @@ const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden">
     {/* Gradient base */}
     <div className="absolute inset-0" style={{
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #0f172a 60%, #1a1a2e 100%)'
+      background: 'linear-gradient(135deg, #1a0a00 0%, #2d1810 30%, #1a0a05 60%, #1f0f18 100%)'
     }} />
 
     {/* Animated mesh gradient orbs */}
     {[
-      { color: '#2563eb', size: 600, top: '-15%', left: '-10%', delay: 0 },
-      { color: '#0891b2', size: 500, bottom: '-20%', right: '-15%', delay: 2 },
-      { color: '#6366f1', size: 400, top: '50%', left: '60%', delay: 4 },
+      { color: '#f97316', size: 600, top: '-15%', left: '-10%', delay: 0 },
+      { color: '#ec4899', size: 500, bottom: '-20%', right: '-15%', delay: 2 },
+      { color: '#f43f5e', size: 400, top: '50%', left: '60%', delay: 4 },
     ].map((orb, i) => (
       <motion.div
         key={i}
@@ -142,8 +142,8 @@ const FeatureCard = ({ icon: Icon, titleAr, titleEn, descAr, descEn, delay, isRT
       transition={{ type: 'spring', stiffness: 300 }}
       className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.1] hover:border-white/[0.15] transition-all duration-300"
     >
-      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
-        <Icon className="w-5 h-5 text-cyan-400" />
+      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
+        <Icon className="w-5 h-5 text-orange-400" />
       </div>
       <div className="min-w-0">
         <h4 className="text-sm font-semibold text-white/90">{isRTL ? titleAr : titleEn}</h4>
@@ -199,7 +199,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           >
             {/* Glow ring */}
             <motion.div
-              className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-cyan-500/30 to-blue-500/30 blur-lg"
+              className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-orange-500/30 to-pink-500/30 blur-lg"
               animate={{ opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 3, repeat: Infinity }}
             />
@@ -231,7 +231,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
                 ? ['متطورة وذكية', 'سريعة وفعّالة', 'آمنة وموثوقة']
                 : ['Solutions & Intelligence', 'Fast & Efficient', 'Secure & Reliable']
               }
-              className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+              className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent"
             />
           </h2>
           <p className="text-sm text-white/50 mt-4 max-w-md leading-relaxed">
@@ -263,7 +263,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           ].map((s, i) => (
             <div key={i} className="text-center flex-1">
               <motion.p
-                className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+                className="text-lg font-bold bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.2 + i * 0.15, type: 'spring' }}
@@ -368,7 +368,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button type="submit" disabled={loading}
             className="w-full h-12 rounded-xl font-bold text-sm gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-            style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb, #6366f1)' }}>
+            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #f43f5e)' }}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
               <span className="flex items-center gap-2 text-white">{t.auth.login} <ArrowIcon className="h-4 w-4" /></span>
             )}
@@ -452,7 +452,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <div className="text-center mb-6">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb)' }}>
+          style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}>
           <Mail className="h-6 w-6 text-white" />
         </div>
         <h3 className="text-lg font-bold text-foreground">{t.auth.forgotPasswordTitle}</h3>
@@ -468,7 +468,7 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
         </div>
         <Button type="submit" disabled={loading}
           className="w-full h-12 rounded-xl font-bold text-sm gap-2 border-0 text-white shadow-lg shadow-primary/25"
-          style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb, #6366f1)' }}>
+          style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #f43f5e)' }}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.auth.sendResetLink}
         </Button>
       </form>
@@ -509,7 +509,7 @@ export default function AuthPage() {
           {/* Mobile Logo */}
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 lg:hidden">
             <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb)' }}>
+              style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}>
               <img src={logoSrc} alt={sysName} className="h-10 w-10 object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-foreground mt-3">{sysName}</h1>
