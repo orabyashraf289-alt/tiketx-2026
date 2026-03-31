@@ -368,7 +368,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button type="submit" disabled={loading}
             className="w-full h-12 rounded-xl font-bold text-sm gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-            style={{ background: 'linear-gradient(135deg, #0891b2, #2563eb, #6366f1)' }}>
+            style={{ background: 'linear-gradient(135deg, #f97316, #ec4899, #f43f5e)' }}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
               <span className="flex items-center gap-2 text-white">{t.auth.login} <ArrowIcon className="h-4 w-4" /></span>
             )}
