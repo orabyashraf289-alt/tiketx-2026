@@ -161,12 +161,12 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="gradCreated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(174, 72%, 36%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(230, 65%, 58%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
