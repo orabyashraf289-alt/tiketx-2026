@@ -234,7 +234,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="value" name={copy.tickets} radius={[0, 8, 8, 0]}>
                       {priorityData.map((_, i) => (
-                        <Cell key={i} fill={['hsl(174, 72%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
+                        <Cell key={i} fill={['hsl(24, 95%, 53%)', 'hsl(45, 93%, 47%)', 'hsl(340, 75%, 55%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
                     </Bar>
                   </BarChart>
