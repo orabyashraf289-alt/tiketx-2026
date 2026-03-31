@@ -192,13 +192,15 @@ export default function NewTicket() {
 
   return (
     <PageLayout>
-      <header className="h-14 flex items-center border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30">
-        <SidebarTrigger />
-            <SidebarTrigger />
+      <header className="h-[56px] flex items-center border-b border-border/40 bg-card/90 backdrop-blur-xl px-4 gap-3 shrink-0 sticky top-0 z-30">
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowRight className={`h-5 w-5 ${!isRTL ? 'rotate-180' : ''}`} />
             </Button>
-            <h1 className="text-lg font-bold">{t.newTicket.title}</h1>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FileText className="h-4 w-4 text-primary" />
+            </div>
+            <h1 className="text-[15px] font-bold text-foreground">{t.newTicket.title}</h1>
           </header>
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">

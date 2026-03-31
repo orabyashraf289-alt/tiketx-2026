@@ -292,7 +292,7 @@ export default function TicketsInbox() {
           </button>
         </div>
       )}
-      <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20" onClick={() => navigate('/tickets/new')}>
+      <Button className="gradient-primary text-white gap-2 text-sm rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onClick={() => navigate('/tickets/new')}>
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">{t.tickets.createNewTicket}</span>
       </Button>
