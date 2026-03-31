@@ -23,10 +23,13 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
     <button
       ref={ref}
       onClick={onClick}
-      className={`w-full text-start px-3 sm:px-4 py-3 transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
+      className={`group w-full text-start px-3 sm:px-4 py-3 transition-all duration-300 hover:bg-primary/5 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset relative overflow-hidden ${
         isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
       }`}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
+    >
+      {/* Hover gradient line */}
+      <div className="absolute top-0 ltr:left-0 rtl:right-0 w-0 h-full bg-gradient-to-b from-primary/10 via-accent/5 to-transparent group-hover:w-1 transition-all duration-300" />
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="flex-1 min-w-0">
