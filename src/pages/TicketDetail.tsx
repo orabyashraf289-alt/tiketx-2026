@@ -617,8 +617,8 @@ export default function TicketDetailPage() {
 
                 {/* Ticket Meta Info */}
                 <motion.div variants={fadeScale}>
-                  <Card className="rounded-2xl border-border/50 shadow-card">
-                    <CardHeader className="pb-2"><CardTitle className="text-sm">{t.tickets.ticketInfo}</CardTitle></CardHeader>
+                  <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                    <CardHeader className="pb-2 border-b border-border/30"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{t.tickets.ticketInfo}</CardTitle></CardHeader>
                     <CardContent className="space-y-3 text-sm">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground shrink-0" />
