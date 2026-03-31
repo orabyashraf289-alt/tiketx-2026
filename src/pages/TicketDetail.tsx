@@ -337,7 +337,9 @@ export default function TicketDetailPage() {
               {/* Main Content */}
               <div className="lg:col-span-2 space-y-6">
                 <motion.div variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/50 shadow-card overflow-hidden">
+                  <Card className="group rounded-2xl border-border/40 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
+                    {/* Top gradient accent bar */}
+                    <div className="h-1 w-full bg-gradient-to-r from-primary via-accent to-primary" />
                     <CardHeader>
                       <div className="flex items-center gap-2 flex-wrap mb-2">
                         <StatusBadge status={ticket.status} />
