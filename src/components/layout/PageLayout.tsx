@@ -1,6 +1,7 @@
 import { ReactNode, memo } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { PageTransition } from '@/components/PageTransition';
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -11,9 +12,9 @@ export const PageLayout = memo(function PageLayout({ children }: PageLayoutProps
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <PageTransition>
           {children}
-        </div>
+        </PageTransition>
       </div>
     </SidebarProvider>
   );
