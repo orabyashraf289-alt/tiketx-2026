@@ -72,9 +72,9 @@ const GridBackground = () => (
 
     {/* Animated mesh gradient orbs */}
     {[
-      { color: '#2563eb', size: 600, top: '-15%', left: '-10%', delay: 0 },
-      { color: '#0891b2', size: 500, bottom: '-20%', right: '-15%', delay: 2 },
-      { color: '#6366f1', size: 400, top: '50%', left: '60%', delay: 4 },
+      { color: '#f97316', size: 600, top: '-15%', left: '-10%', delay: 0 },
+      { color: '#ec4899', size: 500, bottom: '-20%', right: '-15%', delay: 2 },
+      { color: '#f43f5e', size: 400, top: '50%', left: '60%', delay: 4 },
     ].map((orb, i) => (
       <motion.div
         key={i}
