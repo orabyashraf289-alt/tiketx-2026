@@ -88,9 +88,11 @@ export const AppSidebar = memo(function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" side={lang === 'ar' ? 'right' : 'left'}>
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
+      <SidebarHeader className="p-4 border-b border-sidebar-border relative overflow-hidden">
+        {/* Subtle brand accent line at top */}
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, hsl(192 82% 42%), hsl(225 72% 55%), hsl(192 82% 42%))' }} />
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-card/10 backdrop-blur-sm border border-sidebar-border/50 shadow-lg shrink-0 overflow-hidden p-1">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary/20 to-sidebar-accent/40 backdrop-blur-sm border border-sidebar-border/50 shadow-lg shrink-0 overflow-hidden p-1">
             <img src={logoSrc} alt={sysName} className="h-full w-full object-contain drop-shadow-md" />
           </div>
           {!collapsed && (
