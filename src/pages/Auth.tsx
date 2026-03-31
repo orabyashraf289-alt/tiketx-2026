@@ -55,7 +55,7 @@ const TypewriterText = ({ texts, className }: { texts: string[]; className?: str
       <motion.span
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.5, repeat: Infinity }}
-        className="inline-block w-[3px] h-[1em] bg-cyan-400 align-middle"
+        className="inline-block w-[3px] h-[1em] bg-primary align-middle"
         style={{ marginInlineStart: '2px' }}
       />
     </span>
