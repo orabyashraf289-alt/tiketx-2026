@@ -263,7 +263,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="value" name={copy.tickets} fill="hsl(230, 65%, 58%)" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="value" name={copy.tickets} fill="hsl(340, 75%, 55%)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
