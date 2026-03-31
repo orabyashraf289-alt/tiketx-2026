@@ -112,10 +112,10 @@
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(222 60% 42%));
+    background: linear-gradient(135deg, hsl(192 82% 38%), hsl(225 72% 50%));
   }
   .gradient-accent {
-    background: linear-gradient(135deg, hsl(217 72% 50%), hsl(217 72% 58%));
+    background: linear-gradient(135deg, hsl(192 82% 38%), hsl(192 82% 48%));
   }
   .shadow-card {
     box-shadow: 0 1px 3px hsl(222 30% 14% / 0.06), 0 1px 2px hsl(222 30% 14% / 0.04);
