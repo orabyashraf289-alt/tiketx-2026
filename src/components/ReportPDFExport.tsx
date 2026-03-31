@@ -67,7 +67,7 @@ export function exportReportPDF(report: ReportData, dateLabel: string, opts: Exp
         thResolution: 'Resolution',
         thTitle: 'Title',
         thNumber: '#',
-        footer: (iso: string) => `This report was generated automatically by ${opts.systemName || 'TicketFlow'} — ${iso}`,
+        footer: (iso: string) => `This report was generated automatically by ${opts.systemName || 'Ticket-X'} — ${iso}`,
       };
 
   const statusRows = Object.entries(report.byStatus)
