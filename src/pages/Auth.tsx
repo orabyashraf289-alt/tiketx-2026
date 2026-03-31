@@ -142,8 +142,8 @@ const FeatureCard = ({ icon: Icon, titleAr, titleEn, descAr, descEn, delay, isRT
       transition={{ type: 'spring', stiffness: 300 }}
       className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm hover:bg-white/[0.1] hover:border-white/[0.15] transition-all duration-300"
     >
-      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
-        <Icon className="w-5 h-5 text-cyan-400" />
+      <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
+        <Icon className="w-5 h-5 text-orange-400" />
       </div>
       <div className="min-w-0">
         <h4 className="text-sm font-semibold text-white/90">{isRTL ? titleAr : titleEn}</h4>
