@@ -52,7 +52,7 @@ export function TicketPDFExport({ ticket, comments, attachments }: TicketPDFExpo
 <body>
   <div class="header">
     <div>
-      <h1>TicketFlow</h1>
+      <h1>Ticket-X</h1>
       <p style="font-size:12px;color:#666;margin-top:4px;">تقرير تذكرة</p>
     </div>
     <div class="meta">
