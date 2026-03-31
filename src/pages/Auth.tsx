@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,55 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useLanguage } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+
+/* ─── Typewriter Component ─── */
+const TypewriterText = ({ texts, className }: { texts: string[]; className?: string }) => {
+  const [display, setDisplay] = useState('');
+  const [textIdx, setTextIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const currentText = texts[textIdx] || '';
+
+    if (!isDeleting && charIdx < currentText.length) {
+      const timer = setTimeout(() => setCharIdx(c => c + 1), 70);
+      return () => clearTimeout(timer);
+    }
+
+    if (!isDeleting && charIdx === currentText.length) {
+      const timer = setTimeout(() => setIsDeleting(true), 2500);
+      return () => clearTimeout(timer);
+    }
+
+    if (isDeleting && charIdx > 0) {
+      const timer = setTimeout(() => setCharIdx(c => c - 1), 40);
+      return () => clearTimeout(timer);
+    }
+
+    if (isDeleting && charIdx === 0) {
+      setIsDeleting(false);
+      setTextIdx(i => (i + 1) % texts.length);
+    }
+  }, [charIdx, isDeleting, textIdx, texts]);
+
+  useEffect(() => {
+    const currentText = texts[textIdx] || '';
+    setDisplay(currentText.slice(0, charIdx));
+  }, [charIdx, textIdx, texts]);
+
+  return (
+    <span className={className}>
+      {display}
+      <motion.span
+        animate={{ opacity: [1, 0] }}
+        transition={{ duration: 0.5, repeat: Infinity }}
+        className="inline-block w-[3px] h-[1em] bg-cyan-400 align-middle"
+        style={{ marginInlineStart: '2px' }}
+      />
+    </span>
+  );
+};
 
 /* ─── Animated Grid Background ─── */
 const GridBackground = () => (
@@ -176,11 +225,14 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           className="mb-10"
         >
           <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
-            {isRTL ? (
-              <>حلول دعم فني<br /><span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">متطورة وذكية</span></>
-            ) : (
-              <>Advanced Support<br /><span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Solutions & Intelligence</span></>
-            )}
+            {isRTL ? 'حلول دعم فني' : 'Advanced Support'}<br />
+            <TypewriterText
+              texts={isRTL
+                ? ['متطورة وذكية', 'سريعة وفعّالة', 'آمنة وموثوقة']
+                : ['Solutions & Intelligence', 'Fast & Efficient', 'Secure & Reliable']
+              }
+              className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+            />
           </h2>
           <p className="text-sm text-white/50 mt-4 max-w-md leading-relaxed">
             {isRTL
