@@ -67,7 +67,7 @@ const GridBackground = () => (
   <div className="absolute inset-0 overflow-hidden">
     {/* Gradient base */}
     <div className="absolute inset-0" style={{
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #0f172a 60%, #1a1a2e 100%)'
+      background: 'linear-gradient(135deg, #1a0a00 0%, #2d1810 30%, #1a0a05 60%, #1f0f18 100%)'
     }} />
 
     {/* Animated mesh gradient orbs */}
