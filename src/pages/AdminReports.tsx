@@ -516,7 +516,7 @@ export default function AdminReports() {
 
                 {/* Agent Performance */}
                 <motion.div custom={15} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-info">
+                  <Card className="rounded-2xl border-t-4 border-t-info shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.teamPerformance}</CardTitle>
                     </CardHeader>
