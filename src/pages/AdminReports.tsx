@@ -14,7 +14,7 @@ import { exportReportPDF } from '@/components/ReportPDFExport';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
-const COLORS = ['hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(152, 55%, 42%)'];
+const COLORS = ['hsl(24, 95%, 53%)', 'hsl(340, 75%, 55%)', 'hsl(158, 60%, 40%)', 'hsl(210, 80%, 52%)', 'hsl(45, 93%, 47%)', 'hsl(280, 60%, 50%)', 'hsl(0, 72%, 51%)'];
 
 function downloadCSV(data: Record<string, any>[], filename: string) {
   if (data.length === 0) return;
