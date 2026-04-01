@@ -484,7 +484,7 @@ export default function AdminReports() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Operations Overview */}
                 <motion.div custom={14} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-primary">
+                  <Card className="rounded-2xl border-t-4 border-t-primary shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.operationsOverview}</CardTitle>
                     </CardHeader>
