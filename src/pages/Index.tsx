@@ -18,11 +18,6 @@ import { DashboardCharts } from '@/components/DashboardCharts';
 import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 import { useLanguage } from '@/i18n';
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
-};
-
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -34,7 +29,7 @@ const listItem = {
 };
 
 export default function Dashboard() {
-  const { role } = useAuth();
+  const { role, profile } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'all'>('all');
@@ -112,13 +107,17 @@ export default function Dashboard() {
 
   const isAdmin = role === 'admin' || role === 'agent' || role === 'developer';
 
+  // Greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? '☀️ صباح الخير' : hour < 18 ? '🌤️ مساء الخير' : '🌙 مساء الخير';
+
   const headerActions = (
     <>
       <div className="relative hidden md:block">
         <Search className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input placeholder={t.common.search} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="ltr:pl-9 rtl:pr-9 h-9 w-52 text-xs rounded-xl bg-muted/60 border-0 focus:bg-background focus:ring-1 focus:ring-primary/30" />
       </div>
-      <Button className="gradient-primary text-white gap-2 text-sm rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onClick={() => navigate('/tickets/new')}>
+      <Button className="gradient-primary text-primary-foreground gap-2 text-sm rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onClick={() => navigate('/tickets/new')}>
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">{t.sidebar.newTicket}</span>
       </Button>
@@ -150,48 +149,128 @@ export default function Dashboard() {
         actions={headerActions}
       />
 
-      <main className="flex-1 overflow-auto" role="main">
+      <main className="flex-1 overflow-auto bg-muted/30" role="main">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 space-y-5">
-          {/* KPI Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <KPICard title={t.dashboard.unresolvedTickets} value={unresolvedCount} icon={Inbox} variant="primary" />
-            <KPICard title={t.dashboard.pending} value={pendingCount} icon={Clock} variant="warning" />
-            <KPICard title={t.dashboard.overdue} value={report?.overdueCount ?? 0} icon={AlertTriangle} variant="destructive" />
-            <KPICard title={t.dashboard.slaBreaches} value={report?.slaBreaches ?? 0} icon={Shield} variant="destructive" trend={report?.slaBreaches === 0 ? 'up' : 'down'} />
-            <KPICard title={t.dashboard.avgFirstResponse} value={`${report?.avgFirstResponseHours ?? 0}h`} icon={Timer} variant="info" />
-            <KPICard title={t.dashboard.slaCompliance} value={`${report?.slaCompliancePercent ?? 0}%`} icon={CheckCircle2} variant="success" trend={(report?.slaCompliancePercent ?? 0) >= 80 ? 'up' : 'down'} />
-          </div>
+
+          {/* Welcome Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between"
+          >
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">
+                {greeting}، {profile?.full_name || ''}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{t.dashboard.title}</p>
+            </div>
+          </motion.div>
+
+          {/* Overview Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-card border border-border/50 p-5 shadow-card"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">نظرة عامة على النظام</h3>
+              <span className="text-[10px] text-success font-semibold flex items-center gap-1 mr-auto rtl:ml-auto rtl:mr-0">
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> مباشر
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <OverviewStat label={t.dashboard.unresolvedTickets} value={unresolvedCount} color="destructive" icon={Inbox} />
+              <OverviewStat label={t.dashboard.pending} value={pendingCount} color="warning" icon={Clock} />
+              <OverviewStat label="تم الحل" value={stats?.resolved ?? 0} color="success" icon={CheckCircle2} />
+              <OverviewStat label={t.dashboard.overdue} value={report?.overdueCount ?? 0} color="destructive" icon={AlertTriangle} />
+              <OverviewStat label={t.dashboard.slaBreaches} value={report?.slaBreaches ?? 0} color="primary" icon={Shield} />
+              <OverviewStat label="المغلقة" value={stats?.closed ?? 0} color="info" icon={Inbox} />
+            </div>
+          </motion.div>
+
+          {/* KPI Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            <KPICard
+              title={t.dashboard.slaCompliance}
+              value={`${report?.slaCompliancePercent ?? 0}%`}
+              icon={TrendingUp}
+              color="primary"
+              trend={report?.slaCompliancePercent ? `${report.slaCompliancePercent >= 80 ? '↑' : '↓'} ${report.slaCompliancePercent}%` : undefined}
+              trendUp={(report?.slaCompliancePercent ?? 0) >= 80}
+            />
+            <KPICard
+              title={t.dashboard.avgFirstResponse}
+              value={`${report?.avgFirstResponseHours ?? 0} ساعة`}
+              icon={Timer}
+              color="warning"
+            />
+            <KPICard
+              title="معدل الحل"
+              value={tickets.length > 0 ? `${Math.round(((stats?.resolved ?? 0) / tickets.length) * 100)}%` : '0%'}
+              icon={CheckCircle2}
+              color="success"
+            />
+            <KPICard
+              title="إجمالي التذاكر"
+              value={tickets.length}
+              icon={BarChart3}
+              color="info"
+            />
+          </motion.div>
+
+          {/* Quick Actions */}
+          {isAdmin && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-bold text-foreground">⚡ إجراءات سريعة</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {[
+                  { label: t.dashboard.quickActions.reports, icon: BarChart3, path: '/admin/reports', color: 'primary' },
+                  { label: t.dashboard.quickActions.users, icon: Users, path: '/admin/users', color: 'accent' },
+                  { label: t.dashboard.quickActions.ticketInbox, icon: Inbox, path: '/tickets', color: 'success' },
+                  { label: t.dashboard.quickActions.knowledgeBase, icon: BookOpen, path: '/knowledge-base', color: 'info' },
+                  { label: t.dashboard.quickActions.newTicket, icon: Plus, path: '/tickets/new', color: 'warning' },
+                ].map((action) => (
+                  <motion.button
+                    key={action.path}
+                    whileHover={{ y: -3, scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(action.path)}
+                    className={`group flex flex-col items-center gap-2 p-4 rounded-2xl border border-border/40 bg-${action.color}/5 hover:bg-${action.color}/10 hover:border-${action.color}/30 hover:shadow-card-hover transition-all duration-200`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl bg-${action.color}/15 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                      <action.icon className={`h-5 w-5 text-${action.color}`} />
+                    </div>
+                    <span className="text-xs font-semibold text-foreground">{action.label}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {isAdmin && <DashboardCharts report={report} trendData={trendData} />}
 
-          {isAdmin && (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {[
-                { label: t.dashboard.quickActions.reports, icon: BarChart3, path: '/admin/reports' },
-                { label: t.dashboard.quickActions.users, icon: Users, path: '/admin/users' },
-                { label: t.dashboard.quickActions.ticketInbox, icon: Inbox, path: '/tickets' },
-                { label: t.dashboard.quickActions.knowledgeBase, icon: BookOpen, path: '/knowledge-base' },
-                { label: t.dashboard.quickActions.newTicket, icon: Plus, path: '/tickets/new' },
-              ].map((action) => (
-                <motion.button
-                  key={action.path}
-                  whileHover={{ y: -3 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate(action.path)}
-                  className="group flex items-center gap-2.5 p-3.5 rounded-xl border border-border/40 bg-card hover:border-primary/30 hover:shadow-card-hover transition-all duration-200 text-sm font-medium text-foreground"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                    <action.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="flex-1 text-start">{action.label}</span>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </motion.button>
-              ))}
-            </div>
-          )}
-
           {/* Ticket List */}
-          <motion.div variants={fadeUp} initial="hidden" animate="visible" className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-card">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-2xl border border-border/40 bg-card overflow-hidden shadow-card"
+          >
             <div className="p-4 border-b border-border/40">
               <div className="flex items-center gap-3 mb-3 md:hidden">
                 <div className="relative flex-1">
@@ -260,45 +339,54 @@ export default function Dashboard() {
   );
 }
 
-/* ─── KPI Card ─── */
-const variantConfig = {
-  primary: { bg: 'bg-primary/8', iconBg: 'bg-primary/15', color: 'text-primary' },
-  warning: { bg: 'bg-warning/8', iconBg: 'bg-warning/15', color: 'text-warning' },
-  destructive: { bg: 'bg-destructive/8', iconBg: 'bg-destructive/15', color: 'text-destructive' },
-  success: { bg: 'bg-success/8', iconBg: 'bg-success/15', color: 'text-success' },
-  info: { bg: 'bg-info/8', iconBg: 'bg-info/15', color: 'text-info' },
-};
+/* ─── Overview Stat (Small colored card) ─── */
+function OverviewStat({ label, value, color, icon: Icon }: {
+  label: string;
+  value: number | string;
+  color: string;
+  icon: React.ElementType;
+}) {
+  return (
+    <motion.div
+      whileHover={{ y: -2, scale: 1.03 }}
+      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl bg-${color}/8 border border-${color}/15 cursor-default transition-all`}
+    >
+      <Icon className={`h-5 w-5 text-${color}`} />
+      <span className={`text-2xl font-bold text-${color}`}>{value}</span>
+      <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">{label}</span>
+    </motion.div>
+  );
+}
 
-function KPICard({ title, value, icon: Icon, variant, trend }: {
+/* ─── KPI Card (Large metric card) ─── */
+function KPICard({ title, value, icon: Icon, color, trend, trendUp }: {
   title: string;
   value: number | string;
   icon: React.ElementType;
-  variant: keyof typeof variantConfig;
-  trend?: 'up' | 'down';
+  color: string;
+  trend?: string;
+  trendUp?: boolean;
 }) {
-  const v = variantConfig[variant];
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className="group relative rounded-2xl border border-border/40 bg-card p-4 transition-all duration-300 hover:shadow-card-hover hover:border-primary/30 overflow-hidden cursor-default"
+      className={`relative rounded-2xl bg-${color}/5 border border-${color}/15 p-5 overflow-hidden cursor-default transition-all hover:shadow-card-hover`}
     >
-      {/* Hover gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-muted-foreground font-medium leading-tight">{title}</p>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xl font-bold text-foreground">{value}</span>
-            {trend === 'up' && <TrendingUp className="h-3.5 w-3.5 text-success" />}
-            {trend === 'down' && <TrendingDown className="h-3.5 w-3.5 text-destructive" />}
-          </div>
+      <div className="flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-medium">{title}</p>
+          <p className="text-3xl font-bold text-foreground">{value}</p>
+          {trend && (
+            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+              trendUp ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
+            }`}>
+              {trend}
+            </span>
+          )}
         </div>
-        <div className={`w-10 h-10 rounded-xl ${v.iconBg} flex items-center justify-center ${v.color} group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className="h-[18px] w-[18px]" />
+        <div className={`w-12 h-12 rounded-2xl bg-${color}/15 flex items-center justify-center`}>
+          <Icon className={`h-6 w-6 text-${color}`} />
         </div>
       </div>
     </motion.div>

@@ -92,8 +92,8 @@ export const AppSidebar = memo(function AppSidebar() {
         <NavLink
           to={item.url}
           end={item.url === '/'}
-          className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl text-[hsl(30,20%,75%)] hover:text-[hsl(0,0%,100%)] hover:bg-[hsl(24,60%,50%,0.15)] transition-all duration-200"
-          activeClassName="bg-gradient-to-l from-[hsl(24,95%,53%,0.2)] to-[hsl(340,75%,55%,0.1)] text-[hsl(0,0%,100%)] font-semibold border-r-[3px] rtl:border-r-0 rtl:border-l-[3px] border-[hsl(24,95%,55%)] shadow-[inset_0_0_20px_hsl(24,95%,53%,0.08)]"
+          className="group/link flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200"
+          activeClassName="bg-primary/10 text-primary font-semibold border-r-[3px] rtl:border-r-0 rtl:border-l-[3px] border-primary"
         >
           <item.icon className="h-[18px] w-[18px] shrink-0 transition-colors duration-200" />
           {!collapsed && <span className="text-[13px]">{item.title}</span>}
@@ -105,20 +105,16 @@ export const AppSidebar = memo(function AppSidebar() {
   return (
     <Sidebar collapsible="icon" side={lang === 'ar' ? 'right' : 'left'}>
       {/* Header */}
-      <SidebarHeader className="relative overflow-hidden border-b border-[hsl(20,20%,18%)]">
-        {/* Top gradient bar */}
-        <div className="h-[3px] w-full" style={{ background: 'linear-gradient(90deg, hsl(24 95% 55%), hsl(340 75% 55%), hsl(24 95% 55%))' }} />
+      <SidebarHeader className="relative overflow-hidden border-b border-border/60 bg-card">
         <div className="px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl shrink-0 overflow-hidden p-1.5"
-              style={{ background: 'linear-gradient(135deg, hsl(24 95% 50%), hsl(340 75% 50%))', boxShadow: '0 0 20px hsl(24 95% 53% / 0.4), 0 0 40px hsl(340 75% 55% / 0.2)' }}>
-              <img src={logoSrc} alt={sysName} className="h-full w-full object-contain drop-shadow-lg" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl shrink-0 overflow-hidden p-1.5 bg-destructive/10">
+              <img src={logoSrc} alt={sysName} className="h-full w-full object-contain" />
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="text-[16px] font-extrabold text-[hsl(0,0%,100%)] tracking-tight truncate">{sysName}</h2>
-                <p className="text-[9px] font-bold tracking-[0.25em] uppercase"
-                  style={{ background: 'linear-gradient(90deg, hsl(24 95% 60%), hsl(340 75% 60%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <h2 className="text-[16px] font-extrabold text-foreground tracking-tight truncate">{sysName}</h2>
+                <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-muted-foreground">
                   {sysSub}
                 </p>
               </div>
@@ -128,9 +124,9 @@ export const AppSidebar = memo(function AppSidebar() {
       </SidebarHeader>
 
       {/* Navigation */}
-      <SidebarContent className="px-3 py-3 custom-scrollbar">
+      <SidebarContent className="px-3 py-3 custom-scrollbar bg-card">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[hsl(24,80%,60%)] text-[10px] uppercase tracking-[0.2em] font-bold px-3 mb-2">
+          <SidebarGroupLabel className="text-primary text-[10px] uppercase tracking-[0.2em] font-bold px-3 mb-2">
             {t.sidebar.menu}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -144,9 +140,8 @@ export const AppSidebar = memo(function AppSidebar() {
 
         {role === 'admin' && (
           <SidebarGroup>
-            {/* Divider */}
-            <div className="mx-3 my-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, hsl(24 95% 55% / 0.3), hsl(340 75% 55% / 0.3), transparent)' }} />
-            <SidebarGroupLabel className="text-[hsl(340,60%,65%)] text-[10px] uppercase tracking-[0.2em] font-bold px-3 mb-2">
+            <div className="mx-3 my-3 h-px bg-border/60" />
+            <SidebarGroupLabel className="text-accent text-[10px] uppercase tracking-[0.2em] font-bold px-3 mb-2">
               {t.sidebar.administration}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -161,24 +156,21 @@ export const AppSidebar = memo(function AppSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t border-[hsl(20,20%,18%)]">
+      <SidebarFooter className="border-t border-border/60 bg-card">
         {!collapsed && profile && (
           <div className="p-3 space-y-3">
-            {/* User card */}
             <div
-              className="flex items-center gap-3 cursor-pointer rounded-xl p-3 hover:bg-[hsl(24,60%,50%,0.1)] transition-all duration-200"
+              className="flex items-center gap-3 cursor-pointer rounded-xl p-3 hover:bg-muted/60 transition-all duration-200"
               onClick={() => window.location.href = '/profile'}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-[hsl(0,0%,100%)] shrink-0"
-                style={{ background: 'linear-gradient(135deg, hsl(24 95% 53%), hsl(340 75% 55%))', boxShadow: '0 4px 12px hsl(24 95% 53% / 0.3)' }}>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold text-primary-foreground shrink-0 gradient-primary">
                 {profile.full_name?.charAt(0) || 'م'}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-bold text-[hsl(0,0%,100%)] truncate">{profile.full_name}</p>
-                <p className="text-[10px] font-semibold" style={{ color: 'hsl(24 80% 60%)' }}>{role ? roleLabels[role] : ''}</p>
+                <p className="text-[13px] font-bold text-foreground truncate">{profile.full_name}</p>
+                <p className="text-[10px] font-semibold text-primary">{role ? roleLabels[role] : ''}</p>
               </div>
             </div>
-            {/* Actions bar */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-1">
                 <LanguageSwitcher />
@@ -187,7 +179,7 @@ export const AppSidebar = memo(function AppSidebar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-[hsl(30,20%,45%)] hover:text-destructive hover:bg-destructive/10 rounded-lg h-8"
+                className="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg h-8"
                 onClick={() => signOut()}
               >
                 <LogOut className="h-3.5 w-3.5 ltr:mr-1 rtl:ml-1" />
@@ -202,7 +194,7 @@ export const AppSidebar = memo(function AppSidebar() {
             <ThemeToggle size="icon" />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-[hsl(30,20%,45%)] hover:text-destructive hover:bg-destructive/10" onClick={() => signOut()}>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => signOut()}>
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
