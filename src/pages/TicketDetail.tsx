@@ -424,7 +424,7 @@ export default function TicketDetailPage() {
 
                 {/* Comments */}
                 <motion.div variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/40 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
+                  <Card className="rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
                     <Tabs defaultValue="comments" dir="rtl">
                       <CardHeader className="pb-2">
                         <TabsList className="rounded-xl">
