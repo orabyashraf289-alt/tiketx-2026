@@ -380,7 +380,7 @@ export default function AdminReports() {
                           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
-                          <Bar dataKey="value" fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" fill="hsl(24, 95%, 53%)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
