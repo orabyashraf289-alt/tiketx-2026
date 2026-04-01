@@ -45,16 +45,16 @@
 
     --radius: 0.75rem;
 
-    /* Sidebar — warm dark */
-    --sidebar-background: 20 30% 8%;
-    --sidebar-foreground: 30 20% 68%;
+    /* Sidebar — rich dark */
+    --sidebar-background: 15 35% 6%;
+    --sidebar-foreground: 30 20% 75%;
     --sidebar-primary: 24 95% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 25% 14%;
-    --sidebar-accent-foreground: 30 20% 92%;
-    --sidebar-border: 20 20% 14%;
+    --sidebar-accent: 20 30% 12%;
+    --sidebar-accent-foreground: 30 15% 95%;
+    --sidebar-border: 20 25% 14%;
     --sidebar-ring: 24 95% 55%;
-    --sidebar-muted: 20 20% 16%;
+    --sidebar-muted: 20 20% 10%;
   }
 
   .dark {
