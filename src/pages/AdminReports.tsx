@@ -14,7 +14,7 @@ import { exportReportPDF } from '@/components/ReportPDFExport';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
-const COLORS = ['hsl(217, 72%, 50%)', 'hsl(222, 60%, 42%)', 'hsl(38, 92%, 50%)', 'hsl(199, 89%, 48%)', 'hsl(0, 72%, 51%)', 'hsl(280, 60%, 50%)', 'hsl(152, 55%, 42%)'];
+const COLORS = ['hsl(24, 95%, 53%)', 'hsl(340, 75%, 55%)', 'hsl(158, 60%, 40%)', 'hsl(210, 80%, 52%)', 'hsl(45, 93%, 47%)', 'hsl(280, 60%, 50%)', 'hsl(0, 72%, 51%)'];
 
 function downloadCSV(data: Record<string, any>[], filename: string) {
   if (data.length === 0) return;
@@ -360,8 +360,8 @@ export default function AdminReports() {
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
                           <Legend />
-                          <Line type="monotone" dataKey="count" name={t.admin.charts.created} stroke="hsl(217, 72%, 50%)" strokeWidth={2} dot={false} />
-                          <Line type="monotone" dataKey="resolved" name={t.admin.charts.resolved} stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="count" name={t.admin.charts.created} stroke="hsl(24, 95%, 53%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="resolved" name={t.admin.charts.resolved} stroke="hsl(158, 60%, 40%)" strokeWidth={2} dot={false} />
                         </LineChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -380,7 +380,7 @@ export default function AdminReports() {
                           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
-                          <Bar dataKey="value" fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" fill="hsl(24, 95%, 53%)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -416,7 +416,7 @@ export default function AdminReports() {
                             <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                             <YAxis tick={{ fontSize: 11 }} />
                             <Tooltip />
-                            <Bar dataKey="value" fill="hsl(222, 60%, 42%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="value" fill="hsl(340, 75%, 55%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -434,7 +434,7 @@ export default function AdminReports() {
                             <XAxis type="number" tick={{ fontSize: 11 }} />
                             <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
                             <Tooltip />
-                            <Bar dataKey="value" fill="hsl(217, 72%, 50%)" radius={[0, 4, 4, 0]} />
+                            <Bar dataKey="value" fill="hsl(24, 95%, 53%)" radius={[0, 4, 4, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -454,7 +454,7 @@ export default function AdminReports() {
                           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
-                          <Bar dataKey="value" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="value" fill="hsl(45, 93%, 47%)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -471,7 +471,7 @@ export default function AdminReports() {
                             <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
                             <Tooltip />
-                            <Bar dataKey="compliance" name={t.admin.charts.compliancePercent} fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="compliance" name={t.admin.charts.compliancePercent} fill="hsl(158, 60%, 40%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
@@ -484,7 +484,7 @@ export default function AdminReports() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Operations Overview */}
                 <motion.div custom={14} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-primary">
+                  <Card className="rounded-2xl border-t-4 border-t-primary shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.operationsOverview}</CardTitle>
                     </CardHeader>
@@ -516,7 +516,7 @@ export default function AdminReports() {
 
                 {/* Agent Performance */}
                 <motion.div custom={15} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-info">
+                  <Card className="rounded-2xl border-t-4 border-t-info shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.teamPerformance}</CardTitle>
                     </CardHeader>
@@ -543,7 +543,7 @@ export default function AdminReports() {
 
                 {/* Customer Experience */}
                 <motion.div custom={16} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-success">
+                  <Card className="rounded-2xl border-t-4 border-t-success shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.customerExperience}</CardTitle>
                     </CardHeader>

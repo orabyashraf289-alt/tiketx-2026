@@ -337,9 +337,9 @@ export default function TicketDetailPage() {
               {/* Main Content */}
               <div className="lg:col-span-2 space-y-6">
                 <motion.div variants={fadeUp}>
-                  <Card className="group rounded-2xl border-border/40 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
-                    {/* Top gradient accent bar */}
-                    <div className="h-1 w-full bg-gradient-to-r from-primary via-accent to-primary" />
+                  <Card className="group rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
+                    {/* Top accent bar */}
+                    <div className="h-1.5 w-full bg-primary" />
                     <CardHeader>
                       <div className="flex items-center gap-2 flex-wrap mb-2">
                         <StatusBadge status={ticket.status} />
@@ -424,7 +424,7 @@ export default function TicketDetailPage() {
 
                 {/* Comments */}
                 <motion.div variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/40 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
+                  <Card className="rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
                     <Tabs defaultValue="comments" dir="rtl">
                       <CardHeader className="pb-2">
                         <TabsList className="rounded-xl">
@@ -574,8 +574,8 @@ export default function TicketDetailPage() {
               <div className="space-y-4">
                 {/* Service Catalog Info */}
                 <motion.div variants={fadeScale}>
-                  <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                    <CardHeader className="pb-2 border-b border-border/30">
+                  <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                    <CardHeader className="pb-2 border-b border-border/40">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Tag className="h-4 w-4 text-primary" />
                         {t.tickets.serviceCatalog}
@@ -617,8 +617,8 @@ export default function TicketDetailPage() {
 
                 {/* Ticket Meta Info */}
                 <motion.div variants={fadeScale}>
-                  <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                    <CardHeader className="pb-2 border-b border-border/30"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{t.tickets.ticketInfo}</CardTitle></CardHeader>
+                  <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                    <CardHeader className="pb-2 border-b border-border/40"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{t.tickets.ticketInfo}</CardTitle></CardHeader>
                     <CardContent className="space-y-3 text-sm">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -678,8 +678,8 @@ export default function TicketDetailPage() {
                 {isAgentOrAdmin && (
                   <>
                     <motion.div variants={fadeScale}>
-                      <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                        <CardHeader className="border-b border-border/30"><CardTitle className="text-sm font-semibold">{t.tickets.actions}</CardTitle></CardHeader>
+                      <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                        <CardHeader className="border-b border-border/40"><CardTitle className="text-sm font-semibold">{t.tickets.actions}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
                             <Label className="text-xs">{t.tickets.changeStatus}</Label>
