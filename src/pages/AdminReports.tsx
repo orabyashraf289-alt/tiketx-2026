@@ -360,8 +360,8 @@ export default function AdminReports() {
                           <YAxis tick={{ fontSize: 11 }} />
                           <Tooltip />
                           <Legend />
-                          <Line type="monotone" dataKey="count" name={t.admin.charts.created} stroke="hsl(217, 72%, 50%)" strokeWidth={2} dot={false} />
-                          <Line type="monotone" dataKey="resolved" name={t.admin.charts.resolved} stroke="hsl(199, 89%, 48%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="count" name={t.admin.charts.created} stroke="hsl(24, 95%, 53%)" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="resolved" name={t.admin.charts.resolved} stroke="hsl(158, 60%, 40%)" strokeWidth={2} dot={false} />
                         </LineChart>
                       </ResponsiveContainer>
                     </CardContent>
