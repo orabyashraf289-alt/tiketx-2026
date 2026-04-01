@@ -574,8 +574,8 @@ export default function TicketDetailPage() {
               <div className="space-y-4">
                 {/* Service Catalog Info */}
                 <motion.div variants={fadeScale}>
-                  <Card className="rounded-2xl border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-300">
-                    <CardHeader className="pb-2 border-b border-border/30">
+                  <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
+                    <CardHeader className="pb-2 border-b border-border/40">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Tag className="h-4 w-4 text-primary" />
                         {t.tickets.serviceCatalog}
