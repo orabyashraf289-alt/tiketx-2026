@@ -314,10 +314,10 @@ export default function AdminUsers() {
             <motion.div variants={pageVariants} initial="hidden" animate="visible" className="space-y-3">
               {filteredUsers.map((u: any) => (
                 <motion.div key={u.id} variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/50 hover:shadow-md transition-shadow">
+                  <Card className="rounded-2xl border-border/50 shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardContent className="flex items-center justify-between py-4 gap-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shrink-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary shrink-0">
                           {u.full_name?.charAt(0) || '?'}
                         </div>
                         <div className="min-w-0 flex-1">

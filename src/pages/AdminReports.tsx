@@ -543,7 +543,7 @@ export default function AdminReports() {
 
                 {/* Customer Experience */}
                 <motion.div custom={16} variants={fadeUp} initial="hidden" animate="show">
-                  <Card className="border-t-4 border-t-success">
+                  <Card className="rounded-2xl border-t-4 border-t-success shadow-card hover:shadow-card-hover transition-shadow duration-300">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-bold">{t.admin.panels.customerExperience}</CardTitle>
                     </CardHeader>
