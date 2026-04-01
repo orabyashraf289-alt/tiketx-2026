@@ -13,7 +13,7 @@ import { useSystemSettings } from '@/hooks/useSystemSettings';
 import { useLanguage } from '@/i18n';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-/* ─── Typewriter Component ─── */
+/* ─── Typewriter ─── */
 const TypewriterText = ({ texts, className }: { texts: string[]; className?: string }) => {
   const [display, setDisplay] = useState('');
   const [textIdx, setTextIdx] = useState(0);
@@ -23,16 +23,16 @@ const TypewriterText = ({ texts, className }: { texts: string[]; className?: str
   useEffect(() => {
     const currentText = texts[textIdx] || '';
     if (!isDeleting && charIdx < currentText.length) {
-      const timer = setTimeout(() => setCharIdx(c => c + 1), 70);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setCharIdx(c => c + 1), 70);
+      return () => clearTimeout(t);
     }
     if (!isDeleting && charIdx === currentText.length) {
-      const timer = setTimeout(() => setIsDeleting(true), 2500);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setIsDeleting(true), 2500);
+      return () => clearTimeout(t);
     }
     if (isDeleting && charIdx > 0) {
-      const timer = setTimeout(() => setCharIdx(c => c - 1), 40);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setCharIdx(c => c - 1), 40);
+      return () => clearTimeout(t);
     }
     if (isDeleting && charIdx === 0) {
       setIsDeleting(false);
@@ -50,57 +50,65 @@ const TypewriterText = ({ texts, className }: { texts: string[]; className?: str
       <motion.span
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.5, repeat: Infinity }}
-        className="inline-block w-[3px] h-[1em] bg-primary align-middle"
-        style={{ marginInlineStart: '2px' }}
+        className="inline-block w-[3px] h-[1em] align-middle"
+        style={{ marginInlineStart: '2px', background: '#60a5fa' }}
       />
     </span>
   );
 };
 
-/* ─── Animated Background ─── */
-const AnimatedBackground = () => (
+/* ─── Dark Navy Background ─── */
+const NavyBackground = () => (
   <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/85 to-accent/90" />
-    
-    {/* Geometric patterns */}
-    <div className="absolute inset-0 opacity-10"
+    {/* Base gradient: deep navy */}
+    <div className="absolute inset-0" style={{
+      background: 'linear-gradient(160deg, #0a1628 0%, #0f2035 30%, #132744 60%, #0d1b2e 100%)'
+    }} />
+
+    {/* Subtle grid */}
+    <div className="absolute inset-0 opacity-[0.04]"
       style={{
-        backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary-foreground)) 1px, transparent 1px),
-                          radial-gradient(circle at 75% 75%, hsl(var(--primary-foreground)) 1px, transparent 1px)`,
-        backgroundSize: '40px 40px',
+        backgroundImage: `linear-gradient(rgba(147,197,253,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(147,197,253,0.15) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px',
       }}
     />
 
-    {/* Floating shapes */}
+    {/* Soft glowing orbs */}
     {[
-      { size: 300, top: '-5%', left: '-5%', delay: 0 },
-      { size: 200, bottom: '10%', right: '-5%', delay: 2 },
-      { size: 150, top: '60%', left: '30%', delay: 4 },
+      { color: '#1e40af', size: 500, top: '-10%', left: '-8%', delay: 0 },
+      { color: '#1d4ed8', size: 400, bottom: '-15%', right: '-10%', delay: 2 },
+      { color: '#3b82f6', size: 250, top: '40%', left: '50%', delay: 4 },
     ].map((orb, i) => (
       <motion.div
         key={i}
-        className="absolute rounded-full border border-primary-foreground/10"
+        className="absolute rounded-full"
         style={{
           width: orb.size, height: orb.size,
+          background: `radial-gradient(circle, ${orb.color}20, transparent 70%)`,
           top: orb.top, left: orb.left, bottom: (orb as any).bottom, right: (orb as any).right,
+          filter: 'blur(60px)',
         }}
         animate={{
           scale: [1, 1.15, 1],
-          opacity: [0.1, 0.2, 0.1],
-          rotate: [0, 180, 360],
+          opacity: [0.3, 0.5, 0.3],
         }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear', delay: orb.delay }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: orb.delay }}
       />
     ))}
 
-    {/* Subtle dots */}
-    {Array.from({ length: 12 }).map((_, i) => (
+    {/* Floating dots */}
+    {Array.from({ length: 15 }).map((_, i) => (
       <motion.div
         key={`p-${i}`}
-        className="absolute w-1.5 h-1.5 rounded-full bg-primary-foreground/15"
-        style={{ top: `${10 + Math.random() * 80}%`, left: `${10 + Math.random() * 80}%` }}
-        animate={{ y: [0, -30, 0], opacity: [0, 0.4, 0] }}
-        transition={{ duration: 5 + Math.random() * 5, repeat: Infinity, delay: Math.random() * 5, ease: 'easeInOut' }}
+        className="absolute rounded-full"
+        style={{
+          width: 2, height: 2,
+          background: 'rgba(147,197,253,0.2)',
+          top: `${10 + Math.random() * 80}%`,
+          left: `${10 + Math.random() * 80}%`,
+        }}
+        animate={{ y: [0, -25, 0], opacity: [0, 0.5, 0] }}
+        transition={{ duration: 6 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 5, ease: 'easeInOut' }}
       />
     ))}
   </div>
@@ -118,20 +126,20 @@ const FeatureCard = ({ icon: Icon, titleAr, titleEn, descAr, descEn, delay, isRT
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 300 }}
-      className="flex items-start gap-3 p-4 rounded-2xl bg-primary-foreground/[0.08] border border-primary-foreground/[0.1] backdrop-blur-sm hover:bg-primary-foreground/[0.12] transition-all duration-300"
+      className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm hover:bg-white/[0.07] hover:border-blue-400/20 transition-all duration-300"
     >
-      <div className="shrink-0 w-10 h-10 rounded-xl bg-primary-foreground/15 flex items-center justify-center">
-        <Icon className="w-5 h-5 text-primary-foreground/80" />
+      <div className="shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-400/10 flex items-center justify-center">
+        <Icon className="w-5 h-5 text-blue-400" />
       </div>
       <div className="min-w-0">
-        <h4 className="text-sm font-semibold text-primary-foreground/90">{isRTL ? titleAr : titleEn}</h4>
-        <p className="text-xs text-primary-foreground/50 mt-0.5 leading-relaxed">{isRTL ? descAr : descEn}</p>
+        <h4 className="text-sm font-semibold text-white/90">{isRTL ? titleAr : titleEn}</h4>
+        <p className="text-xs text-blue-200/40 mt-0.5 leading-relaxed">{isRTL ? descAr : descEn}</p>
       </div>
     </motion.div>
   </motion.div>
 );
 
-/* ─── Left Branding Panel ─── */
+/* ─── Branding Panel ─── */
 const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string }) => {
   const { isRTL } = useLanguage();
 
@@ -144,36 +152,42 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
 
   return (
     <div className="hidden lg:flex flex-1 relative overflow-hidden flex-col justify-between p-10 xl:p-14">
-      <AnimatedBackground />
+      <NavyBackground />
 
-      {/* Top section */}
+      {/* Logo + Brand */}
       <div className="relative z-10">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="flex items-center gap-4">
-          <motion.div className="relative" animate={{ y: [0, -5, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
-            <div className="relative w-14 h-14 rounded-2xl bg-primary-foreground/15 backdrop-blur-md border border-primary-foreground/20 flex items-center justify-center overflow-hidden shadow-2xl">
+          <motion.div className="relative" animate={{ y: [0, -4, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
+            <motion.div
+              className="absolute -inset-2 rounded-2xl blur-xl"
+              style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(37,99,235,0.2))' }}
+              animate={{ opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
+            <div className="relative w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center overflow-hidden shadow-2xl">
               <img src={logoSrc} alt={sysName} className="w-10 h-10 object-contain" />
             </div>
           </motion.div>
           <div>
-            <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">{sysName}</h1>
-            <p className="text-xs text-primary-foreground/50 font-medium tracking-widest uppercase mt-0.5">
+            <h1 className="text-2xl font-bold text-white tracking-tight">{sysName}</h1>
+            <p className="text-xs text-blue-300/50 font-medium tracking-widest uppercase mt-0.5">
               {isRTL ? 'نظام الدعم الذكي' : 'Smart Helpdesk'}
             </p>
           </div>
         </motion.div>
       </div>
 
-      {/* Center */}
+      {/* Hero Text + Features */}
       <div className="relative z-10 flex-1 flex flex-col justify-center -mt-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className="mb-10">
-          <h2 className="text-3xl xl:text-4xl font-bold text-primary-foreground leading-tight">
+          <h2 className="text-3xl xl:text-4xl font-bold text-white leading-tight">
             {isRTL ? 'حلول دعم فني' : 'Advanced Support'}<br />
             <TypewriterText
               texts={isRTL ? ['متطورة وذكية', 'سريعة وفعّالة', 'آمنة وموثوقة'] : ['Solutions & Intelligence', 'Fast & Efficient', 'Secure & Reliable']}
-              className="text-primary-foreground/80"
+              className="text-blue-400"
             />
           </h2>
-          <p className="text-sm text-primary-foreground/50 mt-4 max-w-md leading-relaxed">
+          <p className="text-sm text-blue-200/40 mt-4 max-w-md leading-relaxed">
             {isRTL
               ? 'منصة متكاملة لإدارة التذاكر والدعم الفني مع الذكاء الاصطناعي، مصممة لتحسين تجربة العملاء وتسريع حل المشكلات.'
               : 'An integrated platform for ticket management and technical support powered by AI, designed to enhance customer experience.'}
@@ -189,7 +203,7 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
 
       {/* Bottom Stats */}
       <div className="relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.5 }} className="flex items-center gap-6 pt-6 border-t border-primary-foreground/[0.08]">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.5 }} className="flex items-center gap-6 pt-6 border-t border-white/[0.06]">
           {[
             { numAr: '+١٠٠٠', numEn: '1000+', labelAr: 'تذكرة مُدارة', labelEn: 'Tickets Managed' },
             { numAr: '٩٩.٩٪', numEn: '99.9%', labelAr: 'وقت التشغيل', labelEn: 'Uptime' },
@@ -197,14 +211,14 @@ const BrandingPanel = ({ sysName, logoSrc }: { sysName: string; logoSrc: string 
           ].map((s, i) => (
             <div key={i} className="text-center flex-1">
               <motion.p
-                className="text-lg font-bold text-primary-foreground"
+                className="text-lg font-bold text-blue-400"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.2 + i * 0.15, type: 'spring' }}
               >
                 {isRTL ? s.numAr : s.numEn}
               </motion.p>
-              <p className="text-[10px] text-primary-foreground/40 mt-0.5">{isRTL ? s.labelAr : s.labelEn}</p>
+              <p className="text-[10px] text-blue-300/30 mt-0.5">{isRTL ? s.labelAr : s.labelEn}</p>
             </div>
           ))}
         </motion.div>
@@ -240,21 +254,21 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
   return (
     <form onSubmit={handleLogin} className="space-y-5">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="space-y-2">
-        <Label htmlFor="login-email" className="text-sm font-medium text-foreground/80 flex items-center gap-2">
-          <Mail className="h-4 w-4 text-primary" />
+        <Label htmlFor="login-email" className="text-sm font-medium text-foreground/70 flex items-center gap-2">
+          <Mail className="h-4 w-4 text-muted-foreground" />
           {t.auth.email}
         </Label>
         <Input
           id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
           placeholder={isRTL ? 'أدخل بريدك الإلكتروني' : 'Enter your email address'}
           required dir="ltr"
-          className="h-12 rounded-xl bg-muted/40 border-border/60 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all duration-200"
+          className="h-12 rounded-xl border-border/50 bg-muted/30 text-foreground placeholder:text-muted-foreground/60 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-background transition-all duration-200"
         />
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="space-y-2">
-        <Label htmlFor="login-password" className="text-sm font-medium text-foreground/80 flex items-center gap-2">
-          <Lock className="h-4 w-4 text-primary" />
+        <Label htmlFor="login-password" className="text-sm font-medium text-foreground/70 flex items-center gap-2">
+          <Lock className="h-4 w-4 text-muted-foreground" />
           {t.auth.password}
         </Label>
         <div className="relative">
@@ -262,7 +276,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
             id="login-password" type={showPassword ? 'text' : 'password'} value={password}
             onChange={e => setPassword(e.target.value)}
             placeholder="••••••••" required dir="ltr"
-            className="h-12 rounded-xl bg-muted/40 border-border/60 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all duration-200 ltr:pr-11 rtl:pl-11"
+            className="h-12 rounded-xl border-border/50 bg-muted/30 text-foreground placeholder:text-muted-foreground/60 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-background transition-all duration-200 ltr:pr-11 rtl:pl-11"
           />
           <button type="button" onClick={() => setShowPassword(!showPassword)}
             className="absolute ltr:right-3.5 rtl:left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground/60 transition-colors">
@@ -275,18 +289,18 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
         <label className="flex items-center gap-2 cursor-pointer select-none group">
           <div
             onClick={() => setRememberMe(!rememberMe)}
-            className={`rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${rememberMe ? 'bg-primary border-primary' : 'border-border group-hover:border-muted-foreground'}`}
+            className={`rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${rememberMe ? 'bg-blue-600 border-blue-600' : 'border-border/60 group-hover:border-muted-foreground'}`}
             style={{ width: 18, height: 18 }}
           >
             {rememberMe && (
-              <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <motion.svg initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </motion.svg>
             )}
           </div>
           <span className="text-sm text-muted-foreground">{isRTL ? 'تذكرني' : 'Remember me'}</span>
         </label>
-        <button type="button" onClick={onForgot} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+        <button type="button" onClick={onForgot} className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
           {t.auth.forgotPassword}
         </button>
       </motion.div>
@@ -294,7 +308,8 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
         <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button type="submit" disabled={loading}
-            className="w-full h-12 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:bg-primary/90 transition-all duration-300">
+            className="w-full h-12 rounded-xl font-bold text-sm gap-2 text-white shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/30 transition-all duration-300"
+            style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb, #3b82f6)' }}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
               <span className="flex items-center gap-2">{t.auth.login} <ArrowIcon className="h-4 w-4" /></span>
             )}
@@ -303,15 +318,15 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="relative my-6">
-        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
+        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/40" /></div>
         <div className="relative flex justify-center">
-          <span className="px-4 text-xs font-medium text-muted-foreground bg-background">{isRTL ? 'أو تسجيل الدخول بواسطة' : 'Or continue with'}</span>
+          <span className="px-4 text-xs font-medium text-muted-foreground/70 bg-background">{isRTL ? 'أو تسجيل الدخول بواسطة' : 'Or continue with'}</span>
         </div>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="grid grid-cols-2 gap-3">
         <motion.button type="button" whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
-          className="flex items-center justify-center gap-2.5 h-11 rounded-xl border border-border/60 bg-background hover:bg-muted/50 transition-colors text-sm font-medium text-foreground">
+          className="flex items-center justify-center gap-2.5 h-11 rounded-xl border border-border/40 bg-background hover:bg-muted/40 transition-colors text-sm font-medium text-foreground">
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -321,7 +336,7 @@ const LoginForm = ({ onForgot }: { onForgot: () => void }) => {
           Google
         </motion.button>
         <motion.button type="button" whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
-          className="flex items-center justify-center gap-2.5 h-11 rounded-xl border border-border/60 bg-background hover:bg-muted/50 transition-colors text-sm font-medium text-foreground">
+          className="flex items-center justify-center gap-2.5 h-11 rounded-xl border border-border/40 bg-background hover:bg-muted/40 transition-colors text-sm font-medium text-foreground">
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
             <rect x="13" y="1" width="10" height="10" fill="#7FBA00"/>
@@ -374,22 +389,23 @@ const ForgotPasswordForm = ({ onBack }: { onBack: () => void }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Mail className="h-6 w-6 text-primary" />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)' }}>
+          <Mail className="h-6 w-6 text-white" />
         </div>
         <h3 className="text-lg font-bold text-foreground">{t.auth.forgotPasswordTitle}</h3>
         <p className="text-xs text-muted-foreground mt-1">{t.auth.forgotPasswordDesc}</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-foreground/80">{t.auth.email}</Label>
+          <Label className="text-sm font-medium text-foreground/70">{t.auth.email}</Label>
           <Input type="email" value={email} onChange={e => setEmail(e.target.value)}
             placeholder={isRTL ? 'أدخل بريدك الإلكتروني' : 'Enter your email address'}
             required dir="ltr"
-            className="h-12 rounded-xl bg-muted/40 border-border/60 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background transition-all" />
+            className="h-12 rounded-xl border-border/50 bg-muted/30 text-foreground placeholder:text-muted-foreground/60 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-background transition-all" />
         </div>
         <Button type="submit" disabled={loading}
-          className="w-full h-12 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90">
+          className="w-full h-12 rounded-xl font-bold text-sm gap-2 text-white shadow-lg shadow-blue-600/25"
+          style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb, #3b82f6)' }}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.auth.sendResetLink}
         </Button>
       </form>
@@ -425,7 +441,8 @@ export default function AuthPage() {
         >
           {/* Mobile Logo */}
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 lg:hidden">
-            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-primary shadow-lg overflow-hidden">
+            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl shadow-lg overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)' }}>
               <img src={logoSrc} alt={sysName} className="h-10 w-10 object-contain" />
             </div>
             <h1 className="text-xl font-extrabold text-foreground mt-3">{sysName}</h1>
