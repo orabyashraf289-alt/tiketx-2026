@@ -471,7 +471,7 @@ export default function AdminReports() {
                             <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                             <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
                             <Tooltip />
-                            <Bar dataKey="compliance" name={t.admin.charts.compliancePercent} fill="hsl(217, 72%, 50%)" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="compliance" name={t.admin.charts.compliancePercent} fill="hsl(158, 60%, 40%)" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
                       </CardContent>
