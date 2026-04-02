@@ -9,7 +9,7 @@ const variants = {
     filter: 'blur(0px)',
     transition: {
       duration: 0.5,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as const,
       staggerChildren: 0.06,
     },
   },
@@ -17,7 +17,7 @@ const variants = {
     opacity: 0,
     y: -10,
     filter: 'blur(4px)',
-    transition: { duration: 0.25, ease: [0.4, 0, 1, 1] },
+    transition: { duration: 0.25, ease: [0.4, 0, 1, 1] as const },
   },
 };
 
