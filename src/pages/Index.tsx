@@ -20,12 +20,12 @@ import { useLanguage } from '@/i18n';
 
 const staggerContainer = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
 };
 
 const listItem = {
-  hidden: { opacity: 0, x: 16 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, x: 16, filter: 'blur(4px)' },
+  visible: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export default function Dashboard() {
