@@ -108,7 +108,7 @@ export const AppSidebar = memo(function AppSidebar() {
       <SidebarHeader className="relative overflow-hidden border-b border-border/60 bg-card">
         <div className="px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl shrink-0 overflow-hidden p-1.5 bg-destructive/10">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl shrink-0 overflow-hidden p-1.5 bg-primary/10">
               <img src={logoSrc} alt={sysName} className="h-full w-full object-contain" />
             </div>
             {!collapsed && (
