@@ -47,14 +47,14 @@
 
     /* Sidebar — clean light */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 20 10% 40%;
-    --sidebar-primary: 24 95% 53%;
+    --sidebar-foreground: 215 10% 40%;
+    --sidebar-primary: 217 71% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 25% 96%;
-    --sidebar-accent-foreground: 20 20% 10%;
-    --sidebar-border: 30 15% 92%;
-    --sidebar-ring: 24 95% 53%;
-    --sidebar-muted: 30 18% 95%;
+    --sidebar-accent: 214 25% 96%;
+    --sidebar-accent-foreground: 217 20% 10%;
+    --sidebar-border: 214 15% 92%;
+    --sidebar-ring: 217 71% 35%;
+    --sidebar-muted: 214 18% 95%;
   }
 
   .dark {
