@@ -20,12 +20,12 @@ import { useLanguage } from '@/i18n';
 
 const staggerContainer = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
 };
 
 const listItem = {
-  hidden: { opacity: 0, x: 16 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, x: 16, filter: 'blur(4px)' },
+  visible: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export default function Dashboard() {
@@ -348,11 +348,25 @@ function OverviewStat({ label, value, color, icon: Icon }: {
 }) {
   return (
     <motion.div
-      whileHover={{ y: -2, scale: 1.03 }}
-      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl bg-${color}/8 border border-${color}/15 cursor-default transition-all`}
+      whileHover={{ y: -3, scale: 1.04 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl bg-${color}/8 border border-${color}/15 cursor-default hover:shadow-card-hover`}
     >
-      <Icon className={`h-5 w-5 text-${color}`} />
-      <span className={`text-2xl font-bold text-${color}`}>{value}</span>
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+      >
+        <Icon className={`h-5 w-5 text-${color}`} />
+      </motion.div>
+      <motion.span
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+        className={`text-2xl font-bold text-${color}`}
+      >
+        {value}
+      </motion.span>
       <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight">{label}</span>
     </motion.div>
   );
@@ -369,25 +383,45 @@ function KPICard({ title, value, icon: Icon, color, trend, trendUp }: {
 }) {
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className={`relative rounded-2xl bg-${color}/5 border border-${color}/15 p-5 overflow-hidden cursor-default transition-all hover:shadow-card-hover`}
+      whileHover={{ y: -5, scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+      className={`relative rounded-2xl bg-${color}/5 border border-${color}/15 p-5 overflow-hidden cursor-default hover:shadow-card-hover transition-shadow duration-500`}
     >
-      <div className="flex items-start justify-between">
+      {/* Background glow effect */}
+      <div className={`absolute -top-12 ltr:-right-12 rtl:-left-12 w-32 h-32 rounded-full bg-${color}/5 blur-2xl pointer-events-none`} />
+      
+      <div className="flex items-start justify-between relative">
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground font-medium">{title}</p>
-          <p className="text-3xl font-bold text-foreground">{value}</p>
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+            className="text-3xl font-bold text-foreground"
+          >
+            {value}
+          </motion.p>
           {trend && (
-            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-              trendUp ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
-            }`}>
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                trendUp ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
+              }`}
+            >
               {trend}
-            </span>
+            </motion.span>
           )}
         </div>
-        <div className={`w-12 h-12 rounded-2xl bg-${color}/15 flex items-center justify-center`}>
+        <motion.div
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+          className={`w-12 h-12 rounded-2xl bg-${color}/15 flex items-center justify-center`}
+        >
           <Icon className={`h-6 w-6 text-${color}`} />
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );

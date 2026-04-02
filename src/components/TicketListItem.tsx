@@ -23,17 +23,21 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
     <button
       ref={ref}
       onClick={onClick}
-      className={`group w-full text-start px-3 sm:px-4 py-3 transition-all duration-300 hover:bg-primary/5 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset relative overflow-hidden ${
+      className={`group w-full text-start px-3 sm:px-4 py-3 transition-all duration-300 hover:bg-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset relative overflow-hidden ${
         isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
       }`}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
     >
       {/* Hover gradient line */}
-      <div className="absolute top-0 ltr:left-0 rtl:right-0 w-0 h-full bg-gradient-to-b from-primary/10 via-accent/5 to-transparent group-hover:w-1 transition-all duration-300" />
-      <div className="flex items-start justify-between gap-2 sm:gap-3">
+      <div className="absolute top-0 ltr:left-0 rtl:right-0 w-0 h-full bg-gradient-to-b from-primary/15 via-accent/8 to-transparent group-hover:w-1 transition-all duration-500 ease-out" />
+      
+      {/* Subtle hover glow */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-primary/[0.03] to-transparent pointer-events-none" />
+
+      <div className="flex items-start justify-between gap-2 sm:gap-3 relative">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
-            <span className="text-[10px] sm:text-xs font-mono font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            <span className="text-[10px] sm:text-xs font-mono font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded transition-colors group-hover:bg-primary/10 group-hover:text-primary">
               {ticket.code || `#${ticket.ticket_number}`}
             </span>
             <StatusBadge status={ticket.status} />
@@ -50,11 +54,11 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
               </span>
             )}
           </div>
-          <h3 className="font-semibold text-xs sm:text-sm truncate text-foreground">{ticket.title}</h3>
+          <h3 className="font-semibold text-xs sm:text-sm truncate text-foreground group-hover:text-primary transition-colors duration-300">{ticket.title}</h3>
           <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-1 hidden sm:block">{ticket.description}</p>
         </div>
       </div>
-      <div className="flex items-center justify-between mt-2 sm:mt-2.5 text-[10px] sm:text-xs text-muted-foreground">
+      <div className="flex items-center justify-between mt-2 sm:mt-2.5 text-[10px] sm:text-xs text-muted-foreground relative">
         <div className="flex items-center gap-2 sm:gap-4">
           <span className="flex items-center gap-1">
             <User className="h-3 w-3" />

@@ -10,20 +10,28 @@ import { TicketStatus } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 
-/* Updated brand-aligned palette */
+/* Navy blue professional palette */
 const COLORS = [
-  'hsl(24, 95%, 53%)',    /* primary orange */
-  'hsl(340, 75%, 55%)',   /* accent pink */
+  'hsl(217, 71%, 45%)',   /* primary navy */
+  'hsl(210, 80%, 55%)',   /* accent blue */
+  'hsl(199, 89%, 48%)',   /* sky blue */
+  'hsl(158, 60%, 42%)',   /* success teal */
   'hsl(45, 93%, 47%)',    /* warning gold */
-  'hsl(210, 80%, 52%)',   /* info blue */
-  'hsl(0, 72%, 51%)',     /* destructive red */
-  'hsl(280, 55%, 50%)',   /* purple */
-  'hsl(158, 60%, 40%)',   /* success green */
+  'hsl(262, 52%, 50%)',   /* purple */
+  'hsl(0, 62%, 50%)',     /* destructive red */
 ];
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
+  hidden: { opacity: 0, y: 20, filter: 'blur(4px)' },
+  visible: {
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
 interface DashboardChartsProps {
@@ -135,14 +143,14 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
     fontSize: '12px',
     background: 'hsl(var(--card))',
     border: '1px solid hsl(var(--border))',
-    boxShadow: '0 4px 12px hsl(220 30% 10% / 0.1)',
+    boxShadow: '0 8px 32px hsl(220 30% 10% / 0.12)',
   };
 
   return (
-    <div className="space-y-4">
+    <motion.div className="space-y-4" variants={stagger} initial="hidden" animate="visible">
       {/* Trend Chart */}
       <motion.div variants={fadeUp}>
-        <Card className="overflow-hidden border-border/40 shadow-card">
+        <Card className="overflow-hidden border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-500">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2 font-semibold">
               <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -150,7 +158,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
               </div>
               {copy.trend}
             </CardTitle>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-lg border-border/50 hover:border-primary/30" onClick={() => exportToCSV(report, lang)}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs rounded-lg border-border/50 hover:border-primary/30 transition-colors" onClick={() => exportToCSV(report, lang)}>
               <Download className="h-3.5 w-3.5" />
               {copy.exportCSV}
             </Button>
@@ -161,21 +169,21 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="gradCreated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(24, 95%, 53%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(217, 71%, 45%)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(217, 71%, 45%)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(340, 75%, 55%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="hsl(158, 60%, 42%)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(158, 60%, 42%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} />
                   <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(v) => v.slice(5)} stroke="hsl(var(--muted-foreground))" />
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(24, 95%, 53%)" fill="url(#gradCreated)" strokeWidth={2.5} />
-                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(340, 75%, 55%)" fill="url(#gradResolved)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="created" name={copy.created} stroke="hsl(217, 71%, 45%)" fill="url(#gradCreated)" strokeWidth={2.5} />
+                  <Area type="monotone" dataKey="resolved" name={copy.resolved} stroke="hsl(158, 60%, 42%)" fill="url(#gradResolved)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -188,7 +196,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
       {/* Row 2: Pie + Priority + Source */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <motion.div variants={fadeUp}>
-          <Card className="h-full border-border/40 shadow-card">
+          <Card className="h-full border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2 font-semibold">
                 <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -216,7 +224,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="h-full border-border/40 shadow-card">
+          <Card className="h-full border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2 font-semibold">
                 <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
@@ -234,7 +242,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="value" name={copy.tickets} radius={[0, 8, 8, 0]}>
                       {priorityData.map((_, i) => (
-                        <Cell key={i} fill={['hsl(24, 95%, 53%)', 'hsl(45, 93%, 47%)', 'hsl(340, 75%, 55%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
+                        <Cell key={i} fill={['hsl(210, 80%, 55%)', 'hsl(45, 93%, 47%)', 'hsl(25, 95%, 53%)', 'hsl(0, 72%, 51%)'][i] || COLORS[i]} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -247,7 +255,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
         </motion.div>
 
         <motion.div variants={fadeUp}>
-          <Card className="h-full border-border/40 shadow-card">
+          <Card className="h-full border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2 font-semibold">
                 <div className="w-7 h-7 rounded-lg bg-info/10 flex items-center justify-center">
@@ -263,7 +271,7 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip contentStyle={tooltipStyle} />
-                    <Bar dataKey="value" name={copy.tickets} fill="hsl(340, 75%, 55%)" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="value" name={copy.tickets} fill="hsl(210, 80%, 55%)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -277,25 +285,25 @@ export const DashboardCharts = memo(function DashboardCharts({ report, trendData
       {/* SLA by Service */}
       {slaServiceData.length > 0 && (
         <motion.div variants={fadeUp}>
-          <Card className="border-border/40 shadow-card">
+          <Card className="border-border/40 shadow-card hover:shadow-card-hover transition-shadow duration-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">{copy.slaByService}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={slaServiceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                   <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(24, 95%, 53%)" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="compliance" name={copy.compliancePercent} fill="hsl(217, 71%, 45%)" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 });
