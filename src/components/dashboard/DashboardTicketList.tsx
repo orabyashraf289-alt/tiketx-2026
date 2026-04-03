@@ -29,7 +29,7 @@ const staggerContainer = {
 
 const listItem = {
   hidden: { opacity: 0, x: 16, filter: 'blur(3px)' },
-  visible: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export const DashboardTicketList = memo(function DashboardTicketList({
