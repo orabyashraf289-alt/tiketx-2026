@@ -21,6 +21,8 @@ import { DashboardKPICards } from '@/components/dashboard/DashboardKPICards';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { DashboardTicketList } from '@/components/dashboard/DashboardTicketList';
+import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
+import { AICopilotWidget } from '@/components/dashboard/AICopilotWidget';
 
 export default function Dashboard() {
   const { role, profile } = useAuth();
@@ -194,6 +196,14 @@ export default function Dashboard() {
             stats={stats}
             report={report}
           />
+
+          {/* AI Copilot + Activity Feed */}
+          {isAdmin && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <AICopilotWidget />
+              <LiveActivityFeed />
+            </div>
+          )}
 
           {/* Quick Actions */}
           {isAdmin && <DashboardQuickActions />}
