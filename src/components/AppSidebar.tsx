@@ -90,6 +90,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'القنوات المتعددة' : 'Omni-Channel', url: '/admin/channels', icon: Globe },
     { title: lang === 'ar' ? 'منشئ التقارير' : 'Report Builder', url: '/admin/report-builder', icon: BarChart3 },
     { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
+    { title: lang === 'ar' ? 'رسائل WhatsApp' : 'WhatsApp', url: '/admin/whatsapp', icon: MessageSquare },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },

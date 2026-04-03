@@ -372,6 +372,3 @@ export default function AdminWhatsApp() {
     </PageLayout>
   );
 }
-
-// Need Plus icon
-import { Plus } from 'lucide-react';
