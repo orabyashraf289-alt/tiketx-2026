@@ -153,7 +153,6 @@ export default function AdminWhatsApp() {
     <PageLayout>
       <PageHeader
         title={isAr ? 'رسائل WhatsApp' : 'WhatsApp Messages'}
-        subtitle={isAr ? 'إدارة محادثات WhatsApp وإرسال واستقبال الرسائل' : 'Manage WhatsApp conversations'}
         icon={<MessageSquare className="h-6 w-6" />}
       />
 
