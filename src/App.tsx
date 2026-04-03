@@ -74,6 +74,7 @@ const queryClient = new QueryClient({
 function ProtectedRoute({ children, redirectRequester }: { children: React.ReactNode; redirectRequester?: boolean }) {
   const { user, loading, role } = useAuth();
   useRealtimeNotificationSound();
+  useTenantBranding(); // Apply tenant white-label branding
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   if (redirectRequester && role === 'requester') return <Navigate to="/portal" replace />;
