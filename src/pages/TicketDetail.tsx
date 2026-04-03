@@ -31,6 +31,7 @@ import { CannedResponsesPicker } from '@/components/CannedResponses';
 import { TimeTracker } from '@/components/TimeTracker';
 import { SentimentAnalysis } from '@/components/SentimentBadge';
 import { TicketSummary } from '@/components/TicketSummary';
+import { TicketAICopilot } from '@/components/TicketAICopilot';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
