@@ -197,6 +197,14 @@ export default function Dashboard() {
             report={report}
           />
 
+          {/* AI Copilot + Activity Feed */}
+          {isAdmin && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <AICopilotWidget />
+              <LiveActivityFeed />
+            </div>
+          )}
+
           {/* Quick Actions */}
           {isAdmin && <DashboardQuickActions />}
 
