@@ -21,6 +21,8 @@ import { DashboardKPICards } from '@/components/dashboard/DashboardKPICards';
 import { DashboardOverview } from '@/components/dashboard/DashboardOverview';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { DashboardTicketList } from '@/components/dashboard/DashboardTicketList';
+import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
+import { AICopilotWidget } from '@/components/dashboard/AICopilotWidget';
 
 export default function Dashboard() {
   const { role, profile } = useAuth();
