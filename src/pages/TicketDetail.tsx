@@ -661,6 +661,19 @@ export default function TicketDetailPage() {
                 {/* CSAT Rating */}
                 <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
 
+                {/* AI Copilot - for agents/admins */}
+                {isAgentOrAdmin && (
+                  <motion.div variants={fadeScale}>
+                    <TicketAICopilot
+                      ticketId={ticket.id}
+                      ticketTitle={ticket.title}
+                      ticketDescription={ticket.description}
+                      ticketStatus={ticket.status}
+                      comments={comments}
+                    />
+                  </motion.div>
+                )}
+
                 {/* AI Ticket Summary - for agents/admins */}
                 {isAgentOrAdmin && (
                   <motion.div variants={fadeScale}>
