@@ -25,10 +25,11 @@ export const AppSidebar = memo(function AppSidebar() {
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
   const sysSettings = useSystemSettings();
+  const tenantBranding = useTenantBranding();
   const { t, lang } = useLanguage();
 
-  const logoSrc = sysSettings.logo_url || logoImg;
-  const sysName = sysSettings.system_name || 'Ticket-X';
+  const logoSrc = tenantBranding.logo_url || sysSettings.logo_url || logoImg;
+  const sysName = tenantBranding.tenant_name || sysSettings.system_name || 'Ticket-X';
   const sysSub = sysSettings.system_subtitle || 'SMART HELPDESK';
 
   const roleLabels: Record<string, string> = {
