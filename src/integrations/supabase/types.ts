@@ -768,6 +768,95 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_members_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          accent_color: string | null
+          created_at: string
+          custom_domain: string | null
+          favicon_url: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          max_tickets_per_month: number | null
+          max_users: number | null
+          name: string
+          owner_id: string
+          plan: string
+          primary_color: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          favicon_url?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          max_tickets_per_month?: number | null
+          max_users?: number | null
+          name: string
+          owner_id: string
+          plan?: string
+          primary_color?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          favicon_url?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          max_tickets_per_month?: number | null
+          max_users?: number | null
+          name?: string
+          owner_id?: string
+          plan?: string
+          primary_color?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ticket_approvals: {
         Row: {
           approver_id: string | null
@@ -1344,6 +1433,53 @@ export type Database = {
             columns: ["webhook_id"]
             isOneToOne: false
             referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_messages: {
+        Row: {
+          body: string | null
+          created_at: string
+          direction: string
+          from_number: string
+          id: string
+          media_url: string | null
+          status: string | null
+          ticket_id: string | null
+          to_number: string
+          twilio_sid: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          direction: string
+          from_number: string
+          id?: string
+          media_url?: string | null
+          status?: string | null
+          ticket_id?: string | null
+          to_number: string
+          twilio_sid?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          direction?: string
+          from_number?: string
+          id?: string
+          media_url?: string | null
+          status?: string | null
+          ticket_id?: string | null
+          to_number?: string
+          twilio_sid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
         ]
