@@ -89,6 +89,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.slackIntegration, url: '/admin/slack', icon: MessageSquare },
     { title: lang === 'ar' ? 'القنوات المتعددة' : 'Omni-Channel', url: '/admin/channels', icon: Globe },
     { title: lang === 'ar' ? 'منشئ التقارير' : 'Report Builder', url: '/admin/report-builder', icon: BarChart3 },
+    { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
