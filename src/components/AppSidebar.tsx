@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
