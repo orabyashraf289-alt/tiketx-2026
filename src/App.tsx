@@ -48,6 +48,7 @@ const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
 const AdminChannels = lazy(() => import('./pages/AdminChannels'));
 const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const AdminTenants = lazy(() => import('./pages/AdminTenants'));
+const AdminWhatsApp = lazy(() => import('./pages/AdminWhatsApp'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
