@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
@@ -24,10 +25,11 @@ export const AppSidebar = memo(function AppSidebar() {
   const collapsed = state === 'collapsed';
   const { profile, role, signOut } = useAuth();
   const sysSettings = useSystemSettings();
+  const tenantBranding = useTenantBranding();
   const { t, lang } = useLanguage();
 
-  const logoSrc = sysSettings.logo_url || logoImg;
-  const sysName = sysSettings.system_name || 'Ticket-X';
+  const logoSrc = tenantBranding.logo_url || sysSettings.logo_url || logoImg;
+  const sysName = tenantBranding.tenant_name || sysSettings.system_name || 'Ticket-X';
   const sysSub = sysSettings.system_subtitle || 'SMART HELPDESK';
 
   const roleLabels: Record<string, string> = {
@@ -90,6 +92,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'القنوات المتعددة' : 'Omni-Channel', url: '/admin/channels', icon: Globe },
     { title: lang === 'ar' ? 'منشئ التقارير' : 'Report Builder', url: '/admin/report-builder', icon: BarChart3 },
     { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
+    { title: lang === 'ar' ? 'رسائل WhatsApp' : 'WhatsApp', url: '/admin/whatsapp', icon: MessageSquare },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },

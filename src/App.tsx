@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useTenantBranding } from '@/hooks/useTenantBranding';
 import { useRealtimeNotificationSound } from '@/hooks/useRealtimeNotificationSound';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { SystemSettingsProvider } from '@/hooks/useSystemSettings';
@@ -48,6 +49,7 @@ const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
 const AdminChannels = lazy(() => import('./pages/AdminChannels'));
 const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const AdminTenants = lazy(() => import('./pages/AdminTenants'));
+const AdminWhatsApp = lazy(() => import('./pages/AdminWhatsApp'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -72,6 +74,7 @@ const queryClient = new QueryClient({
 function ProtectedRoute({ children, redirectRequester }: { children: React.ReactNode; redirectRequester?: boolean }) {
   const { user, loading, role } = useAuth();
   useRealtimeNotificationSound();
+  useTenantBranding(); // Apply tenant white-label branding
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
   if (redirectRequester && role === 'requester') return <Navigate to="/portal" replace />;
@@ -143,6 +146,7 @@ const App = () => (
                     <Route path="/admin/channels" element={<ProtectedRoute><AdminChannels /></ProtectedRoute>} />
                     <Route path="/admin/report-builder" element={<ProtectedRoute><AdminReportBuilder /></ProtectedRoute>} />
                     <Route path="/admin/tenants" element={<ProtectedRoute><AdminTenants /></ProtectedRoute>} />
+                    <Route path="/admin/whatsapp" element={<ProtectedRoute><AdminWhatsApp /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
