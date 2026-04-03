@@ -41,3 +41,7 @@ project_id = "yoamlepdjzsjwppxhuov"
     verify_jwt = false
   [functions.broadcast-email]
     verify_jwt = false
+  [functions.send-whatsapp]
+    verify_jwt = false
+  [functions.receive-whatsapp]
+    verify_jwt = false
