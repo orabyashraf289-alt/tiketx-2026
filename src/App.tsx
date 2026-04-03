@@ -45,6 +45,8 @@ const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog'));
 const AdminSecurityDashboard = lazy(() => import('./pages/AdminSecurityDashboard'));
 const AdminSecuritySettings = lazy(() => import('./pages/AdminSecuritySettings'));
 const AdminEmailManagement = lazy(() => import('./pages/AdminEmailManagement'));
+const AdminChannels = lazy(() => import('./pages/AdminChannels'));
+const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -137,6 +139,8 @@ const App = () => (
                     <Route path="/admin/security" element={<ProtectedRoute><AdminSecurityDashboard /></ProtectedRoute>} />
                     <Route path="/admin/security-settings" element={<ProtectedRoute><AdminSecuritySettings /></ProtectedRoute>} />
                     <Route path="/admin/email" element={<ProtectedRoute><AdminEmailManagement /></ProtectedRoute>} />
+                    <Route path="/admin/channels" element={<ProtectedRoute><AdminChannels /></ProtectedRoute>} />
+                    <Route path="/admin/report-builder" element={<ProtectedRoute><AdminReportBuilder /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

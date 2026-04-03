@@ -31,6 +31,7 @@ import { CannedResponsesPicker } from '@/components/CannedResponses';
 import { TimeTracker } from '@/components/TimeTracker';
 import { SentimentAnalysis } from '@/components/SentimentBadge';
 import { TicketSummary } from '@/components/TicketSummary';
+import { TicketAICopilot } from '@/components/TicketAICopilot';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
 
@@ -659,6 +660,19 @@ export default function TicketDetailPage() {
 
                 {/* CSAT Rating */}
                 <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
+
+                {/* AI Copilot - for agents/admins */}
+                {isAgentOrAdmin && (
+                  <motion.div variants={fadeScale}>
+                    <TicketAICopilot
+                      ticketId={ticket.id}
+                      ticketTitle={ticket.title}
+                      ticketDescription={ticket.description}
+                      ticketStatus={ticket.status}
+                      comments={comments}
+                    />
+                  </motion.div>
+                )}
 
                 {/* AI Ticket Summary - for agents/admins */}
                 {isAgentOrAdmin && (
