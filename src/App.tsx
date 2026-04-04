@@ -151,6 +151,8 @@ const App = () => (
                     <Route path="/admin/tenants" element={<ProtectedRoute><AdminTenants /></ProtectedRoute>} />
                     <Route path="/admin/whatsapp" element={<ProtectedRoute><AdminWhatsApp /></ProtectedRoute>} />
                     <Route path="/admin/classera" element={<ProtectedRoute><AdminClasseraIntegrations /></ProtectedRoute>} />
+                    <Route path="/admin/moe-dashboard" element={<ProtectedRoute><MOEDashboard /></ProtectedRoute>} />
+                    <Route path="/admin/billing" element={<ProtectedRoute><AdminBilling /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

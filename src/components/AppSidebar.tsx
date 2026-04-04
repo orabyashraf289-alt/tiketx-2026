@@ -94,6 +94,8 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
     { title: lang === 'ar' ? 'رسائل WhatsApp' : 'WhatsApp', url: '/admin/whatsapp', icon: MessageSquare },
     { title: lang === 'ar' ? 'تكامل كلاسيرا' : 'Classera Integration', url: '/admin/classera', icon: Plug },
+    { title: lang === 'ar' ? 'لوحة وزارة التعليم' : 'MOE Dashboard', url: '/admin/moe-dashboard', icon: ShieldCheck },
+    { title: lang === 'ar' ? 'الفوترة والاشتراكات' : 'Billing', url: '/admin/billing', icon: Users },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
