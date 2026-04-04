@@ -51,6 +51,8 @@ const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const AdminTenants = lazy(() => import('./pages/AdminTenants'));
 const AdminWhatsApp = lazy(() => import('./pages/AdminWhatsApp'));
 const AdminClasseraIntegrations = lazy(() => import('./pages/AdminClasseraIntegrations'));
+const MOEDashboard = lazy(() => import('./pages/MOEDashboard'));
+const AdminBilling = lazy(() => import('./pages/AdminBilling'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
