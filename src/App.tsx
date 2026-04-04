@@ -118,6 +118,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AuthProvider>
+                <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
