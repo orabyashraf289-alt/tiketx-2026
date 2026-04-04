@@ -164,6 +164,9 @@ const App = () => (
                     <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
                     <Route path="/admin/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
                     <Route path="/admin/smart-alerts" element={<ProtectedRoute><SmartAlerts /></ProtectedRoute>} />
+                    <Route path="/admin/pilot-sandbox" element={<ProtectedRoute><PilotSandbox /></ProtectedRoute>} />
+                    <Route path="/admin/predictive-analytics" element={<ProtectedRoute><PredictiveAnalytics /></ProtectedRoute>} />
+                    <Route path="/admin/rollout" element={<ProtectedRoute><RolloutManagement /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
