@@ -12,6 +12,7 @@ import { SystemSettingsProvider } from '@/hooks/useSystemSettings';
 import { LanguageProvider } from '@/i18n';
 import { PageLoader } from '@/components/PageLoader';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy-loaded pages
 const Index = lazy(() => import('./pages/Index'));
