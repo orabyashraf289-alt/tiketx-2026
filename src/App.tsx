@@ -157,6 +157,10 @@ const App = () => (
                     <Route path="/admin/classera" element={<ProtectedRoute><AdminClasseraIntegrations /></ProtectedRoute>} />
                     <Route path="/admin/moe-dashboard" element={<ProtectedRoute><MOEDashboard /></ProtectedRoute>} />
                     <Route path="/admin/billing" element={<ProtectedRoute><AdminBilling /></ProtectedRoute>} />
+                    <Route path="/admin/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+                    <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
+                    <Route path="/admin/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
+                    <Route path="/admin/smart-alerts" element={<ProtectedRoute><SmartAlerts /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
