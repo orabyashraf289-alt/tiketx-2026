@@ -57,6 +57,9 @@ const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
 const TrainingCenter = lazy(() => import('./pages/TrainingCenter'));
 const SmartAlerts = lazy(() => import('./pages/SmartAlerts'));
+const PilotSandbox = lazy(() => import('./pages/PilotSandbox'));
+const PredictiveAnalytics = lazy(() => import('./pages/PredictiveAnalytics'));
+const RolloutManagement = lazy(() => import('./pages/RolloutManagement'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
