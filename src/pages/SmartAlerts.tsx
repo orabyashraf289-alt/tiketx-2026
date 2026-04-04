@@ -51,7 +51,7 @@ export default function SmartAlerts() {
       const { data } = await supabase.from('tickets').select('id, ticket_number, status, priority, created_at, sla_resolution_due_at, first_response_at, sla_first_response_due_at, title');
       return data || [];
     },
-    refetchInterval: 30000,
+    refetchInterval: 60000, // check every 60s instead of 30s
   });
 
   const { data: integrations = [] } = useQuery({
@@ -68,7 +68,7 @@ export default function SmartAlerts() {
       const { data } = await supabase.from('notifications').select('id, title, message, created_at, type').order('created_at', { ascending: false }).limit(20);
       return data || [];
     },
-    refetchInterval: 15000,
+    refetchInterval: 60000,
   });
 
   // Realtime subscription for live feed
