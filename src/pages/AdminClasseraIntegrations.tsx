@@ -373,8 +373,6 @@ Response:
               </Tabs>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
