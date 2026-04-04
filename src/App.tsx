@@ -50,6 +50,7 @@ const AdminChannels = lazy(() => import('./pages/AdminChannels'));
 const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const AdminTenants = lazy(() => import('./pages/AdminTenants'));
 const AdminWhatsApp = lazy(() => import('./pages/AdminWhatsApp'));
+const AdminClasseraIntegrations = lazy(() => import('./pages/AdminClasseraIntegrations'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -147,6 +148,7 @@ const App = () => (
                     <Route path="/admin/report-builder" element={<ProtectedRoute><AdminReportBuilder /></ProtectedRoute>} />
                     <Route path="/admin/tenants" element={<ProtectedRoute><AdminTenants /></ProtectedRoute>} />
                     <Route path="/admin/whatsapp" element={<ProtectedRoute><AdminWhatsApp /></ProtectedRoute>} />
+                    <Route path="/admin/classera" element={<ProtectedRoute><AdminClasseraIntegrations /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
   Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send, Bell,
-  Sparkles,
+  Sparkles, Plug,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -93,6 +93,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'منشئ التقارير' : 'Report Builder', url: '/admin/report-builder', icon: BarChart3 },
     { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
     { title: lang === 'ar' ? 'رسائل WhatsApp' : 'WhatsApp', url: '/admin/whatsapp', icon: MessageSquare },
+    { title: lang === 'ar' ? 'تكامل كلاسيرا' : 'Classera Integration', url: '/admin/classera', icon: Plug },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },

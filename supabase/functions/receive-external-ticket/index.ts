@@ -41,7 +41,7 @@ serve(async (req) => {
       });
     }
 
-    const validSources = ["ERP", "LMS", "CPAY", "PORTAL"];
+    const validSources = ["ERP", "LMS", "CPAY", "PORTAL", "SIS", "EDUMALLS", "SMART_SCHOOL", "DASHBOARD", "HR"];
     if (!validSources.includes(source_system)) {
       return new Response(JSON.stringify({
         error: `Invalid source_system. Must be one of: ${validSources.join(", ")}`,
