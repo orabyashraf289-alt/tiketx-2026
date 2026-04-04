@@ -57,6 +57,9 @@ const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
 const TrainingCenter = lazy(() => import('./pages/TrainingCenter'));
 const SmartAlerts = lazy(() => import('./pages/SmartAlerts'));
+const PilotSandbox = lazy(() => import('./pages/PilotSandbox'));
+const PredictiveAnalytics = lazy(() => import('./pages/PredictiveAnalytics'));
+const RolloutManagement = lazy(() => import('./pages/RolloutManagement'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -161,6 +164,9 @@ const App = () => (
                     <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
                     <Route path="/admin/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
                     <Route path="/admin/smart-alerts" element={<ProtectedRoute><SmartAlerts /></ProtectedRoute>} />
+                    <Route path="/admin/pilot-sandbox" element={<ProtectedRoute><PilotSandbox /></ProtectedRoute>} />
+                    <Route path="/admin/predictive-analytics" element={<ProtectedRoute><PredictiveAnalytics /></ProtectedRoute>} />
+                    <Route path="/admin/rollout" element={<ProtectedRoute><RolloutManagement /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

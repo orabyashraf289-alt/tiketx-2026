@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
   Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send, Bell,
-  Sparkles, Plug, Rocket, Activity, GraduationCap, BellRing,
+  Sparkles, Plug, Rocket, Activity, GraduationCap, BellRing, FlaskConical, Brain, Map,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -100,6 +100,9 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'مراقبة النظام' : 'System Health', url: '/admin/system-health', icon: Activity },
     { title: lang === 'ar' ? 'مركز التدريب' : 'Training Center', url: '/admin/training', icon: GraduationCap },
     { title: lang === 'ar' ? 'التنبيهات الذكية' : 'Smart Alerts', url: '/admin/smart-alerts', icon: BellRing },
+    { title: lang === 'ar' ? 'بيئة الاختبار' : 'Pilot Sandbox', url: '/admin/pilot-sandbox', icon: FlaskConical },
+    { title: lang === 'ar' ? 'التحليلات التنبؤية' : 'Predictive Analytics', url: '/admin/predictive-analytics', icon: Brain },
+    { title: lang === 'ar' ? 'خطة الإطلاق' : 'Rollout Plan', url: '/admin/rollout', icon: Map },
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
