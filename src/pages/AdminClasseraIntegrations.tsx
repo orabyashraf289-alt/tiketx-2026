@@ -103,7 +103,7 @@ export default function AdminClasseraIntegrations() {
             <div className="max-w-6xl mx-auto space-y-6">
               {/* Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div}}>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
