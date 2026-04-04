@@ -169,12 +169,7 @@ export default function AdminClasseraIntegrations() {
                       const SyncIcon = syncInfo.icon;
 
                       return (
-                        <div
-                          key={mod.id}
-
-
-
-                        >
+                        <div key={mod.id}>
                           <Card className={`rounded-2xl transition-all duration-300 hover:shadow-lg ${mod.is_active ? 'border-primary/30' : 'opacity-75'}`}>
                             <CardContent className="pt-5 space-y-4">
                               <div className="flex items-start justify-between">
