@@ -119,7 +119,7 @@ export default function AdminClasseraIntegrations() {
                     </CardContent>
                   </Card>
                 </div>
-                <div}}}>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
@@ -134,7 +134,7 @@ export default function AdminClasseraIntegrations() {
                     </CardContent>
                   </Card>
                 </div>
-                <div}}}>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="space-y-2">
@@ -171,9 +171,9 @@ export default function AdminClasseraIntegrations() {
                       return (
                         <div
                           key={mod.id}
-                         }
-                         }
-                         }
+
+
+
                         >
                           <Card className={`rounded-2xl transition-all duration-300 hover:shadow-lg ${mod.is_active ? 'border-primary/30' : 'opacity-75'}`}>
                             <CardContent className="pt-5 space-y-4">
