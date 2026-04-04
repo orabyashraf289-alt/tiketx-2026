@@ -26,7 +26,8 @@ const defaultBranding: TenantBranding = {
   loading: true,
 };
 
-const CSS_VARS = ['--primary', '--ring', '--sidebar-primary', '--accent'] as const;
+const CSS_VARS_LIGHT = ['--primary', '--ring', '--sidebar-primary', '--accent'] as const;
+const CSS_VARS_DARK = ['--primary', '--ring', '--sidebar-primary', '--accent', '--sidebar-ring'] as const;
 
 function hexToHsl(hex: string): string | null {
   if (!hex || !hex.startsWith('#') || hex.length < 7) return null;
@@ -48,14 +49,22 @@ function hexToHsl(hex: string): string | null {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
-// Store original CSS values for cleanup
+function adjustLightness(hsl: string, delta: number): string {
+  const parts = hsl.split(' ');
+  if (parts.length < 3) return hsl;
+  const l = parseInt(parts[2]);
+  const newL = Math.min(100, Math.max(0, l + delta));
+  return `${parts[0]} ${parts[1]} ${newL}%`;
+}
+
 let originalValues: Record<string, string> | null = null;
+let styleElement: HTMLStyleElement | null = null;
 
 function saveOriginalValues() {
   if (originalValues) return;
   const style = getComputedStyle(document.documentElement);
   originalValues = {};
-  for (const v of CSS_VARS) {
+  for (const v of CSS_VARS_LIGHT) {
     originalValues[v] = style.getPropertyValue(v).trim();
   }
 }
@@ -64,6 +73,11 @@ function restoreOriginalValues() {
   if (!originalValues) return;
   for (const [key, val] of Object.entries(originalValues)) {
     document.documentElement.style.setProperty(key, val);
+  }
+  // Remove dark mode overrides
+  if (styleElement) {
+    styleElement.remove();
+    styleElement = null;
   }
 }
 
@@ -109,12 +123,12 @@ export function useTenantBranding(): TenantBranding {
         return;
       }
 
-      // Save originals before overriding
       saveOriginalValues();
 
       const primaryHsl = hexToHsl(tenant.primary_color || '#6366f1');
       const accentHsl = hexToHsl(tenant.accent_color || '#8b5cf6');
 
+      // Apply light mode vars
       if (primaryHsl) {
         document.documentElement.style.setProperty('--primary', primaryHsl);
         document.documentElement.style.setProperty('--ring', primaryHsl);
@@ -122,6 +136,28 @@ export function useTenantBranding(): TenantBranding {
       }
       if (accentHsl) {
         document.documentElement.style.setProperty('--accent', accentHsl);
+      }
+
+      // Apply dark mode overrides via style element
+      if (primaryHsl || accentHsl) {
+        if (styleElement) styleElement.remove();
+        styleElement = document.createElement('style');
+        const darkPrimary = primaryHsl ? adjustLightness(primaryHsl, 10) : null;
+        const darkAccent = accentHsl ? adjustLightness(accentHsl, 5) : null;
+        
+        let css = '.dark {';
+        if (darkPrimary) {
+          css += `--primary: ${darkPrimary};`;
+          css += `--ring: ${darkPrimary};`;
+          css += `--sidebar-primary: ${darkPrimary};`;
+          css += `--sidebar-ring: ${darkPrimary};`;
+        }
+        if (darkAccent) {
+          css += `--accent: ${darkAccent};`;
+        }
+        css += '}';
+        styleElement.textContent = css;
+        document.head.appendChild(styleElement);
       }
 
       if (tenant.favicon_url) {

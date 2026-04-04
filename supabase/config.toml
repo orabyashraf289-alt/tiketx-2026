@@ -47,3 +47,5 @@ project_id = "yoamlepdjzsjwppxhuov"
     verify_jwt = false
   [functions.classera-webhook]
     verify_jwt = false
+  [functions.sla-auto-escalate]
+    verify_jwt = false
