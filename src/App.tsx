@@ -12,6 +12,7 @@ import { SystemSettingsProvider } from '@/hooks/useSystemSettings';
 import { LanguageProvider } from '@/i18n';
 import { PageLoader } from '@/components/PageLoader';
 import { CustomerChatbot } from '@/components/CustomerChatbot';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy-loaded pages
 const Index = lazy(() => import('./pages/Index'));
@@ -117,6 +118,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AuthProvider>
+                <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/auth" element={<AuthRoute><AuthPage /></AuthRoute>} />
@@ -171,6 +173,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                </ErrorBoundary>
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
