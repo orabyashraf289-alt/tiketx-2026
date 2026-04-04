@@ -55,7 +55,6 @@ export function NotificationsPopover() {
     queryKey: ['notifications', user?.id],
     queryFn: () => fetchNotifications(user!.id),
     enabled: !!user,
-    refetchInterval: 30000,
   });
 
   // Realtime subscription for new notifications

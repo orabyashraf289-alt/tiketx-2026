@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
 import { toast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
 import {
   Plug, CheckCircle, XCircle, RefreshCw, ArrowLeftRight, ArrowDown, ArrowUp,
   Activity, BookOpen, DollarSign, Users, GraduationCap, ShoppingBag,
@@ -100,27 +97,13 @@ export default function AdminClasseraIntegrations() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <Plug className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">تكامل مديولات كلاسيرا</h1>
-            </div>
-            <NotificationsPopover />
-          </motion.header>
-
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+    <PageLayout>
+      <PageHeader title="تكامل مديولات كلاسيرا" icon={<Plug className="h-5 w-5" />} />
+      <main className="flex-1 overflow-auto p-4 md:p-6">
             <div className="max-w-6xl mx-auto space-y-6">
               {/* Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
@@ -135,8 +118,8 @@ export default function AdminClasseraIntegrations() {
                       <p className="text-xs text-muted-foreground mt-2">من أصل {modules.length} مديول</p>
                     </CardContent>
                   </Card>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                </div>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
@@ -150,8 +133,8 @@ export default function AdminClasseraIntegrations() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                </div>
+                <div>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="space-y-2">
@@ -167,7 +150,7 @@ export default function AdminClasseraIntegrations() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               </div>
 
               {/* Tabs */}
@@ -186,12 +169,7 @@ export default function AdminClasseraIntegrations() {
                       const SyncIcon = syncInfo.icon;
 
                       return (
-                        <motion.div
-                          key={mod.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                        >
+                        <div key={mod.id}>
                           <Card className={`rounded-2xl transition-all duration-300 hover:shadow-lg ${mod.is_active ? 'border-primary/30' : 'opacity-75'}`}>
                             <CardContent className="pt-5 space-y-4">
                               <div className="flex items-start justify-between">
@@ -288,7 +266,7 @@ export default function AdminClasseraIntegrations() {
                               </div>
                             </CardContent>
                           </Card>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
@@ -390,8 +368,6 @@ Response:
               </Tabs>
             </div>
           </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
