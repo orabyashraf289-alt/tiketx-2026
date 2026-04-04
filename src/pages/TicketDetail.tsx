@@ -118,41 +118,21 @@ export default function TicketDetailPage() {
     enabled: !!ticket?.service_id,
   });
 
-  // Realtime: comments on this ticket
+  // Realtime: all ticket-related changes in a single channel
   useEffect(() => {
     if (!id) return;
     const channel = supabase
-      .channel(`ticket-comments-${id}`)
+      .channel(`ticket-all-${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${id}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['comments', id] });
-        // Auto-scroll to bottom
         setTimeout(() => {
           const el = document.getElementById('comments-scroll');
           if (el) el.scrollTop = el.scrollHeight;
         }, 300);
       })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [id, queryClient]);
-
-  // Realtime: ticket updates
-  useEffect(() => {
-    if (!id) return;
-    const channel = supabase
-      .channel(`ticket-detail-${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tickets', filter: `id=eq.${id}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['ticket', id] });
-        queryClient.invalidateQueries({ queryKey: ['tickets'] });
       })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [id, queryClient]);
-
-  // Realtime: attachments
-  useEffect(() => {
-    if (!id) return;
-    const channel = supabase
-      .channel(`ticket-attachments-${id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_attachments', filter: `ticket_id=eq.${id}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['attachments', id] });
       })

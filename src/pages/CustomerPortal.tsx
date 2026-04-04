@@ -152,22 +152,11 @@ export default function CustomerPortal() {
     enabled: !!selectedTicket,
   });
 
-  // Realtime: comments on selected ticket
+  // Realtime: single channel for portal events (tickets + notifications)
   useEffect(() => {
-    if (!selectedTicket) return;
+    if (!user) return;
     const channel = supabase
-      .channel(`portal-comments-${selectedTicket.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
-        queryClient.invalidateQueries({ queryKey: ['comments', selectedTicket.id] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [selectedTicket?.id, queryClient]);
-
-  // Realtime: ticket status changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('portal-tickets-realtime')
+      .channel('portal-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, (payload) => {
         queryClient.invalidateQueries({ queryKey: ['tickets'] });
         if (payload.eventType === 'UPDATE' && payload.old && payload.new) {
@@ -179,23 +168,25 @@ export default function CustomerPortal() {
           }
         }
       })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [queryClient, t, statusLabels]);
-
-  // Realtime: notifications
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('portal-notifications-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
         const notif = payload.new as any;
         toast(notif.title, { description: notif.message });
-        queryClient.invalidateQueries({ queryKey: ['notifications'] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, t, statusLabels]);
+
+  // Realtime: comments on selected ticket only
+  useEffect(() => {
+    if (!selectedTicket) return;
+    const channel = supabase
+      .channel(`portal-comments-${selectedTicket.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ticket_comments', filter: `ticket_id=eq.${selectedTicket.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ['comments', selectedTicket.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedTicket?.id, queryClient]);
 
   const commentMutation = useMutation({
     mutationFn: () => addComment({ ticket_id: selectedTicket!.id, author_id: user!.id, content: newComment, note_type: 'public' }),
