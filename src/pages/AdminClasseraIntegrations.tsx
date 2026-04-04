@@ -103,7 +103,7 @@ export default function AdminClasseraIntegrations() {
             <div className="max-w-6xl mx-auto space-y-6">
               {/* Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <div}}>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
@@ -118,8 +118,8 @@ export default function AdminClasseraIntegrations() {
                       <p className="text-xs text-muted-foreground mt-2">من أصل {modules.length} مديول</p>
                     </CardContent>
                   </Card>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                </div>
+                <div}}}>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between">
@@ -133,8 +133,8 @@ export default function AdminClasseraIntegrations() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                </div>
+                <div}}}>
                   <Card className="rounded-2xl">
                     <CardContent className="pt-5">
                       <div className="space-y-2">
@@ -150,7 +150,7 @@ export default function AdminClasseraIntegrations() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               </div>
 
               {/* Tabs */}
@@ -169,11 +169,11 @@ export default function AdminClasseraIntegrations() {
                       const SyncIcon = syncInfo.icon;
 
                       return (
-                        <motion.div
+                        <div
                           key={mod.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 }}
+                         }
+                         }
+                         }
                         >
                           <Card className={`rounded-2xl transition-all duration-300 hover:shadow-lg ${mod.is_active ? 'border-primary/30' : 'opacity-75'}`}>
                             <CardContent className="pt-5 space-y-4">
@@ -271,7 +271,7 @@ export default function AdminClasseraIntegrations() {
                               </div>
                             </CardContent>
                           </Card>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
