@@ -5,9 +5,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function validateCronAuth(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (authHeader === `Bearer ${serviceKey}`) return true;
+
+  const apiKey = req.headers.get("x-api-key");
+  const cronKey = Deno.env.get("CRON_API_KEY");
+  if (cronKey && apiKey === cronKey) return true;
+
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!validateCronAuth(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -17,7 +36,6 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // Find tickets that breached SLA and haven't been escalated
     const { data: breachedTickets, error: fetchErr } = await supabase
       .from("tickets")
       .select("id, ticket_number, title, priority, status, assigned_agent_id, requester_id, department_id, sla_resolution_due_at")
@@ -27,7 +45,7 @@ Deno.serve(async (req) => {
 
     if (fetchErr) {
       console.error("Fetch error:", fetchErr);
-      return new Response(JSON.stringify({ error: fetchErr.message }), {
+      return new Response(JSON.stringify({ error: "Internal error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -42,7 +60,6 @@ Deno.serve(async (req) => {
     let escalatedCount = 0;
 
     for (const ticket of breachedTickets) {
-      // Auto-escalate priority if not already urgent
       const newPriority = ticket.priority === "low" ? "medium" : 
                           ticket.priority === "medium" ? "high" : 
                           ticket.priority === "high" ? "urgent" : "urgent";
@@ -54,7 +71,6 @@ Deno.serve(async (req) => {
           .eq("id", ticket.id);
       }
 
-      // Notify all admins about the escalation
       const { data: admins } = await supabase
         .from("user_roles")
         .select("user_id")
@@ -72,7 +88,6 @@ Deno.serve(async (req) => {
         await supabase.from("notifications").insert(notifications);
       }
 
-      // Log the escalation in audit
       if (ticket.assigned_agent_id) {
         await supabase.from("audit_logs").insert({
           ticket_id: ticket.id,
@@ -95,7 +110,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("SLA auto-escalate error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -6,9 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function validateCronAuth(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (authHeader === `Bearer ${serviceKey}`) return true;
+
+  const apiKey = req.headers.get("x-api-key");
+  const cronKey = Deno.env.get("CRON_API_KEY");
+  if (cronKey && apiKey === cronKey) return true;
+
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!validateCronAuth(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -53,7 +72,6 @@ Deno.serve(async (req) => {
 
       // Notify escalation target (in-app + email)
       if (escalationTo && ticket) {
-        // In-app notification (bilingual payload)
         await supabase.from("notifications").insert({
           user_id: escalationTo,
           ticket_id: approval.ticket_id,
@@ -68,7 +86,6 @@ Deno.serve(async (req) => {
           },
         });
 
-        // Send email notification
         const { data: escalationProfile } = await supabase
           .from("profiles")
           .select("email, full_name")
@@ -110,7 +127,6 @@ Deno.serve(async (req) => {
           },
         });
 
-        // Email to requester
         const { data: requesterProfile } = await supabase
           .from("profiles")
           .select("email, full_name")
@@ -148,8 +164,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error("Escalation error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal error" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
