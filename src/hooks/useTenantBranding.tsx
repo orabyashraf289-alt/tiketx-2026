@@ -26,8 +26,10 @@ const defaultBranding: TenantBranding = {
   loading: true,
 };
 
+const CSS_VARS = ['--primary', '--ring', '--sidebar-primary', '--accent'] as const;
+
 function hexToHsl(hex: string): string | null {
-  if (!hex || !hex.startsWith('#')) return null;
+  if (!hex || !hex.startsWith('#') || hex.length < 7) return null;
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -46,24 +48,47 @@ function hexToHsl(hex: string): string | null {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
+// Store original CSS values for cleanup
+let originalValues: Record<string, string> | null = null;
+
+function saveOriginalValues() {
+  if (originalValues) return;
+  const style = getComputedStyle(document.documentElement);
+  originalValues = {};
+  for (const v of CSS_VARS) {
+    originalValues[v] = style.getPropertyValue(v).trim();
+  }
+}
+
+function restoreOriginalValues() {
+  if (!originalValues) return;
+  for (const [key, val] of Object.entries(originalValues)) {
+    document.documentElement.style.setProperty(key, val);
+  }
+}
+
 export function useTenantBranding(): TenantBranding {
   const { user } = useAuth();
   const [branding, setBranding] = useState<TenantBranding>(defaultBranding);
 
   useEffect(() => {
     if (!user) {
+      restoreOriginalValues();
       setBranding({ ...defaultBranding, loading: false });
       return;
     }
 
+    let cancelled = false;
+
     const fetchTenantBranding = async () => {
-      // Find tenant membership for current user
       const { data: membership } = await supabase
         .from('tenant_members')
         .select('tenant_id')
         .eq('user_id', user.id)
         .limit(1)
         .maybeSingle();
+
+      if (cancelled) return;
 
       if (!membership?.tenant_id) {
         setBranding({ ...defaultBranding, loading: false });
@@ -77,15 +102,19 @@ export function useTenantBranding(): TenantBranding {
         .eq('is_active', true)
         .maybeSingle();
 
+      if (cancelled) return;
+
       if (!tenant) {
         setBranding({ ...defaultBranding, loading: false });
         return;
       }
 
+      // Save originals before overriding
+      saveOriginalValues();
+
       const primaryHsl = hexToHsl(tenant.primary_color || '#6366f1');
       const accentHsl = hexToHsl(tenant.accent_color || '#8b5cf6');
 
-      // Apply tenant colors to CSS variables
       if (primaryHsl) {
         document.documentElement.style.setProperty('--primary', primaryHsl);
         document.documentElement.style.setProperty('--ring', primaryHsl);
@@ -95,7 +124,6 @@ export function useTenantBranding(): TenantBranding {
         document.documentElement.style.setProperty('--accent', accentHsl);
       }
 
-      // Apply favicon
       if (tenant.favicon_url) {
         const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement || document.createElement('link');
         link.rel = 'icon';
@@ -117,6 +145,8 @@ export function useTenantBranding(): TenantBranding {
     };
 
     fetchTenantBranding();
+
+    return () => { cancelled = true; };
   }, [user]);
 
   return branding;
