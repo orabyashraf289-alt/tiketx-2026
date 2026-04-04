@@ -6,9 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function validateCronAuth(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (authHeader === `Bearer ${serviceKey}`) return true;
+
+  const apiKey = req.headers.get("x-api-key");
+  const cronKey = Deno.env.get("CRON_API_KEY");
+  if (cronKey && apiKey === cronKey) return true;
+
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!validateCronAuth(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -17,7 +36,6 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const now = new Date();
-    // Warning threshold: 1 hour before deadline
     const warningThreshold = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
 
     // Find tickets approaching SLA first response deadline
@@ -46,7 +64,6 @@ Deno.serve(async (req) => {
 
     let notifiedCount = 0;
 
-    // Helper to send notification + email
     async function notifyUser(
       userId: string,
       ticketId: string,
@@ -57,7 +74,6 @@ Deno.serve(async (req) => {
       ticketNumber: number,
       ticketTitle: string,
     ) {
-      // Check if notification already sent recently (avoid duplicates)
       const { data: existing } = await supabase
         .from("notifications")
         .select("id")
@@ -67,7 +83,7 @@ Deno.serve(async (req) => {
         .gte("created_at", new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString())
         .limit(1);
 
-      if (existing && existing.length > 0) return; // Already notified
+      if (existing && existing.length > 0) return;
 
       await supabase.from("notifications").insert({
         user_id: userId,
@@ -75,15 +91,9 @@ Deno.serve(async (req) => {
         title: titleAr,
         message: messageAr,
         type: "sla_warning",
-        data: {
-          title_ar: titleAr,
-          title_en: titleEn,
-          message_ar: messageAr,
-          message_en: messageEn,
-        },
+        data: { title_ar: titleAr, title_en: titleEn, message_ar: messageAr, message_en: messageEn },
       });
 
-      // Get email
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, full_name, preferred_language")
@@ -112,7 +122,6 @@ Deno.serve(async (req) => {
       notifiedCount++;
     }
 
-    // Process first response warnings
     for (const ticket of responseAtRisk || []) {
       const msgAr = `⚠️ التذكرة #${ticket.ticket_number} على وشك تجاوز مهلة الاستجابة الأولى (SLA)`;
       const msgEn = `⚠️ Ticket #${ticket.ticket_number} is close to breaching the first response SLA`;
@@ -123,7 +132,6 @@ Deno.serve(async (req) => {
         await notifyUser(ticket.assigned_agent_id, ticket.id, titleAr, titleEn, msgAr, msgEn, ticket.ticket_number, ticket.title);
       }
 
-      // Notify all admins
       const { data: admins } = await supabase
         .from("user_roles")
         .select("user_id")
@@ -136,7 +144,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Process resolution warnings
     for (const ticket of resolutionAtRisk || []) {
       const msgAr = `⚠️ التذكرة #${ticket.ticket_number} على وشك تجاوز مهلة الحل (SLA)`;
       const msgEn = `⚠️ Ticket #${ticket.ticket_number} is close to breaching the resolution SLA`;
@@ -169,8 +176,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
+    console.error("SLA alerts error:", error);
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

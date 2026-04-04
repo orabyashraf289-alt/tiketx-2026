@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-api-key",
 };
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const validSources = ["ERP", "LMS", "CPAY", "PORTAL", "SIS", "EDUMALLS", "SMART_SCHOOL", "DASHBOARD", "HR"];
+const validPriorities = ["low", "medium", "high", "urgent"];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,9 +32,9 @@ serve(async (req) => {
 
     const body = await req.json();
 
-    // Validate required fields
     const { source_system, title, description, priority, external_reference, external_payload, requester_email, service_name, category_name } = body;
 
+    // Validate required fields
     if (!source_system || !title || !description || !requester_email) {
       return new Response(JSON.stringify({
         error: "Missing required fields",
@@ -41,7 +45,33 @@ serve(async (req) => {
       });
     }
 
-    const validSources = ["ERP", "LMS", "CPAY", "PORTAL", "SIS", "EDUMALLS", "SMART_SCHOOL", "DASHBOARD", "HR"];
+    // Validate types
+    if (typeof title !== "string" || typeof description !== "string" || typeof requester_email !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid field types" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate lengths
+    if (title.length > 255) {
+      return new Response(JSON.stringify({ error: "Title must not exceed 255 characters" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (description.length > 10000) {
+      return new Response(JSON.stringify({ error: "Description must not exceed 10000 characters" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate email format
+    if (!emailRegex.test(requester_email)) {
+      return new Response(JSON.stringify({ error: "Invalid email format" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate source_system
     if (!validSources.includes(source_system)) {
       return new Response(JSON.stringify({
         error: `Invalid source_system. Must be one of: ${validSources.join(", ")}`,
@@ -51,6 +81,28 @@ serve(async (req) => {
       });
     }
 
+    // Validate priority if provided
+    if (priority && !validPriorities.includes(priority)) {
+      return new Response(JSON.stringify({
+        error: `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
+      }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate external_payload size
+    if (external_payload) {
+      if (typeof external_payload !== "object" || JSON.stringify(external_payload).length > 10000) {
+        return new Response(JSON.stringify({ error: "Invalid or oversized external_payload" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Strip HTML tags from title and description for safety
+    const sanitizedTitle = title.replace(/<[^>]*>/g, "").trim();
+    const sanitizedDescription = description.replace(/<[^>]*>/g, "").trim();
+
     // Find or create requester profile
     let { data: profile } = await supabase
       .from("profiles")
@@ -59,7 +111,6 @@ serve(async (req) => {
       .single();
 
     if (!profile) {
-      // Create user via admin API
       const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         email: requester_email,
         email_confirm: true,
@@ -68,13 +119,16 @@ serve(async (req) => {
       });
 
       if (authError && !authError.message.includes("already")) {
-        throw new Error(`Failed to create user: ${authError.message}`);
+        console.error("[External API] User creation failed:", authError.message);
+        return new Response(JSON.stringify({ error: "Failed to process requester information" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       if (authUser?.user) {
         profile = { id: authUser.user.id };
       } else {
-        // User might already exist, try to find again
         const { data: existingProfile } = await supabase
           .from("profiles")
           .select("id")
@@ -122,8 +176,8 @@ serve(async (req) => {
     const { data: ticket, error: ticketError } = await supabase
       .from("tickets")
       .insert({
-        title,
-        description,
+        title: sanitizedTitle,
+        description: sanitizedDescription,
         priority: priority || "medium",
         requester_id: profile.id,
         source_system,
@@ -136,7 +190,13 @@ serve(async (req) => {
       .select("id, ticket_number, code, status, priority, created_at")
       .single();
 
-    if (ticketError) throw ticketError;
+    if (ticketError) {
+      console.error("[External API] Ticket creation failed:", ticketError.message);
+      return new Response(JSON.stringify({ error: "Failed to create ticket" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(JSON.stringify({
       success: true,
@@ -153,8 +213,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("[External API] Unhandled error:", error);
+    return new Response(JSON.stringify({ error: "An internal error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

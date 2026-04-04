@@ -6,9 +6,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function validateCronAuth(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (authHeader === `Bearer ${serviceKey}`) return true;
+
+  const apiKey = req.headers.get("x-api-key");
+  const cronKey = Deno.env.get("CRON_API_KEY");
+  if (cronKey && apiKey === cronKey) return true;
+
+  return false;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!validateCronAuth(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -20,7 +39,6 @@ serve(async (req) => {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const weekStart = oneWeekAgo.toISOString();
 
-    // Get all developers
     const { data: developers } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -43,14 +61,12 @@ serve(async (req) => {
 
       if (!profile) continue;
 
-      // Tickets assigned to this developer
       const { data: assignedTickets, count: totalAssigned } = await supabase
         .from("tickets")
         .select("id, status, priority, created_at, resolved_at", { count: "exact" })
         .eq("assigned_agent_id", dev.user_id)
         .gte("created_at", weekStart);
 
-      // Tickets resolved by this developer this week
       const { count: resolvedCount } = await supabase
         .from("tickets")
         .select("id", { count: "exact" })
@@ -58,21 +74,18 @@ serve(async (req) => {
         .not("resolved_at", "is", null)
         .gte("resolved_at", weekStart);
 
-      // Open tickets still pending
       const { count: openCount } = await supabase
         .from("tickets")
         .select("id", { count: "exact" })
         .eq("assigned_agent_id", dev.user_id)
         .in("status", ["new", "open", "in_progress"]);
 
-      // Comments made by developer this week
       const { count: commentsCount } = await supabase
         .from("ticket_comments")
         .select("id", { count: "exact" })
         .eq("author_id", dev.user_id)
         .gte("created_at", weekStart);
 
-      // Priority breakdown
       const priorityBreakdown = {
         urgent: assignedTickets?.filter(t => t.priority === "urgent").length || 0,
         high: assignedTickets?.filter(t => t.priority === "high").length || 0,
@@ -80,7 +93,6 @@ serve(async (req) => {
         low: assignedTickets?.filter(t => t.priority === "low").length || 0,
       };
 
-      // Average resolution time
       let avgResolutionHours = 0;
       const resolvedTickets = assignedTickets?.filter(t => t.resolved_at) || [];
       if (resolvedTickets.length > 0) {
@@ -114,7 +126,6 @@ serve(async (req) => {
 🔴 Urgent: ${priorityBreakdown.urgent} | 🟠 High: ${priorityBreakdown.high}
 🟡 Medium: ${priorityBreakdown.medium} | 🟢 Low: ${priorityBreakdown.low}`;
 
-      // Store as notification (bilingual payload)
       await supabase.from("notifications").insert({
         user_id: dev.user_id,
         title: "📊 التقرير الأسبوعي",
@@ -128,12 +139,8 @@ serve(async (req) => {
         },
       });
 
-      // Log email
-      console.log(`📧 Weekly report sent to ${profile.email}:\n${reportSummary}`);
-
       reports.push({
         developer: profile.full_name,
-        email: profile.email,
         totalAssigned: totalAssigned || 0,
         resolved: resolvedCount || 0,
         open: openCount || 0,
@@ -146,8 +153,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error generating weekly report:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Weekly report error:", error);
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
