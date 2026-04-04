@@ -360,6 +360,60 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_configs: {
+        Row: {
+          api_endpoint: string | null
+          config: Json | null
+          created_at: string
+          description: string | null
+          error_message: string | null
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          module_code: string
+          module_name: string
+          sync_direction: string
+          sync_status: string | null
+          tickets_received: number
+          tickets_synced_back: number
+          updated_at: string
+        }
+        Insert: {
+          api_endpoint?: string | null
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          module_code: string
+          module_name: string
+          sync_direction?: string
+          sync_status?: string | null
+          tickets_received?: number
+          tickets_synced_back?: number
+          updated_at?: string
+        }
+        Update: {
+          api_endpoint?: string | null
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          module_code?: string
+          module_name?: string
+          sync_direction?: string
+          sync_status?: string | null
+          tickets_received?: number
+          tickets_synced_back?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       knowledge_base_articles: {
         Row: {
           author_id: string
@@ -1522,7 +1576,16 @@ export type Database = {
       approval_stage_type: "sequential" | "parallel"
       approval_status: "pending" | "approved" | "rejected"
       note_type: "public" | "private"
-      source_system: "PORTAL" | "ERP" | "LMS" | "CPAY"
+      source_system:
+        | "PORTAL"
+        | "ERP"
+        | "LMS"
+        | "CPAY"
+        | "SIS"
+        | "EDUMALLS"
+        | "SMART_SCHOOL"
+        | "DASHBOARD"
+        | "HR"
       ticket_event_type:
         | "status_changed"
         | "assigned"
@@ -1674,7 +1737,17 @@ export const Constants = {
       approval_stage_type: ["sequential", "parallel"],
       approval_status: ["pending", "approved", "rejected"],
       note_type: ["public", "private"],
-      source_system: ["PORTAL", "ERP", "LMS", "CPAY"],
+      source_system: [
+        "PORTAL",
+        "ERP",
+        "LMS",
+        "CPAY",
+        "SIS",
+        "EDUMALLS",
+        "SMART_SCHOOL",
+        "DASHBOARD",
+        "HR",
+      ],
       ticket_event_type: [
         "status_changed",
         "assigned",
