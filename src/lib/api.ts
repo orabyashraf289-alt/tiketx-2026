@@ -491,6 +491,11 @@ export async function updateSystem(id: string, updates: Partial<System>) {
   return data;
 }
 
+export async function deleteSystem(id: string) {
+  const { error } = await supabase.from('systems').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function fetchServices(systemId?: string) {
   let query = supabase.from('services').select('*, systems(code, name), departments:departments!services_default_assignment_group_fkey(name), sla_policies(first_response_minutes, resolution_minutes)').eq('is_active', true).order('name');
   if (systemId) query = query.eq('system_id', systemId);
