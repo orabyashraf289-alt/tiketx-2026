@@ -169,9 +169,38 @@ export function CustomerKnowledgeBase() {
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Eye className="h-3 w-3" /> {selectedArticle.views_count} {t.admin.views}
                 </span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <ThumbsUp className="h-3 w-3" /> {selectedArticle.helpful_count} {t.admin.helpful}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={votedArticles[selectedArticle.id] === 'up' ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-1.5 rounded-xl"
+                    disabled={!!votedArticles[selectedArticle.id]}
+                    onClick={async () => {
+                      await supabase.rpc('increment_helpful' as any, { article_id: selectedArticle.id });
+                      setVotedArticles(v => ({ ...v, [selectedArticle.id]: 'up' }));
+                      setSelectedArticle(prev => prev ? { ...prev, helpful_count: prev.helpful_count + 1 } : null);
+                      queryClient.invalidateQueries({ queryKey: ['customer-kb-articles'] });
+                      toast({ title: t.common.success });
+                    }}
+                  >
+                    <ThumbsUp className="h-3.5 w-3.5" /> {t.admin.helpful} ({selectedArticle.helpful_count})
+                  </Button>
+                  <Button
+                    variant={votedArticles[selectedArticle.id] === 'down' ? 'destructive' : 'outline'}
+                    size="sm"
+                    className="gap-1.5 rounded-xl"
+                    disabled={!!votedArticles[selectedArticle.id]}
+                    onClick={async () => {
+                      await supabase.rpc('decrement_helpful' as any, { article_id: selectedArticle.id });
+                      setVotedArticles(v => ({ ...v, [selectedArticle.id]: 'down' }));
+                      setSelectedArticle(prev => prev ? { ...prev, helpful_count: Math.max(prev.helpful_count - 1, 0) } : null);
+                      queryClient.invalidateQueries({ queryKey: ['customer-kb-articles'] });
+                      toast({ title: t.common.success });
+                    }}
+                  >
+                    <ThumbsDown className="h-3.5 w-3.5" /> {isRTL ? 'غير مفيد' : 'Not helpful'}
+                  </Button>
+                </div>
               </div>
             </>
           )}
