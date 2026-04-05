@@ -57,8 +57,7 @@ export default function KnowledgeBase() {
     policy: t.admin.categoryLabels.policy,
   };
 
-  const tableName = activeTab === 'internal' ? 'internal_kb_articles' : 'knowledge_base_articles';
-
+  const currentTable = activeTab === 'internal' ? 'internal_kb_articles' : 'knowledge_base_articles';
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['kb-articles', activeTab, search],
     queryFn: async () => {
