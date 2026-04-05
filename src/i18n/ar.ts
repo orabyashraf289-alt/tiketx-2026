@@ -1017,6 +1017,9 @@ const ar = {
 
     // Knowledge Base
     knowledgeBaseTitle: 'قاعدة المعرفة',
+    customerKB: 'قاعدة معرفة العملاء',
+    internalKB: 'قاعدة المعرفة الداخلية',
+    internalKBDesc: 'مقالات ومعلومات مخصصة لفريق الدعم الفني',
     addArticle: 'مقال جديد',
     articleTitle: 'عنوان المقال',
     articleContent: 'المحتوى',
