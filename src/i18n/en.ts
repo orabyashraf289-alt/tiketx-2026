@@ -1006,6 +1006,9 @@ const en: Translations = {
 
     // Knowledge Base
     knowledgeBaseTitle: 'Knowledge Base',
+    customerKB: 'Customer Knowledge Base',
+    internalKB: 'Internal Knowledge Base',
+    internalKBDesc: 'Articles and information for support team only',
     addArticle: 'New Article',
     articleTitle: 'Article Title',
     articleContent: 'Content',
