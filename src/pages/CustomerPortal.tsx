@@ -799,6 +799,12 @@ export default function CustomerPortal() {
               </Tabs>
             </motion.div>
           )}
+
+          {view === 'knowledge-base' && (
+            <motion.div key="kb" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <CustomerKnowledgeBase />
+            </motion.div>
+          )}
         </AnimatePresence>
             </div>
           </main>
