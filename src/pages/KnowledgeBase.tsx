@@ -77,7 +77,7 @@ export default function KnowledgeBase() {
 
   const createMutation = useMutation({
     mutationFn: async (article: typeof form) => {
-      const { error } = await supabase.from(tableName as any).insert({
+      const { error } = await supabase.from(currentTable as any).insert({
         title: article.title,
         content: article.content,
         category: article.category,
