@@ -1620,6 +1620,7 @@ export type Database = {
         Returns: boolean
       }
       increment_helpful: { Args: { article_id: string }; Returns: undefined }
+      increment_views: { Args: { article_id: string }; Returns: undefined }
       send_email_notification_via_edge: {
         Args: {
           _details?: string
