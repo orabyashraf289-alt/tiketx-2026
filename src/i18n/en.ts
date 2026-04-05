@@ -456,6 +456,7 @@ const en: Translations = {
     quickQ2: 'What is the status of my request?',
     quickQ3: 'How do I reset my password?',
     quickQ4: 'Who can I contact?',
+    kbDescription: 'Search articles and guides for quick answers',
   },
 
   roles: {
