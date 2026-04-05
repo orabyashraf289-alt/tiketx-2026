@@ -34,6 +34,7 @@ import { FileDropZone } from '@/components/ticket-wizard/FileDropZone';
 import { TicketPreview } from '@/components/ticket-wizard/TicketPreview';
 import { TicketProgressTracker } from '@/components/TicketProgressTracker';
 import { SmartSearch } from '@/components/SmartSearch';
+import { CustomerKnowledgeBase } from '@/components/CustomerKnowledgeBase';
 
 const statusColors: Record<string, string> = {
   new: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
@@ -67,7 +68,7 @@ const systemStyles: Record<string, { icon: string; gradient: string }> = {
   'EDUMALLS': { icon: '🎓', gradient: 'from-pink-500/10 to-pink-600/5 border-pink-500/20' },
 };
 
-type PortalView = 'dashboard' | 'list' | 'detail' | 'new-ticket';
+type PortalView = 'dashboard' | 'list' | 'detail' | 'new-ticket' | 'knowledge-base';
 
 export default function CustomerPortal() {
   const { user, profile, signOut } = useAuth();
@@ -96,6 +97,7 @@ export default function CustomerPortal() {
   const getViewFromPath = (path: string): PortalView => {
     if (path === '/portal/new') return 'new-ticket';
     if (path === '/portal/tickets') return 'list';
+    if (path === '/portal/kb') return 'knowledge-base';
     return 'dashboard';
   };
 
