@@ -684,7 +684,6 @@ const en: Translations = {
     editSystem: 'Edit System',
     editService: 'Edit Service',
     systemCode: 'System Code',
-    systemName: 'System Name',
     systemDescription: 'System Description',
     systemCreated: 'System created',
     systemUpdated: 'System updated',

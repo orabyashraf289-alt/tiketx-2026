@@ -695,7 +695,6 @@ const ar = {
     editSystem: 'تعديل النظام',
     editService: 'تعديل الخدمة',
     systemCode: 'رمز النظام',
-    systemName: 'اسم النظام',
     systemDescription: 'وصف النظام',
     systemCreated: 'تم إنشاء النظام',
     systemUpdated: 'تم تحديث النظام',
