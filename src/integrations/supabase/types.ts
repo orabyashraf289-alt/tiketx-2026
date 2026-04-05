@@ -1603,6 +1603,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_helpful: { Args: { article_id: string }; Returns: undefined }
       developer_can_access_ticket: {
         Args: { _developer_id: string; _ticket_id: string }
         Returns: boolean
@@ -1618,6 +1619,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_helpful: { Args: { article_id: string }; Returns: undefined }
       send_email_notification_via_edge: {
         Args: {
           _details?: string
