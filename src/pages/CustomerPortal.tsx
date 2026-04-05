@@ -913,7 +913,7 @@ function TicketDetailView({
 
       {/* Progress Tracker */}
       <Card className="border-border/50 p-4 mb-4">
-        <TicketProgressTracker status={ticket.status} />
+        <TicketProgressTracker status={ticket.status} slaResolutionDueAt={ticket.sla_resolution_due_at} createdAt={ticket.created_at} resolvedAt={ticket.resolved_at} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
