@@ -692,7 +692,6 @@ const en: Translations = {
     serviceUpdated: 'Service updated',
     deleteSystemConfirm: 'Delete this system? All related services will be removed.',
     deleteServiceConfirm: 'Delete this service?',
-    selectSystem: 'Select System',
     serviceName: 'Service Name',
     serviceDescription: 'Service Description',
     assignToDept: 'Assignment Group',

@@ -703,7 +703,6 @@ const ar = {
     serviceUpdated: 'تم تحديث الخدمة',
     deleteSystemConfirm: 'هل تريد حذف هذا النظام؟ سيتم حذف جميع الخدمات المرتبطة.',
     deleteServiceConfirm: 'هل تريد حذف هذه الخدمة؟',
-    selectSystem: 'اختر النظام',
     serviceName: 'اسم الخدمة',
     serviceDescription: 'وصف الخدمة',
     assignToDept: 'مجموعة التعيين',
