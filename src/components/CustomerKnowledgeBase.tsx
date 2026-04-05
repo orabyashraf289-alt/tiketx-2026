@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Search, Eye, ThumbsUp, Loader2, ChevronRight, Layers } from 'lucide-react';
+import { BookOpen, Search, Eye, ThumbsUp, ThumbsDown, Loader2, ChevronRight, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { toast } from '@/hooks/use-toast';
 
 interface KBArticle {
   id: string;
