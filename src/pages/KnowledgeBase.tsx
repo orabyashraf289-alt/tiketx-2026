@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Search, Plus, Eye, ThumbsUp, Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BookOpen, Search, Plus, Eye, ThumbsUp, Loader2, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
@@ -30,18 +31,7 @@ interface KBArticle {
   updated_at: string;
 }
 
-async function fetchArticles(search?: string) {
-  let query = supabase
-    .from('knowledge_base_articles')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
-  }
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as KBArticle[];
-}
+type KBType = 'customer' | 'internal';
 
 const categories = ['general', 'how-to', 'troubleshooting', 'faq', 'policy'];
 
@@ -49,6 +39,10 @@ export default function KnowledgeBase() {
   const { user, role } = useAuth();
   const queryClient = useQueryClient();
   const { t, isRTL } = useLanguage();
+  const isStaff = role === 'admin' || role === 'agent';
+  const isDeveloper = role === 'developer';
+
+  const [activeTab, setActiveTab] = useState<KBType>(isStaff || isDeveloper ? 'internal' : 'customer');
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
   const [selectedArticle, setSelectedArticle] = useState<KBArticle | null>(null);
@@ -63,20 +57,33 @@ export default function KnowledgeBase() {
     policy: t.admin.categoryLabels.policy,
   };
 
+  const tableName = activeTab === 'internal' ? 'internal_kb_articles' : 'knowledge_base_articles';
+
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['kb-articles', search],
-    queryFn: () => fetchArticles(search || undefined),
+    queryKey: ['kb-articles', activeTab, search],
+    queryFn: async () => {
+      let query = supabase
+        .from(tableName as any)
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as KBArticle[];
+    },
   });
 
   const createMutation = useMutation({
     mutationFn: async (article: typeof form) => {
-      const { error } = await supabase.from('knowledge_base_articles').insert({
+      const { error } = await supabase.from(tableName as any).insert({
         title: article.title,
         content: article.content,
         category: article.category,
         tags: article.tags.split(',').map(t => t.trim()).filter(Boolean),
         author_id: user!.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -95,7 +102,7 @@ export default function KnowledgeBase() {
   };
 
   const filtered = articles.filter(a => catFilter === 'all' || a.category === catFilter);
-  const canCreate = role === 'admin' || role === 'agent';
+  const canCreate = isStaff;
 
   const headerActions = canCreate ? (
     <Dialog open={showCreate} onOpenChange={setShowCreate}>
@@ -105,7 +112,7 @@ export default function KnowledgeBase() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg" dir={isRTL ? 'rtl' : 'ltr'}>
-        <DialogHeader><DialogTitle>{t.admin.addArticle}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{t.admin.addArticle} ({activeTab === 'internal' ? t.admin.internalKB : t.admin.customerKB})</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Input placeholder={t.admin.articleTitle} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className="rounded-xl" />
           <select
@@ -129,6 +136,8 @@ export default function KnowledgeBase() {
     </Dialog>
   ) : undefined;
 
+  const showTabs = isStaff || isDeveloper;
+
   return (
     <PageLayout>
       <PageHeader
@@ -139,6 +148,34 @@ export default function KnowledgeBase() {
 
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Tabs for staff */}
+          {showTabs && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+              <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as KBType); setCatFilter('all'); setSearch(''); }}>
+                <TabsList className="rounded-xl">
+                  <TabsTrigger value="internal" className="gap-1.5 rounded-lg">
+                    <Lock className="h-3.5 w-3.5" />
+                    {t.admin.internalKB}
+                  </TabsTrigger>
+                  <TabsTrigger value="customer" className="gap-1.5 rounded-lg">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    {t.admin.customerKB}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </motion.div>
+          )}
+
+          {/* Internal KB description */}
+          {activeTab === 'internal' && showTabs && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10 text-sm text-muted-foreground">
+                <Lock className="h-4 w-4 text-primary shrink-0" />
+                {t.admin.internalKBDesc}
+              </div>
+            </motion.div>
+          )}
+
           {/* Search */}
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
             <div className="relative">
@@ -185,11 +222,14 @@ export default function KnowledgeBase() {
                     className="group cursor-pointer rounded-2xl border-border/40 hover:shadow-card-hover hover:border-primary/20 transition-all duration-300 overflow-hidden"
                     onClick={() => setSelectedArticle(article)}
                   >
-                    <div className="h-0.5 w-0 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-500" />
+                    <div className={`h-0.5 w-0 bg-gradient-to-r ${activeTab === 'internal' ? 'from-warning to-accent' : 'from-primary to-accent'} group-hover:w-full transition-all duration-500`} />
                     <CardContent className="pt-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-foreground group-hover:text-primary transition-colors duration-200">{article.title}</h3>
+                          <div className="flex items-center gap-2">
+                            {activeTab === 'internal' && <Lock className="h-3.5 w-3.5 text-warning shrink-0" />}
+                            <h3 className="font-bold text-foreground group-hover:text-primary transition-colors duration-200">{article.title}</h3>
+                          </div>
                           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{article.content.slice(0, 150)}...</p>
                           <div className="flex items-center gap-3 mt-3">
                             <Badge variant="secondary" className="text-[10px] rounded-lg">{categoryLabels[article.category] || article.category}</Badge>
@@ -215,10 +255,14 @@ export default function KnowledgeBase() {
             {selectedArticle && (
               <>
                 <DialogHeader>
-                  <DialogTitle>{selectedArticle.title}</DialogTitle>
+                  <DialogTitle className="flex items-center gap-2">
+                    {activeTab === 'internal' && <Lock className="h-4 w-4 text-warning" />}
+                    {selectedArticle.title}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="flex gap-2 mb-4">
                   <Badge variant="secondary" className="rounded-lg">{categoryLabels[selectedArticle.category]}</Badge>
+                  {activeTab === 'internal' && <Badge variant="outline" className="rounded-lg text-warning border-warning/30">{t.admin.internalKB}</Badge>}
                   {selectedArticle.tags?.map(tg => <Badge key={tg} variant="outline" className="rounded-lg">{tg}</Badge>)}
                 </div>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
