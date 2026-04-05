@@ -29,9 +29,11 @@ const categories = ['general', 'how-to', 'troubleshooting', 'faq', 'policy'];
 
 export function CustomerKnowledgeBase() {
   const { t, isRTL } = useLanguage();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
   const [selectedArticle, setSelectedArticle] = useState<KBArticle | null>(null);
+  const [votedArticles, setVotedArticles] = useState<Record<string, 'up' | 'down'>>({});
 
   const categoryLabels: Record<string, string> = {
     general: t.admin.categoryLabels.general,
