@@ -62,8 +62,9 @@ export default function KnowledgeBase() {
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['kb-articles', activeTab, search],
     queryFn: async () => {
+      const table = activeTab === 'internal' ? 'internal_kb_articles' : 'knowledge_base_articles';
       let query = supabase
-        .from(tableName as any)
+        .from(table)
         .select('*')
         .order('created_at', { ascending: false });
       if (search) {
@@ -71,7 +72,7 @@ export default function KnowledgeBase() {
       }
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as KBArticle[];
+      return (data || []) as unknown as KBArticle[];
     },
   });
 
