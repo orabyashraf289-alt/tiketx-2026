@@ -8,7 +8,7 @@ import { Globe, Copy, CheckCircle, Code, ArrowLeft, ArrowRight } from 'lucide-re
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ApiTestPlayground } from '@/components/ApiTestPlayground';
+
 
 const API_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/receive-external-ticket`;
 
@@ -208,8 +208,6 @@ export default function AdminExternalAPI() {
                   </CardContent>
                 </Card>
               </motion.div>
-              {/* API Playground */}
-              <ApiTestPlayground />
             </div>
           </main>
         </div>

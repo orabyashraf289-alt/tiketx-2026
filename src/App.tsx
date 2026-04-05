@@ -52,15 +52,10 @@ const AdminReportBuilder = lazy(() => import('./pages/AdminReportBuilder'));
 const AdminTenants = lazy(() => import('./pages/AdminTenants'));
 const AdminWhatsApp = lazy(() => import('./pages/AdminWhatsApp'));
 const AdminClasseraIntegrations = lazy(() => import('./pages/AdminClasseraIntegrations'));
-const MOEDashboard = lazy(() => import('./pages/MOEDashboard'));
 const AdminBilling = lazy(() => import('./pages/AdminBilling'));
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
 const TrainingCenter = lazy(() => import('./pages/TrainingCenter'));
-const SmartAlerts = lazy(() => import('./pages/SmartAlerts'));
-const PilotSandbox = lazy(() => import('./pages/PilotSandbox'));
-const PredictiveAnalytics = lazy(() => import('./pages/PredictiveAnalytics'));
-const RolloutManagement = lazy(() => import('./pages/RolloutManagement'));
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -161,15 +156,10 @@ const App = () => (
                     <Route path="/admin/tenants" element={<ProtectedRoute><AdminTenants /></ProtectedRoute>} />
                     <Route path="/admin/whatsapp" element={<ProtectedRoute><AdminWhatsApp /></ProtectedRoute>} />
                     <Route path="/admin/classera" element={<ProtectedRoute><AdminClasseraIntegrations /></ProtectedRoute>} />
-                    <Route path="/admin/moe-dashboard" element={<ProtectedRoute><MOEDashboard /></ProtectedRoute>} />
                     <Route path="/admin/billing" element={<ProtectedRoute><AdminBilling /></ProtectedRoute>} />
                     <Route path="/admin/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
                     <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
                     <Route path="/admin/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
-                    <Route path="/admin/smart-alerts" element={<ProtectedRoute><SmartAlerts /></ProtectedRoute>} />
-                    <Route path="/admin/pilot-sandbox" element={<ProtectedRoute><PilotSandbox /></ProtectedRoute>} />
-                    <Route path="/admin/predictive-analytics" element={<ProtectedRoute><PredictiveAnalytics /></ProtectedRoute>} />
-                    <Route path="/admin/rollout" element={<ProtectedRoute><RolloutManagement /></ProtectedRoute>} />
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

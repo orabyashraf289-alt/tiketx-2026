@@ -23,6 +23,8 @@ import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActi
 import { DashboardTicketList } from '@/components/dashboard/DashboardTicketList';
 import { LiveActivityFeed } from '@/components/dashboard/LiveActivityFeed';
 import { AICopilotWidget } from '@/components/dashboard/AICopilotWidget';
+import { SystemHealthWidget } from '@/components/dashboard/SystemHealthWidget';
+import { EscalationMatrix } from '@/components/dashboard/EscalationMatrix';
 
 export default function Dashboard() {
   const { role, profile } = useAuth();
@@ -197,11 +199,19 @@ export default function Dashboard() {
             report={report}
           />
 
-          {/* AI Copilot + Activity Feed */}
+          {/* AI Copilot + Activity Feed + System Health */}
           {isAdmin && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <AICopilotWidget />
               <LiveActivityFeed />
+              <SystemHealthWidget />
+            </div>
+          )}
+
+          {/* Escalation Matrix */}
+          {isAdmin && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <EscalationMatrix />
             </div>
           )}
 
