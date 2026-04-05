@@ -498,9 +498,9 @@ export default function AdminServiceCatalog() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <Label>{t.tickets.selectSystem} *</Label>
+              <Label>{t.newTicket.selectSystem} *</Label>
               <Select value={svcSystemId} onValueChange={setSvcSystemId}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.tickets.selectSystem} /></SelectTrigger>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.newTicket.selectSystem} /></SelectTrigger>
                 <SelectContent>
                   {systems.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
