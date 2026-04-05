@@ -59,7 +59,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.myTickets, url: '/portal/tickets', icon: Inbox },
     { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
-    { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
+    { title: t.sidebar.knowledgeBase, url: '/portal/kb', icon: BookOpen },
   ], [t]);
 
   const developerItems = useMemo(() => [
