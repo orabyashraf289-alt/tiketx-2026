@@ -786,7 +786,7 @@ export default function CustomerPortal() {
                                     </span>
                                   )}
                                 </div>
-                                <TicketProgressTracker status={ticket.status} compact className="mt-2" />
+                                <TicketProgressTracker status={ticket.status} compact className="mt-2" slaResolutionDueAt={ticket.sla_resolution_due_at} createdAt={ticket.created_at} resolvedAt={ticket.resolved_at} />
                               </div>
                               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors rtl:rotate-180" />
                             </CardContent>
