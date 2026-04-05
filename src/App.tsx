@@ -127,6 +127,7 @@ const App = () => (
                     <Route path="/portal" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                     <Route path="/portal/tickets" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                     <Route path="/portal/new" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
+                    <Route path="/portal/kb" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                     <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
                     <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
                     <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
