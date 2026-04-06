@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CourseDetailView } from '@/components/training/CourseDetailView';
+import { TrainingMusicPlayer } from '@/components/training/TrainingMusicPlayer';
 import {
   BookOpen, PlayCircle, CheckCircle, Clock, Users, Shield,
   Settings, Zap, Plug, BarChart3, Award, GraduationCap, Search, Star,
@@ -127,6 +128,7 @@ export default function TrainingCenter() {
       <PageHeader
         title="مركز التدريب"
         icon={<GraduationCap className="h-5 w-5" />}
+        actions={<TrainingMusicPlayer />}
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto space-y-6">
         {/* KPI Cards */}
