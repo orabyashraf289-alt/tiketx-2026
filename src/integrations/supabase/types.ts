@@ -1494,6 +1494,7 @@ export type Database = {
           duration_minutes: number
           icon: string
           id: string
+          intro_video_url: string | null
           is_published: boolean
           level: string
           sort_order: number
@@ -1507,6 +1508,7 @@ export type Database = {
           duration_minutes?: number
           icon?: string
           id?: string
+          intro_video_url?: string | null
           is_published?: boolean
           level?: string
           sort_order?: number
@@ -1520,6 +1522,7 @@ export type Database = {
           duration_minutes?: number
           icon?: string
           id?: string
+          intro_video_url?: string | null
           is_published?: boolean
           level?: string
           sort_order?: number
