@@ -24,7 +24,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '20 ثانية',
     icon: <BookOpen className="h-5 w-5" />,
     color: 'from-primary to-[hsl(var(--accent-foreground))]',
-    videoUrl: '/training-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/886408c0-eb33-4d7f-9c30-df3b769b3b59/hero-training.mp4',
   },
   {
     id: 'course-1',
@@ -33,7 +33,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <BookOpen className="h-5 w-5" />,
     color: 'from-indigo-500 to-cyan-500',
-    videoUrl: '/course-1-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/43561df2-b838-47e6-95fb-49cfcb1f8d51/course-tickets.mp4',
   },
   {
     id: 'course-2',
@@ -42,7 +42,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Users className="h-5 w-5" />,
     color: 'from-violet-500 to-pink-500',
-    videoUrl: '/course-2-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/c7cdb287-7e53-4f72-a0e8-093e9b73710d/course-team.mp4',
   },
   {
     id: 'course-3',
@@ -51,7 +51,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Shield className="h-5 w-5" />,
     color: 'from-amber-500 to-red-500',
-    videoUrl: '/course-3-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/c6070eab-e0f9-4d44-9aa8-02a5a5cb2b98/course-sla.mp4',
   },
   {
     id: 'course-4',
@@ -60,7 +60,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Plug className="h-5 w-5" />,
     color: 'from-emerald-500 to-cyan-500',
-    videoUrl: '/course-4-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/16476644-7c9a-48a9-9b23-257fba76c26b/course-integration.mp4',
   },
   {
     id: 'course-5',
@@ -69,7 +69,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Zap className="h-5 w-5" />,
     color: 'from-orange-500 to-yellow-500',
-    videoUrl: '/course-5-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/6001e3bb-5c8f-40c9-aff4-7cbcc95180b5/course-automation.mp4',
   },
   {
     id: 'course-6',
@@ -78,7 +78,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <BarChart3 className="h-5 w-5" />,
     color: 'from-blue-500 to-violet-500',
-    videoUrl: '/course-6-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/fa4f9bbb-6899-4f14-98e5-edb7dc7ab2fe/course-reports.mp4',
   },
   {
     id: 'course-7',
@@ -87,7 +87,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Settings className="h-5 w-5" />,
     color: 'from-red-500 to-orange-500',
-    videoUrl: '/course-7-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/605cbf81-ef44-432e-ab02-bff7d6da4254/course-security.mp4',
   },
   {
     id: 'course-8',
@@ -96,7 +96,7 @@ const VIDEO_GUIDES: VideoGuide[] = [
     duration: '11 ثانية',
     icon: <Star className="h-5 w-5" />,
     color: 'from-purple-500 to-pink-500',
-    videoUrl: '/course-8-guide.mp4',
+    videoUrl: '/__l5e/assets-v1/a49b008b-28e5-4897-ad1e-f70095ca1d17/course-tenant.mp4',
   },
 ];
 
