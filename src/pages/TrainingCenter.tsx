@@ -1,6 +1,5 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { PageLayout, PageHeader } from '@/components/layout';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -15,8 +14,7 @@ import { TrainingMusicPlayer } from '@/components/training/TrainingMusicPlayer';
 import {
   BookOpen, PlayCircle, CheckCircle, Clock, Users, Shield,
   Settings, Zap, Plug, BarChart3, Award, GraduationCap, Search, Star,
-  TrendingUp, Sparkles, Target, Trophy, Play, Pause, Volume2, VolumeX,
-  ChevronLeft, ChevronRight, Film, Video,
+  Trophy, Play, Film, Layers, TrendingUp,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, any> = { BookOpen, Users, Shield, Plug, Zap, BarChart3, Settings, Star };
@@ -35,24 +33,18 @@ const COURSE_VIDEOS: Record<number, string> = {
 const HERO_VIDEO = '/__l5e/assets-v1/886408c0-eb33-4d7f-9c30-df3b769b3b59/hero-training.mp4';
 
 const MOTION_VIDEOS: Record<number, string> = {
-  0: '/course-1-guide.mp4',
-  1: '/course-2-guide.mp4',
-  2: '/course-3-guide.mp4',
-  3: '/course-4-guide.mp4',
-  4: '/course-5-guide.mp4',
-  5: '/course-6-guide.mp4',
-  6: '/course-7-guide.mp4',
-  7: '/course-8-guide.mp4',
+  0: '/course-1-guide.mp4', 1: '/course-2-guide.mp4', 2: '/course-3-guide.mp4', 3: '/course-4-guide.mp4',
+  4: '/course-5-guide.mp4', 5: '/course-6-guide.mp4', 6: '/course-7-guide.mp4', 7: '/course-8-guide.mp4',
 };
 
-const levelConfig: Record<string, { color: string; label: string }> = {
-  beginner: { color: 'bg-success/10 text-success border-success/20', label: 'مبتدئ' },
-  intermediate: { color: 'bg-warning/10 text-warning border-warning/20', label: 'متوسط' },
-  advanced: { color: 'bg-destructive/10 text-destructive border-destructive/20', label: 'متقدم' },
+const levelConfig: Record<string, { color: string; label: string; dot: string }> = {
+  beginner: { color: 'bg-success/10 text-success border-success/20', label: 'مبتدئ', dot: 'bg-success' },
+  intermediate: { color: 'bg-warning/10 text-warning border-warning/20', label: 'متوسط', dot: 'bg-warning' },
+  advanced: { color: 'bg-destructive/10 text-destructive border-destructive/20', label: 'متقدم', dot: 'bg-destructive' },
 };
 
 const categories = [
-  { key: 'all', label: 'الكل', icon: Sparkles },
+  { key: 'all', label: 'جميع الدورات', icon: Layers },
   { key: 'basics', label: 'الأساسيات', icon: BookOpen },
   { key: 'management', label: 'الإدارة', icon: Users },
   { key: 'admin', label: 'النظام', icon: Settings },
@@ -60,6 +52,153 @@ const categories = [
   { key: 'analytics', label: 'التحليلات', icon: BarChart3 },
 ];
 
+/* ─── Stat Card ─── */
+function StatCard({ icon: Icon, value, label, accent }: { icon: any; value: number | string; label: string; accent?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`flex items-center gap-3 rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm`}
+    >
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${accent || 'bg-primary/10'}`}>
+        <Icon className={`h-5 w-5 ${accent ? 'text-primary-foreground' : 'text-primary'}`} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-lg font-extrabold text-foreground leading-none">{value}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Course Card ─── */
+function CourseCard({
+  course, progress, hasCert, lessonsCount, index, onSelect, onMotionVideo,
+}: {
+  course: any; progress: number; hasCert: boolean; lessonsCount: number;
+  index: number; onSelect: () => void; onMotionVideo: (url: string, title: string) => void;
+}) {
+  const IconComp = ICON_MAP[course.icon] || BookOpen;
+  const level = levelConfig[course.level] || levelConfig.beginner;
+  const aiVideo = COURSE_VIDEOS[course.sort_order - 1];
+  const motionVideo = MOTION_VIDEOS[course.sort_order - 1];
+  const isComplete = progress === 100;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ delay: index * 0.04, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="group"
+    >
+      <div
+        className="relative cursor-pointer rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-500"
+        onClick={onSelect}
+      >
+        {/* Video Area */}
+        <div className="relative aspect-[16/9] bg-muted overflow-hidden">
+          {aiVideo && (
+            <video
+              src={aiVideo}
+              muted loop playsInline
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+              onMouseOver={e => (e.target as HTMLVideoElement).play()}
+              onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+            />
+          )}
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+          {/* Play icon */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="h-14 w-14 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-xl shadow-primary/25 scale-90 group-hover:scale-100 transition-transform duration-300">
+              <Play className="h-6 w-6 text-primary-foreground ml-0.5" />
+            </div>
+          </div>
+
+          {/* Top badges */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5">
+            <Badge className={`${level.color} text-[10px] font-semibold border px-2 py-0.5`}>
+              {level.label}
+            </Badge>
+            {hasCert && (
+              <Badge className="bg-primary text-primary-foreground text-[10px] gap-1 px-2 py-0.5">
+                <Award className="h-3 w-3" /> معتمد
+              </Badge>
+            )}
+          </div>
+
+          {/* Course number */}
+          <div className="absolute top-3 left-3">
+            <span className="text-[10px] font-bold text-white/60 bg-white/10 backdrop-blur-sm rounded-md px-2 py-1">
+              {String(course.sort_order).padStart(2, '0')}
+            </span>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="absolute bottom-0 inset-x-0 px-4 py-3 flex items-end justify-between">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-white leading-snug line-clamp-1 mb-1">
+                {course.title}
+              </h3>
+              <div className="flex items-center gap-3 text-[10px] text-white/70">
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{course.duration_minutes} دقيقة</span>
+                <span className="flex items-center gap-1"><PlayCircle className="h-3 w-3" />{lessonsCount} درس</span>
+              </div>
+            </div>
+            {motionVideo && (
+              <button
+                onClick={e => { e.stopPropagation(); onMotionVideo(motionVideo, course.title); }}
+                className="flex items-center gap-1 text-[9px] text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full px-2.5 py-1 transition-all shrink-0 mr-2"
+              >
+                <Film className="h-3 w-3" /> موشن
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Card body */}
+        <div className="p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/8 group-hover:bg-primary/12 transition-colors">
+              <IconComp className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              {course.description && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{course.description}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-muted-foreground font-medium">التقدم في الدورة</span>
+              <span className={`font-bold ${isComplete ? 'text-success' : 'text-foreground'}`}>{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-1.5" />
+          </div>
+
+          {/* Action button */}
+          <Button
+            variant={isComplete ? 'secondary' : progress > 0 ? 'default' : 'outline'}
+            size="sm"
+            className="w-full text-xs h-9 gap-2 font-semibold"
+          >
+            {isComplete ? <><CheckCircle className="h-3.5 w-3.5" /> مراجعة الدورة</> :
+             progress > 0 ? <><PlayCircle className="h-3.5 w-3.5" /> متابعة التعلّم</> :
+             <><PlayCircle className="h-3.5 w-3.5" /> ابدأ الدورة</>}
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Main Page ─── */
 export default function TrainingCenter() {
   const { user } = useAuth();
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -109,9 +248,7 @@ export default function TrainingCenter() {
   const courseProgress = useMemo(() => {
     const map: Record<string, number> = {};
     const completedPerCourse: Record<string, number> = {};
-    allProgress.forEach(p => {
-      completedPerCourse[p.course_id] = (completedPerCourse[p.course_id] || 0) + 1;
-    });
+    allProgress.forEach(p => { completedPerCourse[p.course_id] = (completedPerCourse[p.course_id] || 0) + 1; });
     courses.forEach(c => {
       const total = lessonCounts[c.id] || 1;
       const completed = completedPerCourse[c.id] || 0;
@@ -148,240 +285,141 @@ export default function TrainingCenter() {
   return (
     <PageLayout>
       <PageHeader
-        title="مركز التدريب"
+        title="الدليل الاحترافي الشامل"
         icon={<GraduationCap className="h-5 w-5" />}
         actions={<TrainingMusicPlayer />}
       />
       <main className="flex-1 overflow-auto">
-        {/* Hero Section */}
-        <div className="relative w-full h-[320px] md:h-[380px] overflow-hidden">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            src={HERO_VIDEO}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent" />
-          <div className="relative h-full flex flex-col justify-end p-6 md:p-8 max-w-3xl">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <Badge className="bg-primary/20 text-primary border-primary/30 mb-3 text-[11px] gap-1.5">
-                <Film className="h-3 w-3" /> دليل شامل بالذكاء الاصطناعي
-              </Badge>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-foreground leading-tight mb-2">
-                الدليل الاحترافي الشامل
-              </h1>
-              <p className="text-sm text-muted-foreground max-w-lg leading-relaxed mb-4">
-                تعلّم جميع مزايا النظام خطوة بخطوة مع فيديوهات موشن جرافيك وذكاء اصطناعي احترافية
-              </p>
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-6 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> {courses.length} دورات</span>
-                  <span className="flex items-center gap-1.5"><Trophy className="h-3.5 w-3.5 text-warning" /> {completedCourses} مكتملة</span>
-                  <span className="flex items-center gap-1.5"><Award className="h-3.5 w-3.5 text-primary" /> {certificates.length} شهادات</span>
-                  <span className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> {overallProgress}% إنجاز</span>
-                </div>
+        {/* ── Hero Section ── */}
+        <div className="relative w-full h-[260px] md:h-[300px] overflow-hidden">
+          <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" src={HERO_VIDEO} />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-background/60" />
+
+          <div className="relative h-full flex flex-col justify-end p-6 md:px-8 md:pb-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-8 w-1 rounded-full bg-primary" />
+                <h1 className="text-xl md:text-2xl font-extrabold text-foreground">
+                  تعلّم النظام خطوة بخطوة
+                </h1>
               </div>
+              <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
+                دورات تدريبية احترافية بالذكاء الاصطناعي وموشن جرافيك لإتقان جميع مزايا النظام
+              </p>
             </motion.div>
           </div>
         </div>
 
-        <div className="p-4 md:p-6 space-y-6">
-          {/* Search & Filters */}
+        {/* ── Stats Row ── */}
+        <div className="px-4 md:px-8 -mt-5 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard icon={BookOpen} value={courses.length} label="دورة تدريبية" />
+            <StatCard icon={Trophy} value={completedCourses} label="دورة مكتملة" />
+            <StatCard icon={Award} value={certificates.length} label="شهادة إتمام" />
+            <StatCard icon={TrendingUp} value={`${overallProgress}%`} label="نسبة الإنجاز" />
+          </div>
+        </div>
+
+        <div className="p-4 md:px-8 md:py-6 space-y-5">
+          {/* ── Search & Filters ── */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="flex flex-col md:flex-row gap-3 items-start md:items-center"
+            className="flex flex-col lg:flex-row gap-3 items-start lg:items-center"
           >
-            <div className="relative flex-1 min-w-[200px] max-w-md">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="ابحث عن دورة..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pr-10 bg-muted/50"
+                className="pr-10 h-9 text-xs bg-muted/40 border-border/50"
               />
             </div>
-            <div className="flex gap-1.5 flex-wrap">
+
+            {/* Category tabs */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-border/30">
               {categories.map(cat => (
-                <Button
+                <button
                   key={cat.key}
-                  variant={categoryFilter === cat.key ? 'default' : 'ghost'}
-                  size="sm"
                   onClick={() => setCategoryFilter(cat.key)}
-                  className="text-xs h-8 gap-1.5"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                    categoryFilter === cat.key
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
                   <cat.icon className="h-3 w-3" />
                   {cat.label}
-                </Button>
+                </button>
               ))}
             </div>
-            <div className="flex gap-1 mr-auto md:mr-0">
-              {['all', 'beginner', 'intermediate', 'advanced'].map(lvl => (
-                <Button
-                  key={lvl}
-                  variant={levelFilter === lvl ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setLevelFilter(lvl)}
-                  className="text-[10px] h-7 px-2.5"
-                >
-                  {lvl === 'all' ? 'الكل' : levelConfig[lvl].label}
-                </Button>
-              ))}
+
+            {/* Level filters */}
+            <div className="flex items-center gap-1.5 mr-auto lg:mr-0">
+              {['all', 'beginner', 'intermediate', 'advanced'].map(lvl => {
+                const cfg = levelConfig[lvl];
+                return (
+                  <button
+                    key={lvl}
+                    onClick={() => setLevelFilter(lvl)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-all ${
+                      levelFilter === lvl
+                        ? 'border-primary/30 bg-primary/5 text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {cfg && <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />}
+                    {lvl === 'all' ? 'الكل' : cfg?.label}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
 
-          {/* Courses Grid */}
+          {/* ── Courses Grid ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
             <AnimatePresence mode="popLayout">
-              {filteredCourses.map((course, i) => {
-                const progress = courseProgress[course.id] || 0;
-                const hasCert = certSet.has(course.id);
-                const lessonsCount = lessonCounts[course.id] || 0;
-                const IconComp = ICON_MAP[course.icon] || BookOpen;
-                const level = levelConfig[course.level] || levelConfig.beginner;
-                const aiVideo = COURSE_VIDEOS[course.sort_order - 1];
-                const motionVideo = MOTION_VIDEOS[course.sort_order - 1];
-
-                return (
-                  <motion.div
-                    key={course.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.03, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <Card className="group cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-500 border-border/40 hover:border-primary/30 bg-card">
-                      {/* Video Thumbnail */}
-                      <div
-                        className="relative w-full aspect-video bg-muted overflow-hidden"
-                        onClick={() => setSelectedCourseId(course.id)}
-                      >
-                        {aiVideo && (
-                          <video
-                            src={aiVideo}
-                            muted
-                            loop
-                            playsInline
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                            onMouseOver={e => (e.target as HTMLVideoElement).play()}
-                            onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity" />
-
-                        {/* Play Button Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-14 h-14 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-primary/30 scale-90 group-hover:scale-100 transition-transform duration-300">
-                            <Play className="h-6 w-6 text-primary-foreground ml-0.5" />
-                          </div>
-                        </div>
-
-                        {/* Badges */}
-                        <div className="absolute top-2.5 right-2.5 flex gap-1.5">
-                          <Badge className={`${level.color} text-[9px] font-semibold shadow-sm`}>{level.label}</Badge>
-                          {hasCert && (
-                            <Badge className="bg-primary/90 text-primary-foreground text-[9px] gap-0.5 shadow-sm">
-                              <Award className="h-2.5 w-2.5" /> شهادة
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Bottom info bar */}
-                        <div className="absolute bottom-0 inset-x-0 px-3 py-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-[10px] text-white/90 font-medium">
-                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {course.duration_minutes} د</span>
-                            <span className="w-px h-3 bg-white/30" />
-                            <span className="flex items-center gap-1"><PlayCircle className="h-3 w-3" /> {lessonsCount} دروس</span>
-                          </div>
-                          {/* Motion Graphics Button */}
-                          {motionVideo && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setVideoDialog({ url: motionVideo, title: course.title + ' - موشن جرافيك' });
-                              }}
-                              className="flex items-center gap-1 text-[9px] text-white/80 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full transition-all"
-                            >
-                              <Film className="h-2.5 w-2.5" /> موشن جرافيك
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Card Body */}
-                      <CardContent className="p-4 space-y-3" onClick={() => setSelectedCourseId(course.id)}>
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-xl bg-primary/10 group-hover:bg-primary/15 transition-colors shrink-0">
-                            <IconComp className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-relaxed">
-                              {course.title}
-                            </h3>
-                            {course.description && (
-                              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{course.description}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Progress */}
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-[10px]">
-                            <span className="text-muted-foreground">التقدم</span>
-                            <span className="font-bold text-foreground">{progress}%</span>
-                          </div>
-                          <Progress value={progress} className="h-1.5" />
-                        </div>
-
-                        {/* Action */}
-                        <Button
-                          variant={progress === 100 ? 'secondary' : progress > 0 ? 'default' : 'outline'}
-                          size="sm"
-                          className="w-full gap-2 text-xs h-9"
-                        >
-                          {progress === 100 ? <><CheckCircle className="h-3.5 w-3.5" /> مراجعة</> :
-                           progress > 0 ? <><PlayCircle className="h-3.5 w-3.5" /> استئناف</> :
-                           <><PlayCircle className="h-3.5 w-3.5" /> ابدأ التعلّم</>}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
+              {filteredCourses.map((course, i) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  progress={courseProgress[course.id] || 0}
+                  hasCert={certSet.has(course.id)}
+                  lessonsCount={lessonCounts[course.id] || 0}
+                  index={i}
+                  onSelect={() => setSelectedCourseId(course.id)}
+                  onMotionVideo={(url, title) => setVideoDialog({ url, title: title + ' - موشن جرافيك' })}
+                />
+              ))}
             </AnimatePresence>
 
             {filteredCourses.length === 0 && (
               <div className="col-span-full py-20 text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                  <Search className="h-7 w-7 text-muted-foreground" />
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center mb-3">
+                  <Search className="h-6 w-6 text-muted-foreground/60" />
                 </div>
                 <p className="text-sm font-semibold text-muted-foreground">لا توجد دورات مطابقة</p>
-                <p className="text-xs text-muted-foreground mt-1">جرّب تغيير معايير البحث</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">جرّب تغيير معايير البحث</p>
               </div>
             )}
           </div>
         </div>
       </main>
 
-      {/* Video Dialog */}
+      {/* ── Video Dialog ── */}
       <Dialog open={!!videoDialog} onOpenChange={() => setVideoDialog(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden gap-0">
-          <div className="p-4 pb-2">
+        <DialogContent className="max-w-4xl p-0 overflow-hidden gap-0 rounded-2xl">
+          <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+            <Film className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground">{videoDialog?.title}</h3>
           </div>
           <div className="w-full bg-black">
             {videoDialog && (
-              <video
-                controls
-                autoPlay
-                className="w-full max-h-[70vh]"
-                src={videoDialog.url}
-              >
+              <video controls autoPlay className="w-full max-h-[70vh]" src={videoDialog.url}>
                 متصفحك لا يدعم تشغيل الفيديو
               </video>
             )}
