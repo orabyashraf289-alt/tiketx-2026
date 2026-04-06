@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CourseDetailView } from '@/components/training/CourseDetailView';
+import { TrainingMusicPlayer } from '@/components/training/TrainingMusicPlayer';
 import {
   BookOpen, PlayCircle, CheckCircle, Clock, Users, Shield,
   Settings, Zap, Plug, BarChart3, Award, GraduationCap, Search, Star,
