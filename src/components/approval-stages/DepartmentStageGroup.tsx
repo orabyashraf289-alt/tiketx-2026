@@ -7,15 +7,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ApprovalStageCard } from './ApprovalStageCard';
 import type { ApprovalStage } from '@/lib/api';
 
+interface StageStats {
+  pending: number;
+  approved: number;
+  rejected: number;
+  avgDecisionHours: number | null;
+}
+
 interface Props {
   deptName: string;
   stages: ApprovalStage[];
+  stageStatsMap?: Record<string, StageStats>;
   onEdit: (stage: ApprovalStage) => void;
   onDelete: (stage: ApprovalStage) => void;
   onDuplicate: (stage: ApprovalStage) => void;
+  onMoveUp?: (stage: ApprovalStage) => void;
+  onMoveDown?: (stage: ApprovalStage) => void;
 }
 
-export const DepartmentStageGroup = memo(function DepartmentStageGroup({ deptName, stages, onEdit, onDelete, onDuplicate }: Props) {
+export const DepartmentStageGroup = memo(function DepartmentStageGroup({ deptName, stages, stageStatsMap, onEdit, onDelete, onDuplicate, onMoveUp, onMoveDown }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const sorted = [...stages].sort((a, b) => a.stage_order - b.stage_order);
 
@@ -51,9 +61,14 @@ export const DepartmentStageGroup = memo(function DepartmentStageGroup({ deptNam
                   key={stage.id}
                   stage={stage}
                   showArrow={i < sorted.length - 1}
+                  isFirst={i === 0}
+                  isLast={i === sorted.length - 1}
+                  stats={stageStatsMap?.[stage.id]}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onDuplicate={onDuplicate}
+                  onMoveUp={onMoveUp}
+                  onMoveDown={onMoveDown}
                 />
               ))}
             </CardContent>
