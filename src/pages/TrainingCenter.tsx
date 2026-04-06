@@ -140,6 +140,9 @@ export default function TrainingCenter() {
           <StatsCard title="التقدم الكلي" value={`${overallProgress}%`} icon={Target} variant="primary" delay={0.15} />
         </div>
 
+        {/* Video Guides */}
+        <VideoGuideSection />
+
         {/* Continue Learning Section */}
         {inProgressCourses.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
