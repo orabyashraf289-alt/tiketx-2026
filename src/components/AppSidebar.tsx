@@ -97,7 +97,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'الفوترة والاشتراكات' : 'Billing', url: '/admin/billing', icon: Users },
     { title: lang === 'ar' ? 'معالج التفعيل' : 'Onboarding', url: '/admin/onboarding', icon: Rocket },
     { title: lang === 'ar' ? 'مراقبة النظام' : 'System Health', url: '/admin/system-health', icon: Activity },
-    { title: lang === 'ar' ? 'مركز التدريب' : 'Training Center', url: '/admin/training', icon: GraduationCap },
+    
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
     { title: t.sidebar.securityNotifications, url: '/admin/security-settings', icon: Send },
