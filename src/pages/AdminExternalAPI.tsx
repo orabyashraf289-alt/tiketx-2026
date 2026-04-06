@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
-import { Globe, Copy, CheckCircle, Code, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Globe, Copy, CheckCircle, Code, Loader2, Send, BarChart3, Activity, Key, Clock, AlertTriangle, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { Textarea } from '@/components/ui/textarea';
+import { useLanguage } from '@/i18n';
+import { format, formatDistanceToNow } from 'date-fns';
+import { ar } from 'date-fns/locale';
 
 const API_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/receive-external-ticket`;
 
@@ -22,10 +28,7 @@ const examplePayload = {
   external_reference: "ERP-INV-2024-001",
   service_name: "صيانة الأنظمة",
   category_name: "أعطال",
-  external_payload: {
-    invoice_id: "INV-001",
-    module: "billing"
-  }
+  external_payload: { invoice_id: "INV-001", module: "billing" }
 };
 
 const exampleCurl = `curl -X POST "${API_BASE}" \\
@@ -36,17 +39,10 @@ const exampleCurl = `curl -X POST "${API_BASE}" \\
 
 const exampleResponse = {
   success: true,
-  ticket: {
-    id: "uuid-here",
-    ticket_number: 1042,
-    code: "TCK-2026-001042",
-    status: "new",
-    priority: "high",
-    created_at: "2026-03-03T12:00:00.000Z"
-  }
+  ticket: { id: "uuid-here", ticket_number: 1042, code: "TCK-2026-001042", status: "new", priority: "high", created_at: "2026-03-03T12:00:00.000Z" }
 };
 
-function CodeBlock({ code, language = 'json' }: { code: string; language?: string }) {
+function CodeBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -54,18 +50,10 @@ function CodeBlock({ code, language = 'json' }: { code: string; language?: strin
     toast({ title: 'تم النسخ ✅' });
     setTimeout(() => setCopied(false), 2000);
   };
-
   return (
     <div className="relative group">
-      <pre className="bg-muted/70 rounded-xl p-4 text-xs overflow-x-auto border" dir="ltr">
-        <code>{code}</code>
-      </pre>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 left-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={handleCopy}
-      >
+      <pre className="bg-muted/70 rounded-xl p-4 text-xs overflow-x-auto border" dir="ltr"><code>{code}</code></pre>
+      <Button variant="ghost" size="icon" className="absolute top-2 left-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleCopy}>
         {copied ? <CheckCircle className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
       </Button>
     </div>
@@ -73,145 +61,290 @@ function CodeBlock({ code, language = 'json' }: { code: string; language?: strin
 }
 
 export default function AdminExternalAPI() {
+  const { lang } = useLanguage();
+  const isAr = lang === 'ar';
+  const [activeTab, setActiveTab] = useState('docs');
+  const [testPayload, setTestPayload] = useState(JSON.stringify(examplePayload, null, 2));
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [logSearch, setLogSearch] = useState('');
+
+  // Fetch external tickets for logs
+  const { data: externalTickets = [], isLoading: logsLoading } = useQuery({
+    queryKey: ['external-tickets-log'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('tickets')
+        .select('id, ticket_number, code, title, source_system, status, priority, external_reference, created_at')
+        .neq('source_system', 'PORTAL')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      return data || [];
+    },
+  });
+
+  // KPI stats
+  const kpiStats = useMemo(() => {
+    const total = externalTickets.length;
+    const systems = new Set(externalTickets.map(t => t.source_system)).size;
+    const today = externalTickets.filter(t => {
+      const d = new Date(t.created_at);
+      const now = new Date();
+      return d.toDateString() === now.toDateString();
+    }).length;
+    return { total, systems, today };
+  }, [externalTickets]);
+
+  const filteredLogs = useMemo(() => {
+    if (!logSearch) return externalTickets;
+    const q = logSearch.toLowerCase();
+    return externalTickets.filter(t =>
+      t.title?.toLowerCase().includes(q) ||
+      t.code?.toLowerCase().includes(q) ||
+      t.external_reference?.toLowerCase().includes(q) ||
+      t.source_system?.toLowerCase().includes(q)
+    );
+  }, [externalTickets, logSearch]);
+
+  const handleTest = useCallback(async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const payload = JSON.parse(testPayload);
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setTestResult(JSON.stringify(data, null, 2));
+    } catch (err: any) {
+      setTestResult(JSON.stringify({ error: err.message }, null, 2));
+    } finally {
+      setTesting(false);
+    }
+  }, [testPayload]);
+
+  const statusColors: Record<string, string> = {
+    new: 'bg-blue-500/10 text-blue-600',
+    open: 'bg-emerald-500/10 text-emerald-600',
+    in_progress: 'bg-indigo-500/10 text-indigo-600',
+    resolved: 'bg-success/10 text-success',
+    closed: 'bg-muted text-muted-foreground',
+  };
+
+  const fields = [
+    ['source_system', 'string', '✅', isAr ? 'ERP | LMS | CPAY | PORTAL' : 'ERP | LMS | CPAY | PORTAL'],
+    ['title', 'string', '✅', isAr ? 'عنوان التذكرة' : 'Ticket title'],
+    ['description', 'string', '✅', isAr ? 'وصف المشكلة' : 'Issue description'],
+    ['requester_email', 'string', '✅', isAr ? 'بريد مقدم الطلب' : 'Requester email'],
+    ['priority', 'string', '❌', 'low | medium | high | urgent'],
+    ['requester_name', 'string', '❌', isAr ? 'اسم مقدم الطلب' : 'Requester name'],
+    ['external_reference', 'string', '❌', isAr ? 'رقم مرجعي' : 'External reference'],
+    ['service_name', 'string', '❌', isAr ? 'اسم الخدمة' : 'Service name'],
+    ['category_name', 'string', '❌', isAr ? 'اسم التصنيف' : 'Category name'],
+    ['external_payload', 'object', '❌', isAr ? 'بيانات إضافية' : 'Extra data'],
+  ];
+
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <Globe className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">واجهة API الخارجية</h1>
-            </div>
-            <NotificationsPopover />
-          </motion.header>
-
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Overview */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="rounded-2xl border-primary/20 bg-primary/5">
-                  <CardContent className="pt-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Globe className="h-5 w-5 text-primary" />
-                      <h2 className="font-bold text-foreground">استقبال التذاكر من الأنظمة الخارجية</h2>
+    <PageLayout>
+      <PageHeader
+        title={isAr ? 'واجهة API الخارجية' : 'External API'}
+        icon={<Globe className="h-5 w-5" />}
+      />
+      <main className="flex-1 overflow-auto p-4 md:p-6">
+        <div className="max-w-5xl mx-auto space-y-5">
+          {/* KPIs */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: isAr ? 'تذاكر خارجية' : 'External Tickets', value: kpiStats.total, icon: Activity, color: 'text-primary bg-primary/10' },
+              { label: isAr ? 'أنظمة مصدر' : 'Source Systems', value: kpiStats.systems, icon: Globe, color: 'text-emerald-600 bg-emerald-500/10' },
+              { label: isAr ? 'اليوم' : 'Today', value: kpiStats.today, icon: Clock, color: 'text-blue-600 bg-blue-500/10' },
+            ].map((kpi, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <Card className="rounded-2xl border-border/50">
+                  <CardContent className="flex items-center gap-3 py-3 px-4">
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${kpi.color} shrink-0`}>
+                      <kpi.icon className="h-4 w-4" />
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      يمكنك إرسال تذاكر من أنظمة ERP, LMS, CPAY وغيرها عبر هذه الواجهة البرمجية. 
-                      سيتم إنشاء التذكرة تلقائياً مع ربطها بالخدمة والتصنيف المناسب.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Endpoint */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Code className="h-4 w-4 text-primary" />
-                      نقطة النهاية (Endpoint)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-success/20 text-success text-xs font-bold px-2 py-1 rounded">POST</span>
-                      <code className="text-xs bg-muted px-3 py-1.5 rounded-lg flex-1 overflow-x-auto" dir="ltr">
-                        {API_BASE}
-                      </code>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground">الهيدرات المطلوبة:</p>
-                      <div className="text-xs space-y-1 text-muted-foreground" dir="ltr">
-                        <p><code className="bg-muted px-1.5 py-0.5 rounded">Content-Type: application/json</code></p>
-                        <p><code className="bg-muted px-1.5 py-0.5 rounded">apikey: YOUR_ANON_KEY</code></p>
-                        <p><code className="bg-muted px-1.5 py-0.5 rounded">x-api-key: YOUR_EXTERNAL_API_KEY</code> (اختياري)</p>
-                      </div>
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{kpi.value}</p>
+                      <p className="text-[10px] text-muted-foreground">{kpi.label}</p>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
+            ))}
+          </div>
 
-              {/* Request / Response Examples */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <Card className="rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-sm">أمثلة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="payload" dir="rtl">
-                      <TabsList className="rounded-xl mb-4">
-                        <TabsTrigger value="payload" className="rounded-lg text-xs">محتوى الطلب</TabsTrigger>
-                        <TabsTrigger value="curl" className="rounded-lg text-xs">cURL</TabsTrigger>
-                        <TabsTrigger value="response" className="rounded-lg text-xs">الاستجابة</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="payload">
-                        <CodeBlock code={JSON.stringify(examplePayload, null, 2)} />
-                      </TabsContent>
-                      <TabsContent value="curl">
-                        <CodeBlock code={exampleCurl} language="bash" />
-                      </TabsContent>
-                      <TabsContent value="response">
-                        <CodeBlock code={JSON.stringify(exampleResponse, null, 2)} />
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </motion.div>
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="rounded-xl">
+              <TabsTrigger value="docs" className="gap-1.5 rounded-lg text-xs"><Code className="h-3.5 w-3.5" />{isAr ? 'التوثيق' : 'Docs'}</TabsTrigger>
+              <TabsTrigger value="test" className="gap-1.5 rounded-lg text-xs"><Send className="h-3.5 w-3.5" />{isAr ? 'اختبار' : 'Test'}</TabsTrigger>
+              <TabsTrigger value="logs" className="gap-1.5 rounded-lg text-xs"><Activity className="h-3.5 w-3.5" />{isAr ? 'السجل' : 'Logs'}</TabsTrigger>
+            </TabsList>
 
-              {/* Fields Reference */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <Card className="rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-sm">مرجع الحقول</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="border-b bg-muted/50">
-                            <th className="text-right p-2 font-semibold">الحقل</th>
-                            <th className="text-right p-2 font-semibold">النوع</th>
-                            <th className="text-right p-2 font-semibold">مطلوب</th>
-                            <th className="text-right p-2 font-semibold">الوصف</th>
+            {/* Documentation Tab */}
+            <TabsContent value="docs" className="space-y-4 mt-4">
+              <Card className="rounded-2xl border-primary/20 bg-primary/5">
+                <CardContent className="pt-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Globe className="h-5 w-5 text-primary" />
+                    <h2 className="font-bold text-foreground">{isAr ? 'استقبال التذاكر من الأنظمة الخارجية' : 'Receive Tickets from External Systems'}</h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {isAr ? 'يمكنك إرسال تذاكر من أنظمة ERP, LMS, CPAY وغيرها عبر هذه الواجهة البرمجية.' : 'Send tickets from ERP, LMS, CPAY and other systems via this API.'}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Code className="h-4 w-4 text-primary" />Endpoint</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-success/20 text-success text-xs font-bold px-2 py-1 rounded">POST</span>
+                    <code className="text-xs bg-muted px-3 py-1.5 rounded-lg flex-1 overflow-x-auto" dir="ltr">{API_BASE}</code>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-foreground">{isAr ? 'الهيدرات المطلوبة:' : 'Required Headers:'}</p>
+                    <div className="text-xs space-y-1 text-muted-foreground" dir="ltr">
+                      <p><code className="bg-muted px-1.5 py-0.5 rounded">Content-Type: application/json</code></p>
+                      <p><code className="bg-muted px-1.5 py-0.5 rounded">apikey: YOUR_ANON_KEY</code></p>
+                      <p><code className="bg-muted px-1.5 py-0.5 rounded">x-api-key: YOUR_EXTERNAL_API_KEY</code> ({isAr ? 'اختياري' : 'optional'})</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-sm">{isAr ? 'أمثلة' : 'Examples'}</CardTitle></CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="payload" dir={isAr ? 'rtl' : 'ltr'}>
+                    <TabsList className="rounded-xl mb-4">
+                      <TabsTrigger value="payload" className="rounded-lg text-xs">{isAr ? 'محتوى الطلب' : 'Payload'}</TabsTrigger>
+                      <TabsTrigger value="curl" className="rounded-lg text-xs">cURL</TabsTrigger>
+                      <TabsTrigger value="response" className="rounded-lg text-xs">{isAr ? 'الاستجابة' : 'Response'}</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="payload"><CodeBlock code={JSON.stringify(examplePayload, null, 2)} /></TabsContent>
+                    <TabsContent value="curl"><CodeBlock code={exampleCurl} /></TabsContent>
+                    <TabsContent value="response"><CodeBlock code={JSON.stringify(exampleResponse, null, 2)} /></TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-sm">{isAr ? 'مرجع الحقول' : 'Field Reference'}</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="text-start p-2 font-semibold">{isAr ? 'الحقل' : 'Field'}</th>
+                          <th className="text-start p-2 font-semibold">{isAr ? 'النوع' : 'Type'}</th>
+                          <th className="text-start p-2 font-semibold">{isAr ? 'مطلوب' : 'Required'}</th>
+                          <th className="text-start p-2 font-semibold">{isAr ? 'الوصف' : 'Description'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fields.map(([field, type, required, desc]) => (
+                          <tr key={field} className="border-b last:border-0 hover:bg-muted/30">
+                            <td className="p-2 font-mono" dir="ltr">{field}</td>
+                            <td className="p-2">{type}</td>
+                            <td className="p-2 text-center">{required}</td>
+                            <td className="p-2">{desc}</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {[
-                            ['source_system', 'string', '✅', 'ERP | LMS | CPAY | PORTAL'],
-                            ['title', 'string', '✅', 'عنوان التذكرة'],
-                            ['description', 'string', '✅', 'وصف المشكلة'],
-                            ['requester_email', 'string', '✅', 'بريد مقدم الطلب'],
-                            ['priority', 'string', '❌', 'low | medium | high | urgent'],
-                            ['requester_name', 'string', '❌', 'اسم مقدم الطلب'],
-                            ['external_reference', 'string', '❌', 'رقم مرجعي من النظام المصدر'],
-                            ['service_name', 'string', '❌', 'اسم الخدمة (للربط التلقائي)'],
-                            ['category_name', 'string', '❌', 'اسم التصنيف'],
-                            ['external_payload', 'object', '❌', 'بيانات إضافية من النظام المصدر'],
-                          ].map(([field, type, required, desc]) => (
-                            <tr key={field} className="border-b last:border-0 hover:bg-muted/30">
-                              <td className="p-2 font-mono" dir="ltr">{field}</td>
-                              <td className="p-2">{type}</td>
-                              <td className="p-2 text-center">{required}</td>
-                              <td className="p-2">{desc}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Test Tab */}
+            <TabsContent value="test" className="space-y-4 mt-4">
+              <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Send className="h-4 w-4 text-primary" />{isAr ? 'اختبار الـ API' : 'API Tester'}</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold mb-2 text-foreground">{isAr ? 'محتوى الطلب (JSON):' : 'Request Body (JSON):'}</p>
+                    <Textarea
+                      value={testPayload}
+                      onChange={e => setTestPayload(e.target.value)}
+                      className="font-mono text-xs min-h-[200px] rounded-xl"
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button onClick={handleTest} disabled={testing} className="gap-2 rounded-xl">
+                    {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {isAr ? 'إرسال الطلب' : 'Send Request'}
+                  </Button>
+                  {testResult && (
+                    <div>
+                      <p className="text-xs font-semibold mb-2 text-foreground">{isAr ? 'الاستجابة:' : 'Response:'}</p>
+                      <CodeBlock code={testResult} />
                     </div>
-                  </CardContent>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Logs Tab */}
+            <TabsContent value="logs" className="space-y-4 mt-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={isAr ? 'بحث في السجل...' : 'Search logs...'} className="ps-9 h-9 rounded-xl text-xs" />
+                </div>
+                <Badge variant="secondary" className="text-[10px] px-3 py-1 rounded-full">{filteredLogs.length} {isAr ? 'تذكرة' : 'tickets'}</Badge>
+              </div>
+
+              {logsLoading ? (
+                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              ) : filteredLogs.length === 0 ? (
+                <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">{isAr ? 'لا توجد تذاكر خارجية' : 'No external tickets'}</CardContent></Card>
+              ) : (
+                <Card className="rounded-2xl border-border/50 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{isAr ? 'الكود' : 'Code'}</TableHead>
+                        <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
+                        <TableHead className="text-center">{isAr ? 'النظام' : 'System'}</TableHead>
+                        <TableHead className="text-center">{isAr ? 'الحالة' : 'Status'}</TableHead>
+                        <TableHead className="text-center">{isAr ? 'المرجع' : 'Ref'}</TableHead>
+                        <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLogs.map(t => (
+                        <TableRow key={t.id} className="hover:bg-muted/30">
+                          <TableCell className="font-mono text-xs">{t.code || `#${t.ticket_number}`}</TableCell>
+                          <TableCell className="max-w-[200px] truncate text-sm">{t.title}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="text-[10px] px-2 py-0.5">{t.source_system}</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge className={`text-[10px] px-2 py-0.5 border-0 ${statusColors[t.status] || 'bg-muted text-muted-foreground'}`}>{t.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-center text-xs text-muted-foreground font-mono">{t.external_reference || '—'}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(t.created_at), { addSuffix: true, locale: ar })}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </Card>
-              </motion.div>
-            </div>
-          </main>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }
