@@ -159,7 +159,7 @@ const App = () => (
                     <Route path="/admin/billing" element={<ProtectedRoute><AdminBilling /></ProtectedRoute>} />
                     <Route path="/admin/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
                     <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
-                    <Route path="/admin/training" element={<ProtectedRoute><TrainingCenter /></ProtectedRoute>} />
+                    
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
