@@ -126,7 +126,6 @@ export default function TrainingCenter() {
     <PageLayout>
       <PageHeader
         title="مركز التدريب"
-        description="طوّر مهاراتك واحصل على شهادات معتمدة"
         icon={<GraduationCap className="h-5 w-5" />}
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto space-y-6">
