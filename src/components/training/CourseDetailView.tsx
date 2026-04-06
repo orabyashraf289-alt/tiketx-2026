@@ -286,23 +286,38 @@ export function CourseDetailView({ courseId, onBack }: CourseDetailViewProps) {
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <Card>
-                  <CardContent className="py-16 text-center space-y-4">
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                      <BookOpen className="h-8 w-8 text-primary" />
+                  <CardContent className="py-0 px-0 space-y-0">
+                    {course?.intro_video_url && (
+                      <div className="w-full rounded-t-xl overflow-hidden bg-black">
+                        <video
+                          controls
+                          autoPlay
+                          muted
+                          loop
+                          className="w-full max-h-[350px] object-cover"
+                        >
+                          <source src={course.intro_video_url} />
+                        </video>
+                      </div>
+                    )}
+                    <div className="py-12 text-center space-y-4 px-6">
+                      <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <BookOpen className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-foreground">{course?.title}</h2>
+                        <p className="text-muted-foreground mt-1">{course?.description}</p>
+                      </div>
+                      <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {course?.duration_minutes} دقيقة</span>
+                        <span className="flex items-center gap-1"><PlayCircle className="h-4 w-4" /> {lessons.length} دروس</span>
+                        {course?.level && <Badge className={levelColors[course.level]}>{levelLabels[course.level]}</Badge>}
+                      </div>
+                      <Button onClick={() => setActiveLessonIndex(0)} className="gap-2 mt-4">
+                        <PlayCircle className="h-4 w-4" />
+                        {progressPercent > 0 ? 'استئناف الدورة' : 'ابدأ الدورة'}
+                      </Button>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-foreground">{course?.title}</h2>
-                      <p className="text-muted-foreground mt-1">{course?.description}</p>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {course?.duration_minutes} دقيقة</span>
-                      <span className="flex items-center gap-1"><PlayCircle className="h-4 w-4" /> {lessons.length} دروس</span>
-                      {course?.level && <Badge className={levelColors[course.level]}>{levelLabels[course.level]}</Badge>}
-                    </div>
-                    <Button onClick={() => setActiveLessonIndex(0)} className="gap-2 mt-4">
-                      <PlayCircle className="h-4 w-4" />
-                      {progressPercent > 0 ? 'استئناف الدورة' : 'ابدأ الدورة'}
-                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
