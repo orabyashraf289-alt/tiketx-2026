@@ -1537,6 +1537,7 @@ export type Database = {
           id: string
           sort_order: number
           title: string
+          video_url: string | null
         }
         Insert: {
           content?: string
@@ -1546,6 +1547,7 @@ export type Database = {
           id?: string
           sort_order?: number
           title: string
+          video_url?: string | null
         }
         Update: {
           content?: string
@@ -1555,6 +1557,7 @@ export type Database = {
           id?: string
           sort_order?: number
           title?: string
+          video_url?: string | null
         }
         Relationships: [
           {
