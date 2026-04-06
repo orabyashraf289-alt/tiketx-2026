@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
   Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send, Bell,
-  Sparkles, Plug, Rocket, Activity,
+  Sparkles, Plug, Rocket, Activity, BookMarked,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,7 +52,8 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.newTicket, url: '/tickets/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
-  ], [t]);
+    { title: lang === 'ar' ? 'دليل النظام' : 'System Guide', url: '/system-guide', icon: BookMarked },
+  ], [t, lang]);
 
   const requesterItems = useMemo(() => [
     { title: t.sidebar.followUpBoard, url: '/portal', icon: LayoutDashboard },
@@ -60,7 +61,8 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.newTicket, url: '/portal/new', icon: Plus },
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.knowledgeBase, url: '/portal/kb', icon: BookOpen },
-  ], [t]);
+    { title: lang === 'ar' ? 'دليل النظام' : 'System Guide', url: '/system-guide', icon: BookMarked },
+  ], [t, lang]);
 
   const developerItems = useMemo(() => [
     { title: t.sidebar.developerBoard, url: '/developer', icon: LayoutDashboard },
@@ -69,7 +71,8 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.notificationsInbox, url: '/notifications', icon: Bell },
     { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
     { title: t.sidebar.knowledgeBase, url: '/knowledge-base', icon: BookOpen },
-  ], [t]);
+    { title: lang === 'ar' ? 'دليل النظام' : 'System Guide', url: '/system-guide', icon: BookMarked },
+  ], [t, lang]);
 
   const adminItems = useMemo(() => [
     { title: t.sidebar.executiveDashboard, url: '/admin/executive', icon: BarChart3 },
