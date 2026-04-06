@@ -228,6 +228,19 @@ export function CourseDetailView({ courseId, onBack }: CourseDetailViewProps) {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {activeLesson.video_url && (
+                      <div className="mb-6 rounded-xl overflow-hidden border border-border bg-black">
+                        <video
+                          key={activeLesson.id}
+                          controls
+                          className="w-full max-h-[450px]"
+                          poster=""
+                        >
+                          <source src={activeLesson.video_url} />
+                          متصفحك لا يدعم تشغيل الفيديو
+                        </video>
+                      </div>
+                    )}
                     <div className="prose prose-sm max-w-none dark:prose-invert text-foreground">
                       <ReactMarkdown>{activeLesson.content}</ReactMarkdown>
                     </div>
