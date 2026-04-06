@@ -1,18 +1,23 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, type ApprovalStage } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { sanitizeError } from '@/lib/errorHandler';
 import { PageLayout, PageHeader } from '@/components/layout';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Loader2, ShieldCheck } from 'lucide-react';
+import { Plus, Loader2, ShieldCheck, Layers, GitBranch, Clock, AlertTriangle, BarChart3, Workflow } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { ApprovalStageForm, type StageFormData } from '@/components/approval-stages/ApprovalStageForm';
 import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
+import { ApprovalFlowchart } from '@/components/approval-stages/ApprovalFlowchart';
+import { differenceInHours } from 'date-fns';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -23,20 +28,82 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
+interface StageStats {
+  pending: number;
+  approved: number;
+  rejected: number;
+  avgDecisionHours: number | null;
+}
+
 export default function AdminApprovalStages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
+  const isAr = lang === 'ar';
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<StageFormData> | undefined>();
   const [filterDept, setFilterDept] = useState<string>('all');
   const [deleteTarget, setDeleteTarget] = useState<ApprovalStage | null>(null);
+  const [activeTab, setActiveTab] = useState('stages');
 
   const { data: stages = [], isLoading } = useQuery({ queryKey: ['approval-stages'], queryFn: () => fetchApprovalStages() });
   const { data: departments = [] } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
   const { data: agents = [] } = useQuery({ queryKey: ['agents'], queryFn: fetchAgents });
   const { data: services = [] } = useQuery({ queryKey: ['services'], queryFn: () => fetchServices() });
+
+  // Fetch ticket_approvals for stats
+  const { data: approvals = [] } = useQuery({
+    queryKey: ['ticket-approvals-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ticket_approvals')
+        .select('id, stage_id, status, created_at, decided_at');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Compute per-stage stats
+  const stageStatsMap = useMemo(() => {
+    const map: Record<string, StageStats> = {};
+    stages.forEach(s => {
+      const stageApprovals = approvals.filter((a: any) => a.stage_id === s.id);
+      const pending = stageApprovals.filter((a: any) => a.status === 'pending').length;
+      const approved = stageApprovals.filter((a: any) => a.status === 'approved').length;
+      const rejected = stageApprovals.filter((a: any) => a.status === 'rejected').length;
+
+      const decided = stageApprovals.filter((a: any) => a.decided_at && a.created_at);
+      let avgDecisionHours: number | null = null;
+      if (decided.length > 0) {
+        const totalHours = decided.reduce((sum: number, a: any) => {
+          return sum + Math.abs(differenceInHours(new Date(a.decided_at), new Date(a.created_at)));
+        }, 0);
+        avgDecisionHours = totalHours / decided.length;
+      }
+
+      map[s.id] = { pending, approved, rejected, avgDecisionHours };
+    });
+    return map;
+  }, [stages, approvals]);
+
+  // KPI calculations
+  const kpiStats = useMemo(() => {
+    const totalStages = stages.length;
+    const deptsWithStages = new Set(stages.map(s => s.department_id)).size;
+    const totalDepts = departments.length;
+    const withDeadline = stages.filter(s => s.deadline_hours).length;
+    const withEscalation = stages.filter(s => s.escalation_to).length;
+    const avgDeadline = withDeadline > 0
+      ? stages.filter(s => s.deadline_hours).reduce((sum, s) => sum + (s.deadline_hours || 0), 0) / withDeadline
+      : 0;
+
+    const totalPending = approvals.filter((a: any) => a.status === 'pending').length;
+    const totalApproved = approvals.filter((a: any) => a.status === 'approved').length;
+    const totalRejected = approvals.filter((a: any) => a.status === 'rejected').length;
+
+    return { totalStages, deptsWithStages, totalDepts, withDeadline, withEscalation, avgDeadline, totalPending, totalApproved, totalRejected };
+  }, [stages, departments, approvals]);
 
   const createMut = useMutation({
     mutationFn: (data: StageFormData) => createApprovalStage(data),
@@ -91,6 +158,34 @@ export default function AdminApprovalStages() {
     });
   }, [stages, createMut, t]);
 
+  // Reorder: move up/down
+  const handleMoveUp = useCallback(async (stage: ApprovalStage) => {
+    const deptStages = stages.filter(s => s.department_id === stage.department_id).sort((a, b) => a.stage_order - b.stage_order);
+    const idx = deptStages.findIndex(s => s.id === stage.id);
+    if (idx <= 0) return;
+    const prev = deptStages[idx - 1];
+    // Swap orders
+    await Promise.all([
+      updateApprovalStage(stage.id, { stage_order: prev.stage_order } as any),
+      updateApprovalStage(prev.id, { stage_order: stage.stage_order } as any),
+    ]);
+    queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
+    toast({ title: isAr ? 'تم تغيير الترتيب' : 'Order updated' });
+  }, [stages, queryClient, toast, isAr]);
+
+  const handleMoveDown = useCallback(async (stage: ApprovalStage) => {
+    const deptStages = stages.filter(s => s.department_id === stage.department_id).sort((a, b) => a.stage_order - b.stage_order);
+    const idx = deptStages.findIndex(s => s.id === stage.id);
+    if (idx >= deptStages.length - 1) return;
+    const next = deptStages[idx + 1];
+    await Promise.all([
+      updateApprovalStage(stage.id, { stage_order: next.stage_order } as any),
+      updateApprovalStage(next.id, { stage_order: stage.stage_order } as any),
+    ]);
+    queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
+    toast({ title: isAr ? 'تم تغيير الترتيب' : 'Order updated' });
+  }, [stages, queryClient, toast, isAr]);
+
   const openNewForm = useCallback(() => {
     setEditId(null);
     setEditData(undefined);
@@ -108,6 +203,19 @@ export default function AdminApprovalStages() {
     }, {} as Record<string, { name: string; stages: ApprovalStage[] }>);
   }, [filtered]);
 
+  const kpiCards = [
+    { label: isAr ? 'إجمالي المراحل' : 'Total Stages', value: kpiStats.totalStages, icon: Layers, color: 'text-primary bg-primary/10' },
+    { label: isAr ? 'الأقسام المغطاة' : 'Depts Covered', value: `${kpiStats.deptsWithStages}/${kpiStats.totalDepts}`, icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-500/10' },
+    { label: isAr ? 'متوسط المهلة' : 'Avg Deadline', value: kpiStats.avgDeadline > 0 ? `${kpiStats.avgDeadline.toFixed(0)} ${isAr ? 'ساعة' : 'hrs'}` : (isAr ? 'غير محدد' : 'N/A'), icon: Clock, color: 'text-amber-600 bg-amber-500/10' },
+    { label: isAr ? 'مراحل بتصعيد' : 'With Escalation', value: kpiStats.withEscalation, icon: AlertTriangle, color: 'text-destructive bg-destructive/10' },
+  ];
+
+  const approvalKpiCards = [
+    { label: isAr ? 'اعتمادات معلقة' : 'Pending', value: kpiStats.totalPending, color: 'text-amber-600 bg-amber-500/10' },
+    { label: isAr ? 'مقبولة' : 'Approved', value: kpiStats.totalApproved, color: 'text-emerald-600 bg-emerald-500/10' },
+    { label: isAr ? 'مرفوضة' : 'Rejected', value: kpiStats.totalRejected, color: 'text-destructive bg-destructive/10' },
+  ];
+
   return (
     <PageLayout>
       <PageHeader
@@ -120,47 +228,103 @@ export default function AdminApprovalStages() {
         }
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-3xl mx-auto">
-          {/* Toolbar */}
-          <motion.div variants={fadeUp} className="mb-5 flex items-center gap-3 flex-wrap">
-            <Select value={filterDept} onValueChange={setFilterDept}>
-              <SelectTrigger className="w-48 rounded-xl h-9">
-                <SelectValue placeholder={t.common.all} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t.common.all}</SelectItem>
-                {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Badge variant="secondary" className="rounded-full text-xs px-3 py-1">
-              {t.admin.totalStages}: {filtered.length}
-            </Badge>
-          </motion.div>
+        <div className="max-w-4xl mx-auto">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            {kpiCards.map((kpi, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <Card className="rounded-2xl border-border/50">
+                  <CardContent className="flex items-center gap-3 py-4">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${kpi.color} shrink-0`}>
+                      <kpi.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-foreground">{kpi.value}</p>
+                      <p className="text-[11px] text-muted-foreground">{kpi.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
 
-          {/* Content */}
-          {isLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-          ) : Object.keys(grouped).length === 0 ? (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
-              <ShieldCheck className="h-12 w-12 mb-3 opacity-30" />
-              <p>{t.admin.noStagesYet}</p>
-            </motion.div>
-          ) : (
-            <div className="space-y-4">
-              {Object.entries(grouped).map(([deptId, { name, stages: deptStages }]) => (
-                <motion.div key={deptId} variants={fadeUp}>
-                  <DepartmentStageGroup
-                    deptName={name}
-                    stages={deptStages}
-                    onEdit={handleEdit}
-                    onDelete={setDeleteTarget}
-                    onDuplicate={handleDuplicate}
-                  />
+          {/* Approval Stats Mini Row */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {approvalKpiCards.map((kpi, i) => (
+              <Badge key={i} variant="outline" className={`gap-1.5 py-1.5 px-3 text-xs ${kpi.color} border-current/20`}>
+                <BarChart3 className="h-3 w-3" />
+                {kpi.label}: {kpi.value}
+              </Badge>
+            ))}
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="rounded-xl">
+              <TabsTrigger value="stages" className="gap-1.5 rounded-lg text-xs">
+                <Layers className="h-3.5 w-3.5" />
+                {isAr ? 'إدارة المراحل' : 'Manage Stages'}
+              </TabsTrigger>
+              <TabsTrigger value="flowchart" className="gap-1.5 rounded-lg text-xs">
+                <Workflow className="h-3.5 w-3.5" />
+                {isAr ? 'المخطط البصري' : 'Visual Flow'}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Stages Management Tab */}
+            <TabsContent value="stages">
+              <motion.div variants={pageVariants} initial="hidden" animate="visible">
+                {/* Toolbar */}
+                <motion.div variants={fadeUp} className="mb-5 flex items-center gap-3 flex-wrap">
+                  <Select value={filterDept} onValueChange={setFilterDept}>
+                    <SelectTrigger className="w-48 rounded-xl h-9">
+                      <SelectValue placeholder={t.common.all} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t.common.all}</SelectItem>
+                      {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Badge variant="secondary" className="rounded-full text-xs px-3 py-1">
+                    {t.admin.totalStages}: {filtered.length}
+                  </Badge>
                 </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+
+                {/* Content */}
+                {isLoading ? (
+                  <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                ) : Object.keys(grouped).length === 0 ? (
+                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
+                    <ShieldCheck className="h-12 w-12 mb-3 opacity-30" />
+                    <p>{t.admin.noStagesYet}</p>
+                  </motion.div>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(grouped).map(([deptId, { name, stages: deptStages }]) => (
+                      <motion.div key={deptId} variants={fadeUp}>
+                        <DepartmentStageGroup
+                          deptName={name}
+                          stages={deptStages}
+                          stageStatsMap={stageStatsMap}
+                          onEdit={handleEdit}
+                          onDelete={setDeleteTarget}
+                          onDuplicate={handleDuplicate}
+                          onMoveUp={handleMoveUp}
+                          onMoveDown={handleMoveDown}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </TabsContent>
+
+            {/* Flowchart Tab */}
+            <TabsContent value="flowchart">
+              <ApprovalFlowchart stages={filtered} departments={departments} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
 
       {/* Form Dialog */}
