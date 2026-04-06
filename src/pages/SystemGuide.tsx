@@ -340,7 +340,8 @@ export default function SystemGuide() {
   }, [search, activeTab, lang]);
 
   const handleExportPDF = () => {
-    window.open('/admin/system-guide/pdf', '_blank');
+    // Generate a printable version of the current page
+    window.print();
   };
 
   return (
