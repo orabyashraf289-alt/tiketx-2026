@@ -160,6 +160,7 @@ export function CourseDetailView({ courseId, onBack }: CourseDetailViewProps) {
                         </p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                           <Clock className="h-3 w-3" /> {lesson.duration_minutes} دقيقة
+                          {lesson.video_url && <><span className="mx-1">·</span><PlayCircle className="h-3 w-3" /> فيديو</>}
                         </p>
                       </div>
                     </button>
