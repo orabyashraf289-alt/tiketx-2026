@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
-import { Play, Clock, BookOpen, BarChart3, CheckCircle, GitBranch, Video } from 'lucide-react';
+import { Play, Clock, BookOpen, Users, Shield, Plug, Zap, BarChart3, Settings, Star, Video } from 'lucide-react';
 
 interface VideoGuide {
   id: string;
@@ -25,6 +25,78 @@ const VIDEO_GUIDES: VideoGuide[] = [
     icon: <BookOpen className="h-5 w-5" />,
     color: 'from-primary to-[hsl(var(--accent-foreground))]',
     videoUrl: '/training-guide.mp4',
+  },
+  {
+    id: 'course-1',
+    title: 'أساسيات نظام التذاكر',
+    description: 'تعلم كيفية إنشاء ومتابعة وإدارة التذاكر باحترافية',
+    duration: '11 ثانية',
+    icon: <BookOpen className="h-5 w-5" />,
+    color: 'from-indigo-500 to-cyan-500',
+    videoUrl: '/course-1-guide.mp4',
+  },
+  {
+    id: 'course-2',
+    title: 'إدارة فريق الدعم',
+    description: 'توزيع المهام وإدارة أداء الفريق بكفاءة',
+    duration: '11 ثانية',
+    icon: <Users className="h-5 w-5" />,
+    color: 'from-violet-500 to-pink-500',
+    videoUrl: '/course-2-guide.mp4',
+  },
+  {
+    id: 'course-3',
+    title: 'تكوين سياسات SLA',
+    description: 'ضمان جودة الخدمة والاستجابة في الوقت المحدد',
+    duration: '11 ثانية',
+    icon: <Shield className="h-5 w-5" />,
+    color: 'from-amber-500 to-red-500',
+    videoUrl: '/course-3-guide.mp4',
+  },
+  {
+    id: 'course-4',
+    title: 'تكامل كلاسيرا المتقدم',
+    description: 'ربط الأنظمة ومزامنة البيانات تلقائياً',
+    duration: '11 ثانية',
+    icon: <Plug className="h-5 w-5" />,
+    color: 'from-emerald-500 to-cyan-500',
+    videoUrl: '/course-4-guide.mp4',
+  },
+  {
+    id: 'course-5',
+    title: 'سير العمل والأتمتة',
+    description: 'أتمتة العمليات المتكررة وتوفير الوقت',
+    duration: '11 ثانية',
+    icon: <Zap className="h-5 w-5" />,
+    color: 'from-orange-500 to-yellow-500',
+    videoUrl: '/course-5-guide.mp4',
+  },
+  {
+    id: 'course-6',
+    title: 'التقارير والتحليلات',
+    description: 'رؤى تحليلية عميقة لاتخاذ قرارات أفضل',
+    duration: '11 ثانية',
+    icon: <BarChart3 className="h-5 w-5" />,
+    color: 'from-blue-500 to-violet-500',
+    videoUrl: '/course-6-guide.mp4',
+  },
+  {
+    id: 'course-7',
+    title: 'إعدادات النظام والأمان',
+    description: 'حماية البيانات وضبط الإعدادات المتقدمة',
+    duration: '11 ثانية',
+    icon: <Settings className="h-5 w-5" />,
+    color: 'from-red-500 to-orange-500',
+    videoUrl: '/course-7-guide.mp4',
+  },
+  {
+    id: 'course-8',
+    title: 'إدارة Multi-Tenant',
+    description: 'إدارة عدة مؤسسات من منصة واحدة',
+    duration: '11 ثانية',
+    icon: <Star className="h-5 w-5" />,
+    color: 'from-purple-500 to-pink-500',
+    videoUrl: '/course-8-guide.mp4',
   },
 ];
 
@@ -55,9 +127,9 @@ export function VideoGuideSection() {
                 onClick={() => setActiveVideo(guide)}
               >
                 <div className="relative w-full aspect-video bg-muted overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Play className="h-7 w-7 text-primary-foreground mr-[-2px]" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${guide.color} opacity-20 flex items-center justify-center`}>
+                    <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="h-6 w-6 text-primary-foreground mr-[-2px]" />
                     </div>
                   </div>
                   <div className="absolute bottom-3 right-3 flex items-center gap-2 text-[11px] text-foreground/70">
@@ -89,7 +161,6 @@ export function VideoGuideSection() {
         </div>
       </div>
 
-      {/* Video Dialog */}
       <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
           <DialogHeader className="p-4 pb-0">
