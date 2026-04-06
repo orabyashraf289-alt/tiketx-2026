@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { CourseDetailView } from '@/components/training/CourseDetailView';
 import { TrainingMusicPlayer } from '@/components/training/TrainingMusicPlayer';
+import { VideoGuideSection } from '@/components/training/VideoGuideSection';
 import {
   BookOpen, PlayCircle, CheckCircle, Clock, Users, Shield,
   Settings, Zap, Plug, BarChart3, Award, GraduationCap, Search, Star,
@@ -138,6 +139,9 @@ export default function TrainingCenter() {
           <StatsCard title="الشهادات المحصّلة" value={certificates.length} icon={Award} variant="warning" delay={0.1} />
           <StatsCard title="التقدم الكلي" value={`${overallProgress}%`} icon={Target} variant="primary" delay={0.15} />
         </div>
+
+        {/* Video Guides */}
+        <VideoGuideSection />
 
         {/* Continue Learning Section */}
         {inProgressCourses.length > 0 && (
