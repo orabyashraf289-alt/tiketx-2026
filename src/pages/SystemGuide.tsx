@@ -348,8 +348,7 @@ export default function SystemGuide() {
       <div className="flex-1 p-4 md:p-6 max-w-6xl mx-auto w-full" dir={isRTL ? 'rtl' : 'ltr'}>
         <PageHeader
           title={lang === 'ar' ? 'دليل النظام الشامل' : 'Comprehensive System Guide'}
-          description={lang === 'ar' ? 'دليل تفصيلي لجميع ميزات وإمكانيات النظام' : 'A detailed guide to all system features and capabilities'}
-          icon={<BookOpen className="h-6 w-6 text-primary" />}
+          icon={<BookOpen className="h-5 w-5" />}
           actions={
             <Button onClick={handleExportPDF} className="gap-2 rounded-xl">
               <Download className="h-4 w-4" />
