@@ -1,0 +1,114 @@
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { motion } from 'framer-motion';
+import { Play, Clock, BookOpen, BarChart3, CheckCircle, GitBranch, Video } from 'lucide-react';
+
+interface VideoGuide {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  icon: React.ReactNode;
+  color: string;
+  videoUrl: string;
+}
+
+const VIDEO_GUIDES: VideoGuide[] = [
+  {
+    id: 'system-overview',
+    title: 'نظرة عامة على النظام',
+    description: 'تعرف على لوحة التحكم وإدارة التذاكر وسير الموافقات في فيديو واحد',
+    duration: '20 ثانية',
+    icon: <BookOpen className="h-5 w-5" />,
+    color: 'from-primary to-[hsl(var(--accent-foreground))]',
+    videoUrl: '/training-guide.mp4',
+  },
+];
+
+export function VideoGuideSection() {
+  const [activeVideo, setActiveVideo] = useState<VideoGuide | null>(null);
+
+  return (
+    <>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Video className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-bold text-foreground">أدلة الفيديو التعليمية</h2>
+          <Badge variant="outline" className="text-[10px] gap-1 border-primary/20 text-primary">
+            AI Generated
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {VIDEO_GUIDES.map((guide, i) => (
+            <motion.div
+              key={guide.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Card
+                className="group cursor-pointer overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20"
+                onClick={() => setActiveVideo(guide)}
+              >
+                <div className="relative w-full aspect-video bg-muted overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="h-7 w-7 text-primary-foreground mr-[-2px]" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2 text-[11px] text-foreground/70">
+                    <span className="flex items-center gap-1 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full">
+                      <Clock className="h-3 w-3" /> {guide.duration}
+                    </span>
+                  </div>
+                </div>
+
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-primary/10 shrink-0">
+                      {guide.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                        {guide.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{guide.description}</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full gap-2 text-xs h-9 mt-2">
+                    <Play className="h-3.5 w-3.5" /> مشاهدة الدليل
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Video Dialog */}
+      <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-base">{activeVideo?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="w-full bg-black">
+            {activeVideo && (
+              <video
+                controls
+                autoPlay
+                className="w-full max-h-[70vh]"
+                src={activeVideo.videoUrl}
+              >
+                متصفحك لا يدعم تشغيل الفيديو
+              </video>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
