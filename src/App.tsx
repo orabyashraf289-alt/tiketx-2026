@@ -55,7 +55,7 @@ const AdminClasseraIntegrations = lazy(() => import('./pages/AdminClasseraIntegr
 const AdminBilling = lazy(() => import('./pages/AdminBilling'));
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
-const TrainingCenter = lazy(() => import('./pages/TrainingCenter'));
+
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
