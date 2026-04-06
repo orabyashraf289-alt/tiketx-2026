@@ -223,7 +223,26 @@ export default function TrainingCenter() {
 
                       return (
                         <motion.div key={course.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                          <Card className="hover:shadow-lg transition-all cursor-pointer group" onClick={() => setSelectedCourseId(course.id)}>
+                          <Card className="hover:shadow-lg transition-all cursor-pointer group overflow-hidden" onClick={() => setSelectedCourseId(course.id)}>
+                            {course.intro_video_url && (
+                              <div className="relative w-full h-32 bg-muted overflow-hidden">
+                                <video
+                                  src={course.intro_video_url}
+                                  muted
+                                  loop
+                                  playsInline
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  onMouseOver={e => (e.target as HTMLVideoElement).play()}
+                                  onMouseOut={e => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                                <div className="absolute bottom-2 right-2">
+                                  <Badge className="bg-background/80 text-foreground text-[10px] gap-1">
+                                    <PlayCircle className="h-3 w-3" /> معاينة
+                                  </Badge>
+                                </div>
+                              </div>
+                            )}
                             <CardHeader className="pb-3">
                               <div className="flex items-start justify-between">
                                 <div className="p-2 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
