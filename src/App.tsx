@@ -56,6 +56,7 @@ const AdminBilling = lazy(() => import('./pages/AdminBilling'));
 const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
 const SystemGuide = lazy(() => import('./pages/SystemGuide'));
+const AdminRoadmap = lazy(() => import('./pages/AdminRoadmap'));
 
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -161,6 +162,7 @@ const App = () => (
                     <Route path="/admin/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
                     <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealthMonitoring /></ProtectedRoute>} />
                     <Route path="/system-guide" element={<ProtectedRoute><SystemGuide /></ProtectedRoute>} />
+                    <Route path="/admin/roadmap" element={<ProtectedRoute><AdminRoadmap /></ProtectedRoute>} />
                     
                     <Route path="/notifications" element={<ProtectedRoute><NotificationsInbox /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />

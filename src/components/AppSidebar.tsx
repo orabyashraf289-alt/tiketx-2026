@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Inbox, Plus, LogOut, Building2, Users, Timer, BarChart3, BookOpen,
   FormInput, ShieldCheck, Award, Globe, Settings, Mail, Columns, Star, ShieldAlert,
   Webhook, Zap, MessageSquare, FileSearch, ShieldCheck as ShieldCheckIcon, Send, Bell,
-  Sparkles, Plug, Rocket, Activity, BookMarked,
+  Sparkles, Plug, Rocket, Activity, BookMarked, Map,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/hooks/useAuth';
@@ -100,6 +100,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'الفوترة والاشتراكات' : 'Billing', url: '/admin/billing', icon: Users },
     { title: lang === 'ar' ? 'معالج التفعيل' : 'Onboarding', url: '/admin/onboarding', icon: Rocket },
     { title: lang === 'ar' ? 'مراقبة النظام' : 'System Health', url: '/admin/system-health', icon: Activity },
+    { title: lang === 'ar' ? 'خارطة طريق التطوير' : 'Roadmap', url: '/admin/roadmap', icon: Map },
     
     { title: t.sidebar.auditLog, url: '/admin/audit-log', icon: FileSearch },
     { title: t.sidebar.securityGovernance, url: '/admin/security', icon: ShieldCheckIcon },
