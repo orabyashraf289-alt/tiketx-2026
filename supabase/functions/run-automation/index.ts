@@ -183,7 +183,7 @@ serve(async (req) => {
               actionsExecuted.push({ type: action.type, success: false, detail: "Unknown action type" });
           }
         } catch (err) {
-          actionsExecuted.push({ type: action.type, success: false, detail: err.message });
+          actionsExecuted.push({ type: action.type, success: false, detail: err instanceof Error ? err.message : String(err) });
         }
       }
 
@@ -214,7 +214,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Automation error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

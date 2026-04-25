@@ -86,7 +86,7 @@ serve(async (req) => {
           response_body = await res.text();
           success = res.ok;
         } catch (err) {
-          response_body = err.message;
+          response_body = err instanceof Error ? err.message : String(err);
         }
 
         // Log delivery
@@ -122,7 +122,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Webhook dispatch error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
