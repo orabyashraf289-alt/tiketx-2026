@@ -42,6 +42,8 @@ export default function AdminApprovalStages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, isRTL, lang } = useLanguage();
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   const isAr = lang === 'ar';
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -49,11 +51,17 @@ export default function AdminApprovalStages() {
   const [filterDept, setFilterDept] = useState<string>('all');
   const [deleteTarget, setDeleteTarget] = useState<ApprovalStage | null>(null);
   const [activeTab, setActiveTab] = useState('stages');
+  const [rebuilding, setRebuilding] = useState(false);
 
-  const { data: stages = [], isLoading } = useQuery({ queryKey: ['approval-stages'], queryFn: () => fetchApprovalStages() });
+  const { data: stages = [], isLoading, error: stagesError, refetch: refetchStages } = useQuery({
+    queryKey: ['approval-stages'],
+    queryFn: () => fetchApprovalStages(),
+    retry: 1,
+  });
   const { data: departments = [] } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
   const { data: agents = [] } = useQuery({ queryKey: ['agents'], queryFn: fetchAgents });
   const { data: services = [] } = useQuery({ queryKey: ['services'], queryFn: () => fetchServices() });
+
 
   // Fetch ticket_approvals for stats
   const { data: approvals = [] } = useQuery({
