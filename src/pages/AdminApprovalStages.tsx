@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, type ApprovalStage } from '@/lib/api';
+import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, rebuildApprovalRelationships, type ApprovalStage } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeError } from '@/lib/errorHandler';
 import { PageLayout, PageHeader } from '@/components/layout';
@@ -10,14 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Loader2, ShieldCheck, Layers, GitBranch, Clock, AlertTriangle, BarChart3, Workflow } from 'lucide-react';
+import { Plus, Loader2, ShieldCheck, Layers, GitBranch, Clock, AlertTriangle, BarChart3, Workflow, Wrench, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import { ApprovalStageForm, type StageFormData } from '@/components/approval-stages/ApprovalStageForm';
 import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
 import { ApprovalFlowchart } from '@/components/approval-stages/ApprovalFlowchart';
 import { differenceInHours } from 'date-fns';
+
 
 const pageVariants = {
   hidden: { opacity: 0 },
