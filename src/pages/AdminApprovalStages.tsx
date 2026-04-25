@@ -285,6 +285,31 @@ export default function AdminApprovalStages() {
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
         <div className="max-w-4xl mx-auto">
+          {/* Error Banner */}
+          {stagesError && (
+            <Alert variant="destructive" className="mb-4 rounded-2xl" data-testid="stages-error-banner">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>
+                {isAr ? 'فشل تحميل مراحل الاعتماد' : 'Failed to load approval stages'}
+              </AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p className="font-mono text-xs break-all">
+                  {(stagesError as Error)?.message || String(stagesError)}
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => refetchStages()} className="rounded-lg h-7 text-xs">
+                    {isAr ? 'إعادة المحاولة' : 'Retry'}
+                  </Button>
+                  {isAdmin && (
+                    <Button size="sm" variant="outline" onClick={handleRebuildRelationships} disabled={rebuilding} className="rounded-lg h-7 text-xs gap-1">
+                      {rebuilding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wrench className="h-3 w-3" />}
+                      {isAr ? 'فحص العلاقات' : 'Check Relationships'}
+                    </Button>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {kpiCards.map((kpi, i) => (
