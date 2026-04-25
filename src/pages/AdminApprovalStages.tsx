@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, type ApprovalStage } from '@/lib/api';
+import { fetchApprovalStages, createApprovalStage, updateApprovalStage, deleteApprovalStage, fetchDepartments, fetchAgents, fetchServices, rebuildApprovalRelationships, type ApprovalStage } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeError } from '@/lib/errorHandler';
 import { PageLayout, PageHeader } from '@/components/layout';
@@ -10,14 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Loader2, ShieldCheck, Layers, GitBranch, Clock, AlertTriangle, BarChart3, Workflow } from 'lucide-react';
+import { Plus, Loader2, ShieldCheck, Layers, GitBranch, Clock, AlertTriangle, BarChart3, Workflow, Wrench, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import { ApprovalStageForm, type StageFormData } from '@/components/approval-stages/ApprovalStageForm';
 import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
 import { ApprovalFlowchart } from '@/components/approval-stages/ApprovalFlowchart';
 import { differenceInHours } from 'date-fns';
+
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -39,6 +42,8 @@ export default function AdminApprovalStages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { t, isRTL, lang } = useLanguage();
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   const isAr = lang === 'ar';
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -46,11 +51,17 @@ export default function AdminApprovalStages() {
   const [filterDept, setFilterDept] = useState<string>('all');
   const [deleteTarget, setDeleteTarget] = useState<ApprovalStage | null>(null);
   const [activeTab, setActiveTab] = useState('stages');
+  const [rebuilding, setRebuilding] = useState(false);
 
-  const { data: stages = [], isLoading } = useQuery({ queryKey: ['approval-stages'], queryFn: () => fetchApprovalStages() });
+  const { data: stages = [], isLoading, error: stagesError, refetch: refetchStages } = useQuery({
+    queryKey: ['approval-stages'],
+    queryFn: () => fetchApprovalStages(),
+    retry: 1,
+  });
   const { data: departments = [] } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
   const { data: agents = [] } = useQuery({ queryKey: ['agents'], queryFn: fetchAgents });
   const { data: services = [] } = useQuery({ queryKey: ['services'], queryFn: () => fetchServices() });
+
 
   // Fetch ticket_approvals for stats
   const { data: approvals = [] } = useQuery({
@@ -192,6 +203,37 @@ export default function AdminApprovalStages() {
     setFormOpen(true);
   }, []);
 
+  const handleRebuildRelationships = useCallback(async () => {
+    setRebuilding(true);
+    try {
+      const result = await rebuildApprovalRelationships();
+      if (result.ok) {
+        toast({
+          title: isAr ? '✅ العلاقات سليمة' : '✅ Relationships healthy',
+          description: isAr
+            ? `تم التحقق من القيود. ${result.stageCount} مرحلة متاحة.`
+            : `Constraints verified. ${result.stageCount} stage(s) reachable.`,
+        });
+      } else {
+        toast({
+          title: isAr ? '⚠️ مشكلة في العلاقات' : '⚠️ Relationship issue',
+          description: result.embedError || result.fallbackError || 'Unknown',
+          variant: 'destructive',
+        });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
+      await refetchStages();
+    } catch (e: any) {
+      toast({
+        title: isAr ? 'فشل الفحص' : 'Rebuild failed',
+        description: sanitizeError(e),
+        variant: 'destructive',
+      });
+    } finally {
+      setRebuilding(false);
+    }
+  }, [toast, isAr, queryClient, refetchStages]);
+
   const filtered = useMemo(() => filterDept === 'all' ? stages : stages.filter(s => s.department_id === filterDept), [stages, filterDept]);
   const grouped = useMemo(() => {
     return filtered.reduce((acc, s) => {
@@ -222,13 +264,52 @@ export default function AdminApprovalStages() {
         title={t.admin.approvalStagesTitle}
         icon={<ShieldCheck className="h-5 w-5" />}
         actions={
-          <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl" onClick={openNewForm}>
-            <Plus className="h-4 w-4" /> {t.admin.newStage}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                variant="outline"
+                className="gap-2 text-sm rounded-xl"
+                onClick={handleRebuildRelationships}
+                disabled={rebuilding}
+                data-testid="rebuild-relationships-btn"
+              >
+                {rebuilding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
+                {isAr ? 'إعادة بناء العلاقات' : 'Rebuild Relationships'}
+              </Button>
+            )}
+            <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl" onClick={openNewForm} data-testid="new-stage-btn">
+              <Plus className="h-4 w-4" /> {t.admin.newStage}
+            </Button>
+          </div>
         }
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
         <div className="max-w-4xl mx-auto">
+          {/* Error Banner */}
+          {stagesError && (
+            <Alert variant="destructive" className="mb-4 rounded-2xl" data-testid="stages-error-banner">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>
+                {isAr ? 'فشل تحميل مراحل الاعتماد' : 'Failed to load approval stages'}
+              </AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p className="font-mono text-xs break-all">
+                  {(stagesError as Error)?.message || String(stagesError)}
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => refetchStages()} className="rounded-lg h-7 text-xs">
+                    {isAr ? 'إعادة المحاولة' : 'Retry'}
+                  </Button>
+                  {isAdmin && (
+                    <Button size="sm" variant="outline" onClick={handleRebuildRelationships} disabled={rebuilding} className="rounded-lg h-7 text-xs gap-1">
+                      {rebuilding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wrench className="h-3 w-3" />}
+                      {isAr ? 'فحص العلاقات' : 'Check Relationships'}
+                    </Button>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {kpiCards.map((kpi, i) => (
