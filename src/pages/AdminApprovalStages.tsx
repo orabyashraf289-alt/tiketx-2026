@@ -264,9 +264,23 @@ export default function AdminApprovalStages() {
         title={t.admin.approvalStagesTitle}
         icon={<ShieldCheck className="h-5 w-5" />}
         actions={
-          <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl" onClick={openNewForm}>
-            <Plus className="h-4 w-4" /> {t.admin.newStage}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                variant="outline"
+                className="gap-2 text-sm rounded-xl"
+                onClick={handleRebuildRelationships}
+                disabled={rebuilding}
+                data-testid="rebuild-relationships-btn"
+              >
+                {rebuilding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
+                {isAr ? 'إعادة بناء العلاقات' : 'Rebuild Relationships'}
+              </Button>
+            )}
+            <Button className="gradient-accent text-accent-foreground gap-2 text-sm shadow-lg shadow-primary/20 rounded-xl" onClick={openNewForm} data-testid="new-stage-btn">
+              <Plus className="h-4 w-4" /> {t.admin.newStage}
+            </Button>
+          </div>
         }
       />
       <main className="flex-1 p-4 md:p-6 overflow-auto">
