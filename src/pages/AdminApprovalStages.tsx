@@ -203,6 +203,37 @@ export default function AdminApprovalStages() {
     setFormOpen(true);
   }, []);
 
+  const handleRebuildRelationships = useCallback(async () => {
+    setRebuilding(true);
+    try {
+      const result = await rebuildApprovalRelationships();
+      if (result.ok) {
+        toast({
+          title: isAr ? '✅ العلاقات سليمة' : '✅ Relationships healthy',
+          description: isAr
+            ? `تم التحقق من القيود. ${result.stageCount} مرحلة متاحة.`
+            : `Constraints verified. ${result.stageCount} stage(s) reachable.`,
+        });
+      } else {
+        toast({
+          title: isAr ? '⚠️ مشكلة في العلاقات' : '⚠️ Relationship issue',
+          description: result.embedError || result.fallbackError || 'Unknown',
+          variant: 'destructive',
+        });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
+      await refetchStages();
+    } catch (e: any) {
+      toast({
+        title: isAr ? 'فشل الفحص' : 'Rebuild failed',
+        description: sanitizeError(e),
+        variant: 'destructive',
+      });
+    } finally {
+      setRebuilding(false);
+    }
+  }, [toast, isAr, queryClient, refetchStages]);
+
   const filtered = useMemo(() => filterDept === 'all' ? stages : stages.filter(s => s.department_id === filterDept), [stages, filterDept]);
   const grouped = useMemo(() => {
     return filtered.reduce((acc, s) => {
