@@ -641,11 +641,55 @@ export interface TicketApproval {
 }
 
 export async function fetchApprovalStages(departmentId?: string) {
-  let query = supabase.from('approval_stages').select('*, departments(name), services(name), approver_profile:profiles!approval_stages_approver_id_fkey(full_name), escalation_profile:profiles!approval_stages_escalation_to_fkey(full_name)').order('stage_order');
+  // Try full embed first (includes related profiles for approver/escalation).
+  const fullSelect = '*, departments(name), services(name), approver_profile:profiles!approval_stages_approver_id_fkey(full_name), escalation_profile:profiles!approval_stages_escalation_to_fkey(full_name)';
+  let query = supabase.from('approval_stages').select(fullSelect).order('stage_order');
   if (departmentId) query = query.eq('department_id', departmentId);
   const { data, error } = await query;
-  if (error) throw error;
-  return (data as unknown) as ApprovalStage[];
+  if (!error) return (data as unknown) as ApprovalStage[];
+
+  // Fallback: profile FK embed missing/broken — load stages with only safe joins
+  // so the list still renders even if profile relationships are unavailable.
+  console.warn('[fetchApprovalStages] embed failed, falling back without profile joins:', error.message);
+  let fallback = supabase
+    .from('approval_stages')
+    .select('*, departments(name), services(name)')
+    .order('stage_order');
+  if (departmentId) fallback = fallback.eq('department_id', departmentId);
+  const { data: fbData, error: fbError } = await fallback;
+  if (fbError) {
+    // Surface the original embed error too for easier debugging.
+    const combined = new Error(`${error.message} | fallback: ${fbError.message}`);
+    (combined as any).cause = fbError;
+    throw combined;
+  }
+  return (fbData as unknown) as ApprovalStage[];
+}
+
+/**
+ * Admin-only diagnostic: verifies the FK relationships needed for the approval
+ * stages embed work by issuing the same embed query the page uses. Returns a
+ * structured result instead of throwing, so the UI can show the exact error.
+ */
+export async function rebuildApprovalRelationships(): Promise<{
+  ok: boolean;
+  embedWorks: boolean;
+  fallbackWorks: boolean;
+  embedError?: string;
+  fallbackError?: string;
+  stageCount: number;
+}> {
+  const embedSelect = '*, approver_profile:profiles!approval_stages_approver_id_fkey(full_name), escalation_profile:profiles!approval_stages_escalation_to_fkey(full_name)';
+  const embed = await supabase.from('approval_stages').select(embedSelect).limit(1);
+  const fallback = await supabase.from('approval_stages').select('id').limit(1);
+  return {
+    ok: !embed.error && !fallback.error,
+    embedWorks: !embed.error,
+    fallbackWorks: !fallback.error,
+    embedError: embed.error?.message,
+    fallbackError: fallback.error?.message,
+    stageCount: fallback.data?.length ?? 0,
+  };
 }
 
 export async function createApprovalStage(stage: {
