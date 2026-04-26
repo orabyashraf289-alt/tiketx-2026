@@ -313,7 +313,49 @@ export default function AdminApprovalStages() {
               </AlertDescription>
             </Alert>
           )}
-          {/* KPI Cards */}
+
+          {/* Rebuild Diagnostics Panel */}
+          {isAdmin && lastDiagnostics && (
+            <Alert
+              variant={lastDiagnostics.ok ? 'default' : 'destructive'}
+              className="mb-4 rounded-2xl"
+              data-testid="rebuild-diagnostics-panel"
+            >
+              <Wrench className="h-4 w-4" />
+              <AlertTitle>
+                {isAr ? 'نتائج فحص العلاقات' : 'Rebuild Diagnostics'}
+              </AlertTitle>
+              <AlertDescription>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 text-xs">
+                  <div data-testid="diag-embed-works">
+                    <span className="font-semibold">embedWorks:</span>{' '}
+                    <span className={lastDiagnostics.embedWorks ? 'text-emerald-600' : 'text-destructive'}>
+                      {String(lastDiagnostics.embedWorks)}
+                    </span>
+                  </div>
+                  <div data-testid="diag-fallback-works">
+                    <span className="font-semibold">fallbackWorks:</span>{' '}
+                    <span className={lastDiagnostics.fallbackWorks ? 'text-emerald-600' : 'text-destructive'}>
+                      {String(lastDiagnostics.fallbackWorks)}
+                    </span>
+                  </div>
+                  <div data-testid="diag-stage-count">
+                    <span className="font-semibold">stageCount:</span> {lastDiagnostics.stageCount}
+                  </div>
+                </div>
+                {lastDiagnostics.embedError && (
+                  <p className="mt-2 font-mono text-xs break-all" data-testid="diag-embed-error">
+                    <span className="font-semibold">embedError:</span> {lastDiagnostics.embedError}
+                  </p>
+                )}
+                {lastDiagnostics.fallbackError && (
+                  <p className="mt-1 font-mono text-xs break-all" data-testid="diag-fallback-error">
+                    <span className="font-semibold">fallbackError:</span> {lastDiagnostics.fallbackError}
+                  </p>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {kpiCards.map((kpi, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
