@@ -133,6 +133,47 @@ export function ApprovalKanban() {
     },
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, status, notes }: { ids: string[]; status: 'approved' | 'rejected'; notes?: string }) =>
+      bulkUpdateApprovals(ids, status, user!.id, notes),
+    onSuccess: ({ updated }) => {
+      queryClient.invalidateQueries({ queryKey: ['approval-kanban'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({
+        title: isAr ? 'تم تنفيذ الإجراء الجماعي' : 'Bulk action completed',
+        description: isAr ? `تم تحديث ${updated} اعتماد` : `${updated} approvals updated`,
+      });
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      setBulkAction(null);
+      setBulkNotes('');
+    },
+    onError: (err: any) => {
+      toast({ title: isAr ? 'فشل الإجراء الجماعي' : 'Bulk action failed', description: sanitizeError(err), variant: 'destructive' });
+    },
+  });
+
+  const pendingSelectedCount = useMemo(
+    () => approvals.filter(a => selectedIds.has(a.id) && a.status === 'pending').length,
+    [approvals, selectedIds],
+  );
+
+  const toggleSelect = (id: string, status: ApprovalStatus) => {
+    if (status !== 'pending') return;
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllPendingFiltered = () => {
+    setSelectedIds(new Set(filtered.filter(a => a.status === 'pending').map(a => a.id)));
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
   const columns: ApprovalCol[] = ['pending', 'approved', 'rejected'];
 
   const handleDragStart = (e: React.DragEvent, approvalId: string) => {
