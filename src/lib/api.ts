@@ -752,6 +752,55 @@ export const approvalStatusLabels: Record<ApprovalStatus, string> = {
   rejected: 'مرفوض',
 };
 
+// === Approval Coverage Diagnostics ===
+export interface ServiceWithoutCoverage {
+  service_id: string;
+  service_name: string;
+  system_name: string | null;
+  active_tickets_count: number;
+}
+
+export interface TicketMissingApprovals {
+  ticket_id: string;
+  ticket_number: number;
+  ticket_title: string;
+  service_name: string | null;
+  expected_stages_count: number;
+}
+
+export async function fetchServicesWithoutApprovalCoverage(): Promise<ServiceWithoutCoverage[]> {
+  const { data, error } = await supabase.rpc('services_without_approval_coverage');
+  if (error) throw error;
+  return (data || []) as ServiceWithoutCoverage[];
+}
+
+export async function fetchTicketsMissingApprovals(): Promise<TicketMissingApprovals[]> {
+  const { data, error } = await supabase.rpc('tickets_missing_approvals');
+  if (error) throw error;
+  return (data || []) as TicketMissingApprovals[];
+}
+
+export async function backfillTicketApprovals(ticketId: string): Promise<{ inserted_count: number; matched_stages: number }> {
+  const { data, error } = await supabase.rpc('backfill_ticket_approvals', { _ticket_id: ticketId });
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return row as { inserted_count: number; matched_stages: number };
+}
+
+export async function backfillAllMissingApprovals(): Promise<{ processed: number; total_inserted: number }> {
+  const tickets = await fetchTicketsMissingApprovals();
+  let totalInserted = 0;
+  for (const t of tickets) {
+    try {
+      const result = await backfillTicketApprovals(t.ticket_id);
+      totalInserted += result.inserted_count;
+    } catch (e) {
+      console.warn(`Failed to backfill ticket ${t.ticket_number}`, e);
+    }
+  }
+  return { processed: tickets.length, total_inserted: totalInserted };
+}
+
 // Ticket Ratings
 export interface TicketRating {
   id: string;
