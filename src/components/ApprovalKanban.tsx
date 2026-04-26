@@ -63,6 +63,12 @@ export function ApprovalKanban() {
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterStage, setFilterStage] = useState('all');
 
+  // Bulk-selection state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'approved' | 'rejected' | null>(null);
+  const [bulkNotes, setBulkNotes] = useState('');
+
   const { data: approvals = [], isLoading } = useQuery({
     queryKey: ['approval-kanban'],
     queryFn: async () => {
