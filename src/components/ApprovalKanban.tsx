@@ -1,16 +1,20 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { updateTicketApproval, approvalStatusLabels, ApprovalStatus } from '@/lib/api';
+import { updateTicketApproval, bulkUpdateApprovals, approvalStatusLabels, ApprovalStatus } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeError } from '@/lib/errorHandler';
-import { Clock, Check, X, User, GripVertical, AlertTriangle, Forward, Search, Filter, BarChart3, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Clock, Check, X, User, GripVertical, AlertTriangle, Forward, Search, Filter, BarChart3, TrendingUp, ShieldCheck, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, isPast, differenceInHours } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +62,12 @@ export function ApprovalKanban() {
   const [search, setSearch] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterStage, setFilterStage] = useState('all');
+
+  // Bulk-selection state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'approved' | 'rejected' | null>(null);
+  const [bulkNotes, setBulkNotes] = useState('');
 
   const { data: approvals = [], isLoading } = useQuery({
     queryKey: ['approval-kanban'],
@@ -122,6 +132,47 @@ export function ApprovalKanban() {
       toast({ title: isAr ? 'خطأ' : 'Error', description: sanitizeError(err), variant: 'destructive' });
     },
   });
+
+  const bulkMutation = useMutation({
+    mutationFn: ({ ids, status, notes }: { ids: string[]; status: 'approved' | 'rejected'; notes?: string }) =>
+      bulkUpdateApprovals(ids, status, user!.id, notes),
+    onSuccess: ({ updated }) => {
+      queryClient.invalidateQueries({ queryKey: ['approval-kanban'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({
+        title: isAr ? 'تم تنفيذ الإجراء الجماعي' : 'Bulk action completed',
+        description: isAr ? `تم تحديث ${updated} اعتماد` : `${updated} approvals updated`,
+      });
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      setBulkAction(null);
+      setBulkNotes('');
+    },
+    onError: (err: any) => {
+      toast({ title: isAr ? 'فشل الإجراء الجماعي' : 'Bulk action failed', description: sanitizeError(err), variant: 'destructive' });
+    },
+  });
+
+  const pendingSelectedCount = useMemo(
+    () => approvals.filter(a => selectedIds.has(a.id) && a.status === 'pending').length,
+    [approvals, selectedIds],
+  );
+
+  const toggleSelect = (id: string, status: ApprovalStatus) => {
+    if (status !== 'pending') return;
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllPendingFiltered = () => {
+    setSelectedIds(new Set(filtered.filter(a => a.status === 'pending').map(a => a.id)));
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
 
   const columns: ApprovalCol[] = ['pending', 'approved', 'rejected'];
 
@@ -216,7 +267,115 @@ export function ApprovalKanban() {
         <Badge variant="secondary" className="text-[10px] px-2 py-1 rounded-full">
           {isAr ? 'نتائج' : 'Results'}: {filtered.length}
         </Badge>
+        <div className="ms-auto flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={selectMode ? 'default' : 'outline'}
+            className="h-9 rounded-xl text-xs gap-1.5"
+            onClick={() => {
+              setSelectMode(v => !v);
+              if (selectMode) clearSelection();
+            }}
+          >
+            {selectMode ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+            {isAr ? 'تحديد متعدد' : 'Multi-select'}
+          </Button>
+          {selectMode && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 rounded-xl text-xs"
+              onClick={selectAllPendingFiltered}
+            >
+              {isAr ? 'تحديد كل المعلّقة' : 'Select all pending'}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Bulk action bar */}
+      <AnimatePresence>
+        {selectMode && pendingSelectedCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur px-4 py-2.5"
+          >
+            <div className="flex items-center gap-2">
+              <Badge className="bg-primary text-primary-foreground text-xs">{pendingSelectedCount}</Badge>
+              <span className="text-xs font-medium text-foreground">
+                {isAr ? 'اعتماد محدد' : 'selected'}
+              </span>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={clearSelection}>
+                {isAr ? 'إلغاء التحديد' : 'Clear'}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 h-8 bg-success hover:bg-success/90 text-success-foreground"
+                disabled={bulkMutation.isPending}
+                onClick={() => setBulkAction('approved')}
+              >
+                <Check className="h-3.5 w-3.5" />
+                {isAr ? 'اعتماد الكل' : 'Approve all'}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-1.5 h-8"
+                disabled={bulkMutation.isPending}
+                onClick={() => setBulkAction('rejected')}
+              >
+                <X className="h-3.5 w-3.5" />
+                {isAr ? 'رفض الكل' : 'Reject all'}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk confirm dialog */}
+      <Dialog open={bulkAction !== null} onOpenChange={(open) => { if (!open) { setBulkAction(null); setBulkNotes(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkAction === 'approved'
+                ? (isAr ? 'تأكيد الاعتماد الجماعي' : 'Confirm bulk approval')
+                : (isAr ? 'تأكيد الرفض الجماعي' : 'Confirm bulk rejection')}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `سيتم تطبيق الإجراء على ${pendingSelectedCount} اعتماد معلّق فقط. لا يمكن التراجع.`
+                : `Action will apply to ${pendingSelectedCount} pending approvals only. This cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder={isAr ? 'ملاحظات (اختياري)...' : 'Notes (optional)...'}
+            value={bulkNotes}
+            onChange={e => setBulkNotes(e.target.value)}
+            className="min-h-[80px] text-sm"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setBulkAction(null); setBulkNotes(''); }}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button
+              variant={bulkAction === 'rejected' ? 'destructive' : 'default'}
+              disabled={bulkMutation.isPending}
+              onClick={() => bulkAction && bulkMutation.mutate({
+                ids: Array.from(selectedIds),
+                status: bulkAction,
+                notes: bulkNotes.trim() || undefined,
+              })}
+            >
+              {bulkMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />}
+              {isAr ? 'تأكيد' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Kanban Columns */}
       <div className="flex gap-3 overflow-x-auto pb-4 min-h-[500px]">
@@ -256,17 +415,34 @@ export function ApprovalKanban() {
                   return (
                     <motion.div
                       key={approval.id}
-                      draggable={approval.status === 'pending'}
+                      draggable={!selectMode && approval.status === 'pending'}
                       onDragStart={(e: any) => handleDragStart(e, approval.id)}
                       onDragEnd={() => { setDraggedId(null); setDragOverCol(null); }}
                       whileHover={{ y: -2 }}
-                      onClick={() => approval.ticket_id && navigate(`/tickets/${approval.ticket_id}`)}
+                      onClick={() => {
+                        if (selectMode) {
+                          toggleSelect(approval.id, approval.status);
+                        } else if (approval.ticket_id) {
+                          navigate(`/tickets/${approval.ticket_id}`);
+                        }
+                      }}
                       className={`p-3 rounded-lg border border-border/50 bg-background cursor-pointer hover:shadow-card-hover transition-all ${
                         draggedId === approval.id ? 'opacity-40' : ''
-                      } ${isOverdue ? 'border-s-2 border-s-destructive' : ''}`}
+                      } ${isOverdue ? 'border-s-2 border-s-destructive' : ''} ${
+                        selectedIds.has(approval.id) ? 'ring-2 ring-primary border-primary/40' : ''
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-1 mb-1.5">
                         <div className="flex items-center gap-1.5">
+                          {selectMode && (
+                            <Checkbox
+                              checked={selectedIds.has(approval.id)}
+                              disabled={approval.status !== 'pending'}
+                              onCheckedChange={() => toggleSelect(approval.id, approval.status)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-3.5 w-3.5"
+                            />
+                          )}
                           <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                             {approval.ticket?.code || `#${approval.ticket?.ticket_number}`}
                           </span>
@@ -274,7 +450,7 @@ export function ApprovalKanban() {
                             {priority}
                           </Badge>
                         </div>
-                        {approval.status === 'pending' && <GripVertical className="h-3 w-3 text-muted-foreground/50 cursor-grab flex-shrink-0" />}
+                        {!selectMode && approval.status === 'pending' && <GripVertical className="h-3 w-3 text-muted-foreground/50 cursor-grab flex-shrink-0" />}
                       </div>
 
                       <h4 className="text-xs font-semibold text-foreground line-clamp-2 mb-1.5">

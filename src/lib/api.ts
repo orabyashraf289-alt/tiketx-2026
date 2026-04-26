@@ -604,6 +604,15 @@ export async function upsertTicketFieldValues(values: { ticket_id: string; field
 export type ApprovalStageType = 'sequential' | 'parallel';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
+export interface ApprovalSkipRule {
+  field: 'priority' | 'department_id' | 'service_id' | 'category_id' | 'source_system';
+  operator: 'eq' | 'neq' | 'in' | 'nin';
+  value: string | string[];
+}
+export interface ApprovalConditions {
+  skip_if?: ApprovalSkipRule[];
+}
+
 export interface ApprovalStage {
   id: string;
   department_id: string;
@@ -615,6 +624,7 @@ export interface ApprovalStage {
   service_id: string | null;
   deadline_hours: number | null;
   escalation_to: string | null;
+  conditions: ApprovalConditions;
   created_at: string;
   departments?: { name: string } | null;
   services?: { name: string } | null;
@@ -704,7 +714,7 @@ export async function createApprovalStage(stage: {
 }
 
 export async function updateApprovalStage(id: string, updates: Partial<ApprovalStage>) {
-  const { data, error } = await supabase.from('approval_stages').update(updates).eq('id', id).select().single();
+  const { data, error } = await supabase.from('approval_stages').update(updates as any).eq('id', id).select().single();
   if (error) throw error;
   return data;
 }
@@ -744,6 +754,33 @@ export async function delegateApproval(id: string, delegatedTo: string, delegate
     .single();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Bulk update multiple approvals at once. Only `pending` rows are eligible
+ * for transition; the SQL filter ensures we never overwrite decided rows.
+ * Returns the number of rows actually updated.
+ */
+export async function bulkUpdateApprovals(
+  ids: string[],
+  status: Exclude<ApprovalStatus, 'pending'>,
+  approverId: string,
+  notes?: string,
+): Promise<{ updated: number }> {
+  if (ids.length === 0) return { updated: 0 };
+  const { data, error } = await supabase
+    .from('ticket_approvals')
+    .update({
+      status,
+      approver_id: approverId,
+      decided_at: new Date().toISOString(),
+      ...(notes ? { notes } : {}),
+    })
+    .in('id', ids)
+    .eq('status', 'pending')
+    .select('id');
+  if (error) throw error;
+  return { updated: data?.length ?? 0 };
 }
 
 export const approvalStatusLabels: Record<ApprovalStatus, string> = {
