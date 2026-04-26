@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           approver_id: string | null
           approver_role: Database["public"]["Enums"]["app_role"]
+          conditions: Json
           created_at: string
           deadline_hours: number | null
           department_id: string
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           approver_id?: string | null
           approver_role?: Database["public"]["Enums"]["app_role"]
+          conditions?: Json
           created_at?: string
           deadline_hours?: number | null
           department_id: string
@@ -44,6 +46,7 @@ export type Database = {
         Update: {
           approver_id?: string | null
           approver_role?: Database["public"]["Enums"]["app_role"]
+          conditions?: Json
           created_at?: string
           deadline_hours?: number | null
           department_id?: string
@@ -1610,6 +1613,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approval_stage_should_skip: {
+        Args: {
+          _conditions: Json
+          _ticket: Database["public"]["Tables"]["tickets"]["Row"]
+        }
+        Returns: boolean
+      }
       backfill_ticket_approvals: {
         Args: { _ticket_id: string }
         Returns: {
