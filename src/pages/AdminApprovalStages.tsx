@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ApprovalStageForm, type StageFormData } from '@/components/approval-stages/ApprovalStageForm';
 import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
 import { ApprovalFlowchart } from '@/components/approval-stages/ApprovalFlowchart';
+import { ApprovalCoveragePanel } from '@/components/approval-stages/ApprovalCoveragePanel';
 import { differenceInHours } from 'date-fns';
 
 
@@ -383,6 +384,9 @@ export default function AdminApprovalStages() {
               </Badge>
             ))}
           </div>
+
+          {/* Coverage Diagnostics (admin only) */}
+          {isAdmin && <ApprovalCoveragePanel isAr={isAr} />}
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
