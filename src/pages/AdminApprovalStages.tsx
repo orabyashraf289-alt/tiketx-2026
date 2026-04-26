@@ -208,6 +208,7 @@ export default function AdminApprovalStages() {
     setRebuilding(true);
     try {
       const result = await rebuildApprovalRelationships();
+      setLastDiagnostics(result);
       if (result.ok) {
         toast({
           title: isAr ? '✅ العلاقات سليمة' : '✅ Relationships healthy',
@@ -225,6 +226,7 @@ export default function AdminApprovalStages() {
       await queryClient.invalidateQueries({ queryKey: ['approval-stages'] });
       await refetchStages();
     } catch (e: any) {
+      setLastDiagnostics(null);
       toast({
         title: isAr ? 'فشل الفحص' : 'Rebuild failed',
         description: sanitizeError(e),
