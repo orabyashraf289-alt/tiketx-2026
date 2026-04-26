@@ -267,7 +267,115 @@ export function ApprovalKanban() {
         <Badge variant="secondary" className="text-[10px] px-2 py-1 rounded-full">
           {isAr ? 'نتائج' : 'Results'}: {filtered.length}
         </Badge>
+        <div className="ms-auto flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={selectMode ? 'default' : 'outline'}
+            className="h-9 rounded-xl text-xs gap-1.5"
+            onClick={() => {
+              setSelectMode(v => !v);
+              if (selectMode) clearSelection();
+            }}
+          >
+            {selectMode ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+            {isAr ? 'تحديد متعدد' : 'Multi-select'}
+          </Button>
+          {selectMode && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 rounded-xl text-xs"
+              onClick={selectAllPendingFiltered}
+            >
+              {isAr ? 'تحديد كل المعلّقة' : 'Select all pending'}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Bulk action bar */}
+      <AnimatePresence>
+        {selectMode && pendingSelectedCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="sticky top-0 z-10 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 backdrop-blur px-4 py-2.5"
+          >
+            <div className="flex items-center gap-2">
+              <Badge className="bg-primary text-primary-foreground text-xs">{pendingSelectedCount}</Badge>
+              <span className="text-xs font-medium text-foreground">
+                {isAr ? 'اعتماد محدد' : 'selected'}
+              </span>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={clearSelection}>
+                {isAr ? 'إلغاء التحديد' : 'Clear'}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 h-8 bg-success hover:bg-success/90 text-success-foreground"
+                disabled={bulkMutation.isPending}
+                onClick={() => setBulkAction('approved')}
+              >
+                <Check className="h-3.5 w-3.5" />
+                {isAr ? 'اعتماد الكل' : 'Approve all'}
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-1.5 h-8"
+                disabled={bulkMutation.isPending}
+                onClick={() => setBulkAction('rejected')}
+              >
+                <X className="h-3.5 w-3.5" />
+                {isAr ? 'رفض الكل' : 'Reject all'}
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk confirm dialog */}
+      <Dialog open={bulkAction !== null} onOpenChange={(open) => { if (!open) { setBulkAction(null); setBulkNotes(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkAction === 'approved'
+                ? (isAr ? 'تأكيد الاعتماد الجماعي' : 'Confirm bulk approval')
+                : (isAr ? 'تأكيد الرفض الجماعي' : 'Confirm bulk rejection')}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `سيتم تطبيق الإجراء على ${pendingSelectedCount} اعتماد معلّق فقط. لا يمكن التراجع.`
+                : `Action will apply to ${pendingSelectedCount} pending approvals only. This cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder={isAr ? 'ملاحظات (اختياري)...' : 'Notes (optional)...'}
+            value={bulkNotes}
+            onChange={e => setBulkNotes(e.target.value)}
+            className="min-h-[80px] text-sm"
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setBulkAction(null); setBulkNotes(''); }}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button
+              variant={bulkAction === 'rejected' ? 'destructive' : 'default'}
+              disabled={bulkMutation.isPending}
+              onClick={() => bulkAction && bulkMutation.mutate({
+                ids: Array.from(selectedIds),
+                status: bulkAction,
+                notes: bulkNotes.trim() || undefined,
+              })}
+            >
+              {bulkMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />}
+              {isAr ? 'تأكيد' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Kanban Columns */}
       <div className="flex gap-3 overflow-x-auto pb-4 min-h-[500px]">
