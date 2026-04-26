@@ -714,7 +714,7 @@ export async function createApprovalStage(stage: {
 }
 
 export async function updateApprovalStage(id: string, updates: Partial<ApprovalStage>) {
-  const { data, error } = await supabase.from('approval_stages').update(updates).eq('id', id).select().single();
+  const { data, error } = await supabase.from('approval_stages').update(updates as any).eq('id', id).select().single();
   if (error) throw error;
   return data;
 }
