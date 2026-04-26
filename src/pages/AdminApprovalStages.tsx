@@ -52,6 +52,7 @@ export default function AdminApprovalStages() {
   const [deleteTarget, setDeleteTarget] = useState<ApprovalStage | null>(null);
   const [activeTab, setActiveTab] = useState('stages');
   const [rebuilding, setRebuilding] = useState(false);
+  const [lastDiagnostics, setLastDiagnostics] = useState<Awaited<ReturnType<typeof rebuildApprovalRelationships>> | null>(null);
 
   const { data: stages = [], isLoading, error: stagesError, refetch: refetchStages } = useQuery({
     queryKey: ['approval-stages'],
