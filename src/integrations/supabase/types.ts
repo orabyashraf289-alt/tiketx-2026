@@ -1610,6 +1610,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_ticket_approvals: {
+        Args: { _ticket_id: string }
+        Returns: {
+          inserted_count: number
+          matched_stages: number
+        }[]
+      }
       decrement_helpful: { Args: { article_id: string }; Returns: undefined }
       developer_can_access_ticket: {
         Args: { _developer_id: string; _ticket_id: string }
@@ -1639,6 +1646,25 @@ export type Database = {
           _ticket_title: string
         }
         Returns: undefined
+      }
+      services_without_approval_coverage: {
+        Args: never
+        Returns: {
+          active_tickets_count: number
+          service_id: string
+          service_name: string
+          system_name: string
+        }[]
+      }
+      tickets_missing_approvals: {
+        Args: never
+        Returns: {
+          expected_stages_count: number
+          service_name: string
+          ticket_id: string
+          ticket_number: number
+          ticket_title: string
+        }[]
       }
     }
     Enums: {
