@@ -604,6 +604,15 @@ export async function upsertTicketFieldValues(values: { ticket_id: string; field
 export type ApprovalStageType = 'sequential' | 'parallel';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
+export interface ApprovalSkipRule {
+  field: 'priority' | 'department_id' | 'service_id' | 'category_id' | 'source_system';
+  operator: 'eq' | 'neq' | 'in' | 'nin';
+  value: string | string[];
+}
+export interface ApprovalConditions {
+  skip_if?: ApprovalSkipRule[];
+}
+
 export interface ApprovalStage {
   id: string;
   department_id: string;
@@ -615,6 +624,7 @@ export interface ApprovalStage {
   service_id: string | null;
   deadline_hours: number | null;
   escalation_to: string | null;
+  conditions: ApprovalConditions;
   created_at: string;
   departments?: { name: string } | null;
   services?: { name: string } | null;
