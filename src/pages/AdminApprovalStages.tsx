@@ -389,6 +389,8 @@ export default function AdminApprovalStages() {
 
           {/* Coverage Diagnostics (admin only) */}
           {isAdmin && <ApprovalCoveragePanel isAr={isAr} />}
+          {isAdmin && <TestApprovalCreationPanel isAr={isAr} />}
+          {(isAdmin || role === 'agent') && <TicketDiagnosticPanel isAr={isAr} />}
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
