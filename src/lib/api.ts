@@ -838,6 +838,96 @@ export async function backfillAllMissingApprovals(): Promise<{ processed: number
   return { processed: tickets.length, total_inserted: totalInserted };
 }
 
+// === Approval matching diagnostics (per-service / per-ticket) ===
+export interface StagePreviewRow {
+  stage_id: string;
+  stage_name: string;
+  stage_order: number;
+  match_reason: 'service_match' | 'department_match' | 'system_match' | 'other';
+  department_id: string | null;
+  department_name: string | null;
+}
+
+export async function previewApprovalStagesForService(serviceId: string): Promise<StagePreviewRow[]> {
+  const { data, error } = await supabase.rpc('preview_approval_stages_for_service', { _service_id: serviceId });
+  if (error) throw error;
+  return (data || []) as StagePreviewRow[];
+}
+
+export interface MatchedStageInfo {
+  stage_id: string;
+  stage_name: string;
+  stage_order: number;
+  match_reason: string;
+  will_skip: boolean;
+}
+
+export interface TicketApprovalDiagnostics {
+  ticket_id: string;
+  ticket_number: number;
+  ticket_title: string;
+  service_id: string | null;
+  service_name: string | null;
+  department_id: string | null;
+  derived_department_id: string | null;
+  system_id: string | null;
+  service_has_default_group: boolean;
+  existing_approvals_count: number;
+  service_match_count: number;
+  department_match_count: number;
+  system_match_count: number;
+  skipped_by_conditions_count: number;
+  total_potential_matches: number;
+  matched_stages: MatchedStageInfo[];
+  error?: string;
+}
+
+export async function diagnoseTicketApprovals(ticketId: string): Promise<TicketApprovalDiagnostics> {
+  const { data, error } = await supabase.rpc('diagnose_ticket_approvals', { _ticket_id: ticketId });
+  if (error) throw error;
+  return data as unknown as TicketApprovalDiagnostics;
+}
+
+export async function findTicketByNumber(ticketNumber: number): Promise<string | null> {
+  const { data, error } = await supabase.rpc('find_ticket_by_number', { _ticket_number: ticketNumber });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+
+export interface TestTicketResult {
+  service_id: string;
+  service_name: string;
+  department_id: string | null;
+  approvals_created: number;
+  stages: { stage_name: string; stage_order: number; status: string }[];
+  success: boolean;
+}
+
+export async function testTicketApprovalCreation(
+  serviceId: string,
+  departmentId?: string | null,
+): Promise<TestTicketResult> {
+  const { data, error } = await supabase.rpc('test_ticket_approval_creation', {
+    _service_id: serviceId,
+    _department_id: departmentId ?? null,
+  });
+  if (error) throw error;
+  return data as unknown as TestTicketResult;
+}
+
+export interface ServiceMissingGroup {
+  service_id: string;
+  service_name: string;
+  system_name: string | null;
+  active_tickets_count: number;
+}
+
+export async function fetchServicesWithoutAssignmentGroup(): Promise<ServiceMissingGroup[]> {
+  const { data, error } = await supabase.rpc('services_without_assignment_group');
+  if (error) throw error;
+  return (data || []) as ServiceMissingGroup[];
+}
+
 // Ticket Ratings
 export interface TicketRating {
   id: string;
