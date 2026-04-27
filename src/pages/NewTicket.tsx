@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, TicketPriority } from '@/lib/api';
+import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceCategories, fetchServiceFields, upsertTicketFieldValues, previewApprovalStagesForService, TicketPriority } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeError } from '@/lib/errorHandler';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowRight, ArrowLeft, Loader2, Send, FileText, Layers, Paperclip, Eye, Sparkles, User, Mail, Building2, Monitor, ChevronRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Send, FileText, Layers, Paperclip, Eye, Sparkles, User, Mail, Building2, Monitor, ChevronRight, ShieldAlert } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { WizardProgress } from '@/components/ticket-wizard/WizardProgress';
 import { FileDropZone } from '@/components/ticket-wizard/FileDropZone';
@@ -90,6 +91,12 @@ export default function NewTicket() {
     queryFn: () => fetchServiceFields(serviceId || undefined),
     enabled: !!serviceId,
   });
+  const { data: stagePreview = [], isLoading: stagePreviewLoading } = useQuery({
+    queryKey: ['stage-preview', serviceId],
+    queryFn: () => previewApprovalStagesForService(serviceId),
+    enabled: !!serviceId,
+  });
+  const isAdmin = role === 'admin';
 
   const filteredServices = systemId ? services.filter(s => s.system_id === systemId) : services;
   const selectedSystem = systems.find(s => s.id === systemId);
@@ -381,6 +388,47 @@ export default function NewTicket() {
                                 {selectedCategory && <Badge variant="outline">{selectedCategory.name}</Badge>}
                               </div>
                             </motion.div>
+                          )}
+
+                          {serviceId && !stagePreviewLoading && stagePreview.length === 0 && (
+                            <Alert variant="destructive" className="rounded-xl" data-testid="no-approval-stages-alert">
+                              <ShieldAlert className="h-4 w-4" />
+                              <AlertTitle className="text-sm">
+                                {isRTL ? 'لا توجد مراحل اعتماد لهذه الخدمة' : 'No approval stages for this service'}
+                              </AlertTitle>
+                              <AlertDescription className="text-xs space-y-1.5">
+                                <p>
+                                  {isRTL
+                                    ? 'يمكنك إنشاء التذكرة لكنها لن تمر بأي اعتماد قبل المعالجة.'
+                                    : 'You can still create the ticket, but it will not require any approval before processing.'}
+                                </p>
+                                {isAdmin ? (
+                                  <ul className="list-disc ms-4 space-y-0.5 text-[11px]">
+                                    <li>
+                                      {isRTL
+                                        ? 'تحقق من أن للخدمة قسم افتراضي (default_assignment_group) في /admin/services.'
+                                        : 'Make sure the service has a default_assignment_group in /admin/services.'}
+                                    </li>
+                                    <li>
+                                      {isRTL
+                                        ? 'أضف مرحلة اعتماد جديدة في /admin/approval-stages مرتبطة بالخدمة أو بقسمها.'
+                                        : 'Add an approval stage in /admin/approval-stages linked to this service or its department.'}
+                                    </li>
+                                    <li>
+                                      {isRTL
+                                        ? 'استخدم زر "اختبار إنشاء تذكرة تجريبية" في صفحة المراحل للتحقق من المطابقة.'
+                                        : 'Use the "Test ticket approval creation" button on the stages page to verify matching.'}
+                                    </li>
+                                  </ul>
+                                ) : (
+                                  <p className="text-[11px] opacity-80">
+                                    {isRTL
+                                      ? 'تواصل مع المشرف لإعداد مراحل الاعتماد لهذه الخدمة.'
+                                      : 'Please contact your admin to configure approval stages for this service.'}
+                                  </p>
+                                )}
+                              </AlertDescription>
+                            </Alert>
                           )}
 
                           {serviceFields.length > 0 && serviceId && (

@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { ServicesMissingGroupPanel } from '@/components/services/ServicesMissingGroupPanel';
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -297,6 +298,7 @@ export default function AdminServiceCatalog() {
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-5xl mx-auto">
+              <ServicesMissingGroupPanel isAr={isRTL} />
               {systems.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
                   <Server className="h-12 w-12 mx-auto mb-3 opacity-40" />

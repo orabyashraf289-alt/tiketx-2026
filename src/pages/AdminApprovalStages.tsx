@@ -20,6 +20,8 @@ import { ApprovalStageForm, type StageFormData } from '@/components/approval-sta
 import { DepartmentStageGroup } from '@/components/approval-stages/DepartmentStageGroup';
 import { ApprovalFlowchart } from '@/components/approval-stages/ApprovalFlowchart';
 import { ApprovalCoveragePanel } from '@/components/approval-stages/ApprovalCoveragePanel';
+import { TicketDiagnosticPanel } from '@/components/approval-stages/TicketDiagnosticPanel';
+import { TestApprovalCreationPanel } from '@/components/approval-stages/TestApprovalCreationPanel';
 import { differenceInHours } from 'date-fns';
 
 
@@ -387,6 +389,8 @@ export default function AdminApprovalStages() {
 
           {/* Coverage Diagnostics (admin only) */}
           {isAdmin && <ApprovalCoveragePanel isAr={isAr} />}
+          {isAdmin && <TestApprovalCreationPanel isAr={isAr} />}
+          {(isAdmin || role === 'agent') && <TicketDiagnosticPanel isAr={isAr} />}
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
