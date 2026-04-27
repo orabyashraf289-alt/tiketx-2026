@@ -390,7 +390,46 @@ export default function NewTicket() {
                             </motion.div>
                           )}
 
-                          {serviceFields.length > 0 && serviceId && (
+                          {serviceId && !stagePreviewLoading && stagePreview.length === 0 && (
+                            <Alert variant="destructive" className="rounded-xl" data-testid="no-approval-stages-alert">
+                              <ShieldAlert className="h-4 w-4" />
+                              <AlertTitle className="text-sm">
+                                {isRTL ? 'لا توجد مراحل اعتماد لهذه الخدمة' : 'No approval stages for this service'}
+                              </AlertTitle>
+                              <AlertDescription className="text-xs space-y-1.5">
+                                <p>
+                                  {isRTL
+                                    ? 'يمكنك إنشاء التذكرة لكنها لن تمر بأي اعتماد قبل المعالجة.'
+                                    : 'You can still create the ticket, but it will not require any approval before processing.'}
+                                </p>
+                                {isAdmin ? (
+                                  <ul className="list-disc ms-4 space-y-0.5 text-[11px]">
+                                    <li>
+                                      {isRTL
+                                        ? 'تحقق من أن للخدمة قسم افتراضي (default_assignment_group) في /admin/services.'
+                                        : 'Make sure the service has a default_assignment_group in /admin/services.'}
+                                    </li>
+                                    <li>
+                                      {isRTL
+                                        ? 'أضف مرحلة اعتماد جديدة في /admin/approval-stages مرتبطة بالخدمة أو بقسمها.'
+                                        : 'Add an approval stage in /admin/approval-stages linked to this service or its department.'}
+                                    </li>
+                                    <li>
+                                      {isRTL
+                                        ? 'استخدم زر "اختبار إنشاء تذكرة تجريبية" في صفحة المراحل للتحقق من المطابقة.'
+                                        : 'Use the "Test ticket approval creation" button on the stages page to verify matching.'}
+                                    </li>
+                                  </ul>
+                                ) : (
+                                  <p className="text-[11px] opacity-80">
+                                    {isRTL
+                                      ? 'تواصل مع المشرف لإعداد مراحل الاعتماد لهذه الخدمة.'
+                                      : 'Please contact your admin to configure approval stages for this service.'}
+                                  </p>
+                                )}
+                              </AlertDescription>
+                            </Alert>
+                          )}
                             <div className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/20">
                               <p className="text-sm font-semibold text-muted-foreground">{t.newTicket.additionalFields}</p>
                               {serviceFields.map(field => (
