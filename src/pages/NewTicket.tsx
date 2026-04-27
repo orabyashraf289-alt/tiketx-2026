@@ -430,6 +430,8 @@ export default function NewTicket() {
                               </AlertDescription>
                             </Alert>
                           )}
+
+                          {serviceFields.length > 0 && serviceId && (
                             <div className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/20">
                               <p className="text-sm font-semibold text-muted-foreground">{t.newTicket.additionalFields}</p>
                               {serviceFields.map(field => (
