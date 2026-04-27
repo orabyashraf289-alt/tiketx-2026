@@ -1627,10 +1627,19 @@ export type Database = {
           matched_stages: number
         }[]
       }
+      backfill_ticket_approvals_for_service: {
+        Args: { _service_id: string }
+        Returns: number
+      }
       decrement_helpful: { Args: { article_id: string }; Returns: undefined }
       developer_can_access_ticket: {
         Args: { _developer_id: string; _ticket_id: string }
         Returns: boolean
+      }
+      diagnose_ticket_approvals: { Args: { _ticket_id: string }; Returns: Json }
+      find_ticket_by_number: {
+        Args: { _ticket_number: number }
+        Returns: string
       }
       get_user_role: {
         Args: { _user_id: string }
@@ -1645,6 +1654,17 @@ export type Database = {
       }
       increment_helpful: { Args: { article_id: string }; Returns: undefined }
       increment_views: { Args: { article_id: string }; Returns: undefined }
+      preview_approval_stages_for_service: {
+        Args: { _service_id: string }
+        Returns: {
+          department_id: string
+          department_name: string
+          match_reason: string
+          stage_id: string
+          stage_name: string
+          stage_order: number
+        }[]
+      }
       send_email_notification_via_edge: {
         Args: {
           _details?: string
@@ -1665,6 +1685,19 @@ export type Database = {
           service_name: string
           system_name: string
         }[]
+      }
+      services_without_assignment_group: {
+        Args: never
+        Returns: {
+          active_tickets_count: number
+          service_id: string
+          service_name: string
+          system_name: string
+        }[]
+      }
+      test_ticket_approval_creation: {
+        Args: { _department_id?: string; _service_id: string }
+        Returns: Json
       }
       tickets_missing_approvals: {
         Args: never
