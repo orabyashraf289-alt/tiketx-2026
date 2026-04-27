@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { ServicesMissingGroupPanel } from '@/components/services/ServicesMissingGroupPanel';
 
 const pageVariants = {
   hidden: { opacity: 0 },
