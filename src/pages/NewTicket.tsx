@@ -91,6 +91,12 @@ export default function NewTicket() {
     queryFn: () => fetchServiceFields(serviceId || undefined),
     enabled: !!serviceId,
   });
+  const { data: stagePreview = [], isLoading: stagePreviewLoading } = useQuery({
+    queryKey: ['stage-preview', serviceId],
+    queryFn: () => previewApprovalStagesForService(serviceId),
+    enabled: !!serviceId,
+  });
+  const isAdmin = role === 'admin';
 
   const filteredServices = systemId ? services.filter(s => s.system_id === systemId) : services;
   const selectedSystem = systems.find(s => s.id === systemId);
