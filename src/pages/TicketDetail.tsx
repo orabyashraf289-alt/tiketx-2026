@@ -538,6 +538,12 @@ export default function TicketDetailPage() {
                           </div>
                         </TabsContent>
 
+                        {approvalsData.length > 0 && (
+                          <TabsContent value="approvals" className="mt-0">
+                            <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
+                          </TabsContent>
+                        )}
+
                         {isAgentOrAdmin && (
                           <TabsContent value="audit" className="mt-0">
                             {auditLogs.length === 0 ? (
