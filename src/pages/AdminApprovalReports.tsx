@@ -334,9 +334,7 @@ export default function AdminApprovalReports() {
                 </motion.div>
               </motion.div>
             )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }
