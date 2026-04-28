@@ -318,19 +318,25 @@ export default function TicketDetailPage() {
         actions={backButton}
       />
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto">
             <motion.div
               variants={pageVariants}
               initial="hidden"
               animate="visible"
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
+              className="max-w-6xl mx-auto space-y-4"
             >
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+              {/* Approval stepper - prominently at top */}
+              {approvalsData.length > 0 && (
                 <motion.div variants={fadeUp}>
-                  <Card className="group rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
-                    {/* Top accent bar */}
-                    <div className="h-1.5 w-full bg-primary" />
+                  <ApprovalStepper ticketId={ticket.id} />
+                </motion.div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                <motion.div variants={fadeUp}>
+                  <Card className="group rounded-xl border-border/50 shadow-sm overflow-hidden">
                     <CardHeader>
                       <div className="flex items-center gap-2 flex-wrap mb-2">
                         <StatusBadge status={ticket.status} />
