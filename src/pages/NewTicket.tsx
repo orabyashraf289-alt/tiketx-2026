@@ -449,30 +449,30 @@ export default function NewTicket() {
                         <TicketPreview title={title} description={description} priority={priority} systemId={systemId} serviceId={serviceId} categoryId={categoryId}
                           files={files} customFieldValues={customFieldValues} systems={systems} services={services} categories={categories} serviceFields={serviceFields} />
                       )}
-                    </motion.div>
-                  </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
 
-                  <div className="flex items-center justify-between mt-8 pt-5 border-t">
-                    <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
-                      <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                      {t.common.previous}
-                    </Button>
-                    {step < 3 ? (
-                      <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
-                        {t.common.next}
-                        <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                      </Button>
-                    ) : (
-                      <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
-                        {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                        {t.newTicket.submitTicket}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
+              <div className="flex items-center justify-between mt-8 pt-5 border-t border-border/60">
+                <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
+                  <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                  {t.common.previous}
+                </Button>
+                {step < 3 ? (
+                  <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
+                    {t.common.next}
+                    <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                  </Button>
+                ) : (
+                  <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
+                    {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {t.newTicket.submitTicket}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </PageLayout>
   );
 }
