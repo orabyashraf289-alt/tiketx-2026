@@ -452,9 +452,7 @@ export default function AdminServiceCatalog() {
                 </Accordion>
               )}
             </motion.div>
-          </main>
-        </div>
-      </div>
+      </main>
 
       {/* System Dialog */}
       <Dialog open={sysOpen} onOpenChange={setSysOpen}>
@@ -532,6 +530,6 @@ export default function AdminServiceCatalog() {
           </div>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </PageLayout>
   );
 }
