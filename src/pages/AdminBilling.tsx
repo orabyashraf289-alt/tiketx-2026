@@ -5,7 +5,7 @@ import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
+
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { CreditCard, Check, Crown, Zap, Building2, ArrowUp } from 'lucide-react';
