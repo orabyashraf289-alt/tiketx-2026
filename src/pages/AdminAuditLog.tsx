@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
+
 import { motion } from 'framer-motion';
 import { Search, Shield, FileText, Filter, Download, Clock, User, Activity } from 'lucide-react';
 import { format, subDays } from 'date-fns';
@@ -106,28 +105,18 @@ export default function AdminAuditLog() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <Shield className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold text-foreground">{t.admin.auditLogTitle}</h1>
-              <Badge variant="secondary" className="text-xs">{filtered.length} {t.admin.auditLogs}</Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5">
-                <Download className="h-4 w-4" />
-                {t.admin.exportCSV}
-              </Button>
-              <NotificationsPopover />
-            </div>
-          </motion.header>
+    <PageLayout>
+      <PageHeader
+        title={t.admin.auditLogTitle}
+        icon={<Shield className="h-4 w-4" />}
+        badge={<Badge variant="secondary" className="text-xs">{filtered.length} {t.admin.auditLogs}</Badge>}
+        actions={
+          <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5">
+            <Download className="h-4 w-4" />
+            {t.admin.exportCSV}
+          </Button>
+        }
+      />
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <div className="max-w-6xl mx-auto space-y-6">
@@ -282,9 +271,7 @@ export default function AdminAuditLog() {
                 )}
               </Card>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }

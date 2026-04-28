@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -193,37 +192,30 @@ export default function AdminApprovalReports() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold text-foreground">تقرير الاعتمادات</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select value={timeFilter} onValueChange={v => setTimeFilter(v as TimeFilter)}>
-                <SelectTrigger className="w-36 rounded-xl text-xs h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">آخر 7 أيام</SelectItem>
-                  <SelectItem value="30">آخر 30 يوم</SelectItem>
-                  <SelectItem value="90">آخر 90 يوم</SelectItem>
-                  <SelectItem value="all">الكل</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm" className="gap-1.5 rounded-xl text-xs h-8" onClick={handleExportPDF}>
-                <FileDown className="h-3.5 w-3.5" />
-                تصدير PDF
-              </Button>
-            </div>
-          </motion.header>
+    <PageLayout>
+      <PageHeader
+        title="تقرير الاعتمادات"
+        icon={<ShieldCheck className="h-4 w-4" />}
+        actions={
+          <>
+            <Select value={timeFilter} onValueChange={v => setTimeFilter(v as TimeFilter)}>
+              <SelectTrigger className="w-32 rounded-lg text-xs h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">آخر 7 أيام</SelectItem>
+                <SelectItem value="30">آخر 30 يوم</SelectItem>
+                <SelectItem value="90">آخر 90 يوم</SelectItem>
+                <SelectItem value="all">الكل</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-lg text-xs h-8" onClick={handleExportPDF}>
+              <FileDown className="h-3.5 w-3.5" />
+              تصدير PDF
+            </Button>
+          </>
+        }
+      />
 
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             {isLoading ? (
@@ -342,9 +334,7 @@ export default function AdminApprovalReports() {
                 </motion.div>
               </motion.div>
             )}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }

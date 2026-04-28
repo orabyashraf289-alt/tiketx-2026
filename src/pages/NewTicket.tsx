@@ -6,8 +6,7 @@ import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceC
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeError } from '@/lib/errorHandler';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout } from '@/components/layout';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -199,54 +198,45 @@ export default function NewTicket() {
 
   return (
     <PageLayout>
-      <header className="h-[56px] flex items-center border-b border-border/40 bg-card/90 backdrop-blur-xl px-4 gap-3 shrink-0 sticky top-0 z-30">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-              <ArrowRight className={`h-5 w-5 ${!isRTL ? 'rotate-180' : ''}`} />
-            </Button>
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <FileText className="h-4 w-4 text-primary" />
+      <PageHeader
+        title={t.newTicket.title}
+        icon={<FileText className="h-4 w-4" />}
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-1.5 text-muted-foreground hover:text-foreground">
+            <ArrowRight className={`h-4 w-4 ${!isRTL ? 'rotate-180' : ''}`} />
+            <span className="hidden sm:inline">{t.common.back ?? (isRTL ? 'رجوع' : 'Back')}</span>
+          </Button>
+        }
+      />
+
+      <main className="flex-1 overflow-auto bg-muted/20">
+        <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-5">
+          {/* Requester strip — minimal, single line */}
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-3.5 py-2.5">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                {profile?.full_name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium text-foreground truncate">{profile?.full_name || t.common.user}</span>
+              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">{roleLabel}</Badge>
+              <span className="text-xs text-muted-foreground inline-flex items-center gap-1 truncate">
+                <Mail className="h-3 w-3" />{profile?.email || user?.email}
+              </span>
             </div>
-            <h1 className="text-[15px] font-bold text-foreground">{t.newTicket.title}</h1>
-          </header>
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+              <User className="h-3 w-3" />{t.newTicket.requesterLabel}
+            </span>
+          </motion.div>
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <div className="max-w-2xl mx-auto">
-              {/* Requester Info Card */}
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-xl border bg-card p-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12 border-2 border-primary/20">
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
-                      {profile?.full_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{profile?.full_name || t.common.user}</h3>
-                      <Badge variant="outline" className="text-xs">{roleLabel}</Badge>
-                    </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" />
-                        {profile?.email || user?.email}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground hidden sm:block">
-                    <span className="flex items-center gap-1">
-                      <User className="h-3.5 w-3.5" />
-                      {t.newTicket.requesterLabel}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+          <WizardProgress steps={WIZARD_STEPS} currentStep={step} />
 
-              <WizardProgress steps={WIZARD_STEPS} currentStep={step} />
-
-              <Card className="overflow-hidden">
-                <CardContent className="p-6">
-                  <AnimatePresence mode="wait" custom={direction}>
-                    <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: 'easeInOut' }}>
+          <Card className="overflow-hidden border-border/60 shadow-sm">
+            <CardContent className="p-5 md:p-6">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div key={step} custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: 'easeOut' }}>
                       {step === 0 && (
                         <div className="space-y-5">
                           <TicketTemplatesPicker onSelect={(tmpl) => { setTitle(tmpl.title); setDescription(tmpl.description); setPriority(tmpl.priority); }} />
@@ -459,30 +449,30 @@ export default function NewTicket() {
                         <TicketPreview title={title} description={description} priority={priority} systemId={systemId} serviceId={serviceId} categoryId={categoryId}
                           files={files} customFieldValues={customFieldValues} systems={systems} services={services} categories={categories} serviceFields={serviceFields} />
                       )}
-                    </motion.div>
-                  </AnimatePresence>
+                </motion.div>
+              </AnimatePresence>
 
-                  <div className="flex items-center justify-between mt-8 pt-5 border-t">
-                    <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
-                      <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                      {t.common.previous}
-                    </Button>
-                    {step < 3 ? (
-                      <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
-                        {t.common.next}
-                        <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                      </Button>
-                    ) : (
-                      <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
-                        {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                        {t.newTicket.submitTicket}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
+              <div className="flex items-center justify-between mt-8 pt-5 border-t border-border/60">
+                <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
+                  <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                  {t.common.previous}
+                </Button>
+                {step < 3 ? (
+                  <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
+                    {t.common.next}
+                    <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                  </Button>
+                ) : (
+                  <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
+                    {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {t.newTicket.submitTicket}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </PageLayout>
   );
 }

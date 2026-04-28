@@ -9,8 +9,7 @@ import {
   System, Service, ServiceCategory,
 } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -242,61 +241,53 @@ export default function AdminServiceCatalog() {
   const isSysSaving = createSysMut.isPending || updateSysMut.isPending;
   const isSvcSaving = createSvcMut.isPending || updateSvcMut.isPending;
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <h1 className="text-lg font-bold text-foreground">{t.admin.serviceCatalogTitle}</h1>
+  const headerActions = (
+    <>
+      <Button size="sm" variant="outline" className="gap-1 text-xs rounded-lg" onClick={openNewSystem}>
+        <Plus className="h-3.5 w-3.5" /> {t.admin.addSystem}
+      </Button>
+      <Button size="sm" className="gradient-accent text-accent-foreground gap-1 text-xs shadow-sm rounded-lg" onClick={() => openNewService()}>
+        <Plus className="h-3.5 w-3.5" /> {t.admin.addService}
+      </Button>
+      <Dialog open={catOpen} onOpenChange={setCatOpen}>
+        <DialogTrigger asChild>
+          <Button size="sm" variant="outline" className="gap-1 text-xs rounded-lg">
+            <Plus className="h-3.5 w-3.5" /> {t.admin.addCategory}
+          </Button>
+        </DialogTrigger>
+        <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+          <DialogHeader><DialogTitle>{t.admin.newCategory}</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>{t.admin.forService} *</Label>
+              <Select value={catServiceId} onValueChange={setCatServiceId}>
+                <SelectTrigger className="rounded-lg"><SelectValue placeholder={t.tickets.selectService} /></SelectTrigger>
+                <SelectContent>
+                  {services.map(s => <SelectItem key={s.id} value={s.id}>{s.systems?.name} → {s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button size="sm" variant="outline" className="gap-1 text-xs rounded-xl" onClick={openNewSystem}>
-                <Plus className="h-3.5 w-3.5" /> {t.admin.addSystem}
-              </Button>
-              <Button size="sm" className="gradient-accent text-accent-foreground gap-1 text-xs shadow-lg shadow-primary/20 rounded-xl" onClick={() => openNewService()}>
-                <Plus className="h-3.5 w-3.5" /> {t.admin.addService}
-              </Button>
-              <Dialog open={catOpen} onOpenChange={setCatOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-1 text-xs rounded-xl">
-                    <Plus className="h-3.5 w-3.5" /> {t.admin.addCategory}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent dir={isRTL ? 'rtl' : 'ltr'}>
-                  <DialogHeader><DialogTitle>{t.admin.newCategory}</DialogTitle></DialogHeader>
-                  <div className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label>{t.admin.forService} *</Label>
-                      <Select value={catServiceId} onValueChange={setCatServiceId}>
-                        <SelectTrigger className="rounded-xl"><SelectValue placeholder={t.tickets.selectService} /></SelectTrigger>
-                        <SelectContent>
-                          {services.map(s => <SelectItem key={s.id} value={s.id}>{s.systems?.name} → {s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t.admin.categoryName} *</Label>
-                      <Input value={catName} onChange={e => setCatName(e.target.value)} className="rounded-xl" />
-                    </div>
-                    <Button className="w-full gradient-accent text-accent-foreground rounded-xl" disabled={!catServiceId || !catName.trim() || createCatMut.isPending} onClick={() => createCatMut.mutate()}>
-                      {createCatMut.isPending && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
-                      {t.common.create}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+            <div className="space-y-2">
+              <Label>{t.admin.categoryName} *</Label>
+              <Input value={catName} onChange={e => setCatName(e.target.value)} className="rounded-lg" />
             </div>
-          </motion.header>
+            <Button className="w-full gradient-accent text-accent-foreground rounded-lg" disabled={!catServiceId || !catName.trim() || createCatMut.isPending} onClick={() => createCatMut.mutate()}>
+              {createCatMut.isPending && <Loader2 className={`h-4 w-4 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />}
+              {t.common.create}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
+  return (
+    <PageLayout>
+      <PageHeader
+        title={t.admin.serviceCatalogTitle}
+        actions={headerActions}
+      />
+      <main className="flex-1 p-4 md:p-6 overflow-auto">
             <motion.div variants={pageVariants} initial="hidden" animate="visible" className="max-w-5xl mx-auto">
               <ServicesMissingGroupPanel isAr={isRTL} />
               {systems.length === 0 ? (
@@ -461,9 +452,7 @@ export default function AdminServiceCatalog() {
                 </Accordion>
               )}
             </motion.div>
-          </main>
-        </div>
-      </div>
+      </main>
 
       {/* System Dialog */}
       <Dialog open={sysOpen} onOpenChange={setSysOpen}>
@@ -541,6 +530,6 @@ export default function AdminServiceCatalog() {
           </div>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </PageLayout>
   );
 }

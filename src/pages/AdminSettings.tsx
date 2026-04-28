@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -169,10 +168,12 @@ export default function AdminSettings() {
   if (loading) return null;
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
+    <PageLayout>
+      <PageHeader
+        title={t.admin.systemSettings}
+        icon={<Settings className="h-4 w-4" />}
+      />
+      <main className="flex-1 p-4 md:p-6 overflow-auto">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -384,8 +385,7 @@ export default function AdminSettings() {
           >
             <CannedResponsesManager />
           </motion.div>
-        </main>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }
