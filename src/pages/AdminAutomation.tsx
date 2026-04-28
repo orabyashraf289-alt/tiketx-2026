@@ -251,14 +251,19 @@ export default function AdminAutomation() {
                       onClick={() => createMutation.mutate()}>
                       {t.admin.createRule}
                     </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <NotificationsPopover />
-            </div>
-          </motion.header>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+  return (
+    <PageLayout>
+      <PageHeader
+        title={t.admin.automationTitle}
+        icon={<Zap className="h-4 w-4" />}
+        actions={dialogTrigger}
+      />
+      <main className="flex-1 overflow-auto p-4 md:p-6">
             <div className="max-w-5xl mx-auto">
               <Tabs defaultValue="rules" dir={isRTL ? 'rtl' : 'ltr'}>
                 <TabsList><TabsTrigger value="rules">{t.admin.rulesTab}</TabsTrigger><TabsTrigger value="logs">{t.admin.logsTab}</TabsTrigger></TabsList>
@@ -309,9 +314,7 @@ export default function AdminAutomation() {
                 </TabsContent>
               </Tabs>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }
