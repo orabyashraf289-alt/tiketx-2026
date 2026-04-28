@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
+
 import { toast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { MessageSquare, Send, CheckCircle, XCircle, Hash, Bell, Zap, AlertTriangle } from 'lucide-react';
