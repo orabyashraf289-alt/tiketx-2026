@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { NotificationsPopover } from '@/components/NotificationsPopover';
+
 import { motion } from 'framer-motion';
 import { Search, Shield, FileText, Filter, Download, Clock, User, Activity } from 'lucide-react';
 import { format, subDays } from 'date-fns';
