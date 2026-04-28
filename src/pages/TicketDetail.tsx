@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType } from '@/lib/api';
 import { ApprovalTimeline } from '@/components/ApprovalTimeline';
+import { ApprovalStepper } from '@/components/approval-stages/ApprovalStepper';
+import { fetchTicketApprovals } from '@/lib/api';
 import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, User, Clock, Tag, MessageCircle, Send, Loader2, History, Lock, Globe, RotateCcw, Paperclip, FileText } from 'lucide-react';
+import { ArrowRight, User, Clock, Tag, MessageCircle, Send, Loader2, History, Lock, Globe, RotateCcw, Paperclip, FileText, ShieldCheck } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -117,6 +119,14 @@ export default function TicketDetailPage() {
     queryFn: () => fetchServiceFields(ticket?.service_id || undefined),
     enabled: !!ticket?.service_id,
   });
+
+  const { data: approvalsData = [] } = useQuery({
+    queryKey: ['ticket-approvals', id],
+    queryFn: () => fetchTicketApprovals(id!),
+    enabled: !!id,
+  });
+
+  const pendingApprovals = approvalsData.filter(a => a.status === 'pending').length;
 
   // Realtime: all ticket-related changes in a single channel
   useEffect(() => {
@@ -308,19 +318,25 @@ export default function TicketDetailPage() {
         actions={backButton}
       />
 
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto">
             <motion.div
               variants={pageVariants}
               initial="hidden"
               animate="visible"
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"
+              className="max-w-6xl mx-auto space-y-4"
             >
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+              {/* Approval stepper - prominently at top */}
+              {approvalsData.length > 0 && (
                 <motion.div variants={fadeUp}>
-                  <Card className="group rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
-                    {/* Top accent bar */}
-                    <div className="h-1.5 w-full bg-primary" />
+                  <ApprovalStepper ticketId={ticket.id} />
+                </motion.div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+                <motion.div variants={fadeUp}>
+                  <Card className="group rounded-xl border-border/50 shadow-sm overflow-hidden">
                     <CardHeader>
                       <div className="flex items-center gap-2 flex-wrap mb-2">
                         <StatusBadge status={ticket.status} />
@@ -405,16 +421,26 @@ export default function TicketDetailPage() {
 
                 {/* Comments */}
                 <motion.div variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
-                    <Tabs defaultValue="comments" dir="rtl">
-                      <CardHeader className="pb-2">
-                        <TabsList className="rounded-xl">
-                          <TabsTrigger value="comments" className="gap-1 rounded-lg">
+                  <Card className="rounded-xl border-border/50 shadow-sm overflow-hidden">
+                    <Tabs defaultValue="comments" dir={isRTL ? 'rtl' : 'ltr'}>
+                      <CardHeader className="pb-2 border-b border-border/40 bg-muted/20">
+                        <TabsList className="rounded-md bg-transparent h-auto p-0 gap-0 border-0">
+                          <TabsTrigger value="comments" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
                             <MessageCircle className="h-3.5 w-3.5" />
-                            {t.tickets.conversation} ({comments.length})
+                            {t.tickets.conversation}
+                            <span className="bg-muted text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-full ms-0.5 tabular-nums">{comments.length}</span>
                           </TabsTrigger>
+                          {approvalsData.length > 0 && (
+                            <TabsTrigger value="approvals" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
+                              <ShieldCheck className="h-3.5 w-3.5" />
+                              {lang === 'ar' ? 'الاعتمادات' : 'Approvals'}
+                              {pendingApprovals > 0 && (
+                                <span className="bg-warning/15 text-warning text-[10px] px-1.5 py-0.5 rounded-full ms-0.5 tabular-nums">{pendingApprovals}</span>
+                              )}
+                            </TabsTrigger>
+                          )}
                           {isAgentOrAdmin && (
-                            <TabsTrigger value="audit" className="gap-1 rounded-lg">
+                            <TabsTrigger value="audit" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
                               <History className="h-3.5 w-3.5" />
                               {t.tickets.auditLog}
                             </TabsTrigger>
@@ -511,6 +537,12 @@ export default function TicketDetailPage() {
                             </div>
                           </div>
                         </TabsContent>
+
+                        {approvalsData.length > 0 && (
+                          <TabsContent value="approvals" className="mt-0">
+                            <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
+                          </TabsContent>
+                        )}
 
                         {isAgentOrAdmin && (
                           <TabsContent value="audit" className="mt-0">
@@ -747,6 +779,7 @@ export default function TicketDetailPage() {
                     )}
                   </>
                 )}
+              </div>
               </div>
             </motion.div>
           </main>
