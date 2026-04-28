@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,24 +59,12 @@ export default function AdminSlackIntegration() {
   ];
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30"
-          >
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <MessageSquare className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">تكامل Slack</h1>
-            </div>
-            <NotificationsPopover />
-          </motion.header>
-
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+    <PageLayout>
+      <PageHeader
+        title="تكامل Slack"
+        icon={<MessageSquare className="h-4 w-4" />}
+      />
+      <main className="flex-1 overflow-auto p-4 md:p-6">
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Connection Status */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -192,9 +179,7 @@ export default function AdminSlackIntegration() {
                 </Card>
               </motion.div>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </PageLayout>
   );
 }
