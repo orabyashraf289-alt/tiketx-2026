@@ -6,8 +6,7 @@ import { createTicket, addAttachment, fetchSystems, fetchServices, fetchServiceC
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeError } from '@/lib/errorHandler';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout } from '@/components/layout';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
