@@ -1,9 +1,11 @@
 import { memo, forwardRef } from 'react';
-import { Ticket } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { Ticket, fetchTicketApprovals } from '@/lib/api';
 import { StatusBadge, PriorityBadge, SLABadge } from '@/components/TicketBadges';
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
-import { User, Clock, ArrowLeft, ArrowRight } from 'lucide-react';
+import { User, Clock, ArrowLeft, ArrowRight, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useLanguage } from '@/i18n';
 
 interface Props {
@@ -12,7 +14,48 @@ interface Props {
   onClick: () => void;
 }
 
-export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, index, onClick }, ref) {
+/**
+ * Compact "Linear/Notion" style row.
+ * Shows code, title, badges and an inline approval indicator.
+ */
+function TicketApprovalIndicator({ ticketId }: { ticketId: string }) {
+  const { lang } = useLanguage();
+  const { data: approvals = [] } = useQuery({
+    queryKey: ['ticket-approvals', ticketId],
+    queryFn: () => fetchTicketApprovals(ticketId),
+    enabled: !!ticketId,
+    staleTime: 60_000,
+  });
+  if (approvals.length === 0) return null;
+  const total = approvals.length;
+  const approved = approvals.filter(a => a.status === 'approved').length;
+  const rejected = approvals.filter(a => a.status === 'rejected').length;
+  const pending = approvals.filter(a => a.status === 'pending').length;
+
+  const tone = rejected > 0
+    ? 'text-destructive border-destructive/30 bg-destructive/5'
+    : pending > 0
+      ? 'text-warning border-warning/30 bg-warning/5'
+      : 'text-success border-success/30 bg-success/5';
+
+  const Icon = rejected > 0 ? AlertTriangle : ShieldCheck;
+  const label = lang === 'ar' ? 'اعتماد' : 'Approval';
+
+  return (
+    <span
+      className={cn(
+        'hidden md:inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-medium',
+        tone,
+      )}
+      title={`${approved}/${total} ${label}`}
+    >
+      <Icon className="h-2.5 w-2.5" />
+      {approved}/{total}
+    </span>
+  );
+}
+
+export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, onClick }, ref) {
   const { t, lang, isRTL } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
   const dateLocale = lang === 'ar' ? ar : enUS;
@@ -23,58 +66,73 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
     <button
       ref={ref}
       onClick={onClick}
-      className={`group w-full text-start px-3 sm:px-4 py-3 transition-all duration-300 hover:bg-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset relative overflow-hidden ${
-        isOverdue ? 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/5' : ''
-      }`}
+      className={cn(
+        'group w-full text-start px-3 sm:px-4 py-2.5 sm:py-3 transition-colors duration-200',
+        'hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset',
+        'relative',
+        isOverdue && 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/[0.03]',
+      )}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
     >
-      {/* Hover gradient line */}
-      <div className="absolute top-0 ltr:left-0 rtl:right-0 w-0 h-full bg-gradient-to-b from-primary/15 via-accent/8 to-transparent group-hover:w-1 transition-all duration-500 ease-out" />
-      
-      {/* Subtle hover glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-primary/[0.03] to-transparent pointer-events-none" />
+      <div className="flex items-start gap-3">
+        {/* Status dot */}
+        <div className="pt-1.5 shrink-0">
+          <span className={cn(
+            'block w-1.5 h-1.5 rounded-full',
+            ticket.status === 'new' && 'bg-info',
+            ticket.status === 'open' && 'bg-primary',
+            ticket.status === 'in_progress' && 'bg-warning',
+            ticket.status === 'waiting_on_customer' && 'bg-muted-foreground',
+            ticket.status === 'resolved' && 'bg-success',
+            ticket.status === 'closed' && 'bg-muted-foreground/60',
+            ticket.status === 'reopened' && 'bg-destructive',
+          )} />
+        </div>
 
-      <div className="flex items-start justify-between gap-2 sm:gap-3 relative">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
-            <span className="text-[10px] sm:text-xs font-mono font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+          {/* Top row: code + title */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-muted-foreground shrink-0 tabular-nums">
               {ticket.code || `#${ticket.ticket_number}`}
             </span>
+            <h3 className="font-medium text-[13px] sm:text-sm truncate text-foreground group-hover:text-primary transition-colors">
+              {ticket.title}
+            </h3>
+          </div>
+
+          {/* Meta row */}
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <StatusBadge status={ticket.status} />
             <PriorityBadge priority={ticket.priority} />
-            <span className="hidden sm:inline-flex"><SLABadge slaResolutionDueAt={ticket.sla_resolution_due_at} resolvedAt={ticket.resolved_at} /></span>
+            <span className="hidden sm:inline-flex">
+              <SLABadge slaResolutionDueAt={ticket.sla_resolution_due_at} resolvedAt={ticket.resolved_at} />
+            </span>
+            <TicketApprovalIndicator ticketId={ticket.id} />
             {ticket.services && (
-              <span className="hidden md:inline-flex text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                {ticket.services.systems?.name} → {ticket.services.name}
-              </span>
-            )}
-            {ticket.departments?.name && (
-              <span className="hidden lg:inline-flex text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                {ticket.departments.name}
+              <span className="hidden lg:inline-flex text-[10px] text-muted-foreground truncate max-w-[200px]">
+                {ticket.services.systems?.name} · {ticket.services.name}
               </span>
             )}
           </div>
-          <h3 className="font-semibold text-xs sm:text-sm truncate text-foreground group-hover:text-primary transition-colors duration-300">{ticket.title}</h3>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-1 hidden sm:block">{ticket.description}</p>
         </div>
-      </div>
-      <div className="flex items-center justify-between mt-2 sm:mt-2.5 text-[10px] sm:text-xs text-muted-foreground relative">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <span className="flex items-center gap-1">
+
+        {/* Right column: people + time */}
+        <div className="hidden sm:flex flex-col items-end gap-1 shrink-0 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1 max-w-[150px] truncate">
             <User className="h-3 w-3" />
-            <span className="truncate max-w-[80px] sm:max-w-none">{ticket.requester?.full_name || t.common.unknown}</span>
+            <span className="truncate">{ticket.requester?.full_name || t.common.unknown}</span>
           </span>
           {ticket.agent?.full_name && (
-            <span className="hidden sm:flex items-center gap-1 text-primary">
+            <span className="flex items-center gap-1 text-primary/80 max-w-[150px] truncate">
               <AssignArrow className="h-3 w-3" />
-              {ticket.agent.full_name}
+              <span className="truncate">{ticket.agent.full_name}</span>
             </span>
           )}
+          <span className="flex items-center gap-1 tabular-nums">
+            <Clock className="h-3 w-3" />
+            {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: dateLocale })}
+          </span>
         </div>
-        <span className="flex items-center gap-1 shrink-0">
-          <Clock className="h-3 w-3" />
-          {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: dateLocale })}
-        </span>
       </div>
     </button>
   );
