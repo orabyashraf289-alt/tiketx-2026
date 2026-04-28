@@ -421,16 +421,26 @@ export default function TicketDetailPage() {
 
                 {/* Comments */}
                 <motion.div variants={fadeUp}>
-                  <Card className="rounded-2xl border-border/50 shadow-card overflow-hidden hover:shadow-card-hover transition-shadow duration-300">
-                    <Tabs defaultValue="comments" dir="rtl">
-                      <CardHeader className="pb-2">
-                        <TabsList className="rounded-xl">
-                          <TabsTrigger value="comments" className="gap-1 rounded-lg">
+                  <Card className="rounded-xl border-border/50 shadow-sm overflow-hidden">
+                    <Tabs defaultValue="comments" dir={isRTL ? 'rtl' : 'ltr'}>
+                      <CardHeader className="pb-2 border-b border-border/40 bg-muted/20">
+                        <TabsList className="rounded-md bg-transparent h-auto p-0 gap-0 border-0">
+                          <TabsTrigger value="comments" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
                             <MessageCircle className="h-3.5 w-3.5" />
-                            {t.tickets.conversation} ({comments.length})
+                            {t.tickets.conversation}
+                            <span className="bg-muted text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-full ms-0.5 tabular-nums">{comments.length}</span>
                           </TabsTrigger>
+                          {approvalsData.length > 0 && (
+                            <TabsTrigger value="approvals" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
+                              <ShieldCheck className="h-3.5 w-3.5" />
+                              {lang === 'ar' ? 'الاعتمادات' : 'Approvals'}
+                              {pendingApprovals > 0 && (
+                                <span className="bg-warning/15 text-warning text-[10px] px-1.5 py-0.5 rounded-full ms-0.5 tabular-nums">{pendingApprovals}</span>
+                              )}
+                            </TabsTrigger>
+                          )}
                           {isAgentOrAdmin && (
-                            <TabsTrigger value="audit" className="gap-1 rounded-lg">
+                            <TabsTrigger value="audit" className="gap-1.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-xs font-medium">
                               <History className="h-3.5 w-3.5" />
                               {t.tickets.auditLog}
                             </TabsTrigger>
