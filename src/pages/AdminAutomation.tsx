@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { PageLayout, PageHeader } from '@/components/layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,30 +139,19 @@ export default function AdminAutomation() {
     setActions(a => a.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
   };
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            className="h-14 flex items-center justify-between border-b bg-card/80 backdrop-blur-md px-4 gap-3 shrink-0 sticky top-0 z-30">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <Zap className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-bold">{t.admin.automationTitle}</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) resetForm(); }}>
-                <DialogTrigger asChild>
-                  <Button size="sm"><Plus className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />{t.admin.addRule}</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
-                  <DialogHeader><DialogTitle>{t.admin.createRule}</DialogTitle></DialogHeader>
-                  <div className="space-y-5 mt-2">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><Label>{t.admin.ruleName}</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder={t.admin.ruleNamePlaceholder} /></div>
-                      <div><Label>{t.admin.ruleDesc}</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder={t.admin.ruleDescPlaceholder} /></div>
-                    </div>
+  const dialogTrigger = (
+    <Dialog open={open} onOpenChange={v => { setOpen(v); if (!v) resetForm(); }}>
+      <DialogTrigger asChild>
+        <Button size="sm"><Plus className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />{t.admin.addRule}</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto" dir={isRTL ? 'rtl' : 'ltr'}>
+        <DialogHeader><DialogTitle>{t.admin.createRule}</DialogTitle></DialogHeader>
+        <div className="space-y-5 mt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>{t.admin.ruleName}</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder={t.admin.ruleNamePlaceholder} /></div>
+            <div><Label>{t.admin.ruleDesc}</Label><Input value={description} onChange={e => setDescription(e.target.value)} placeholder={t.admin.ruleDescPlaceholder} /></div>
+          </div>
+
 
                     <div className="p-3 rounded-xl border bg-primary/5">
                       <Label className="text-xs font-bold text-primary mb-2 block">⚡ {t.admin.triggerLabel}</Label>
