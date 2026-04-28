@@ -120,6 +120,14 @@ export default function TicketDetailPage() {
     enabled: !!ticket?.service_id,
   });
 
+  const { data: approvalsData = [] } = useQuery({
+    queryKey: ['ticket-approvals', id],
+    queryFn: () => fetchTicketApprovals(id!),
+    enabled: !!id,
+  });
+
+  const pendingApprovals = approvalsData.filter(a => a.status === 'pending').length;
+
   // Realtime: all ticket-related changes in a single channel
   useEffect(() => {
     if (!id) return;
