@@ -764,6 +764,7 @@ export default function TicketDetailPage() {
                   </>
                 )}
               </div>
+              </div>
             </motion.div>
           </main>
 
