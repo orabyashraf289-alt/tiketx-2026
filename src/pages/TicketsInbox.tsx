@@ -285,20 +285,20 @@ export default function TicketsInbox() {
   const headerActions = (
     <>
       {isAgentOrAdmin && (
-        <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-          <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-            <List className="h-4 w-4" />
+        <div className="flex items-center gap-0.5 bg-muted rounded-md p-0.5 border border-border/40">
+          <button onClick={() => { setViewMode('list'); setCurrentPage(1); }} className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`} aria-label="List view">
+            <List className="h-3.5 w-3.5" />
           </button>
-          <button onClick={() => { setViewMode('table'); setCurrentPage(1); }} className={`p-1.5 rounded-md transition-colors ${viewMode === 'table' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-            <TableProperties className="h-4 w-4" />
+          <button onClick={() => { setViewMode('table'); setCurrentPage(1); }} className={`p-1.5 rounded transition-colors ${viewMode === 'table' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`} aria-label="Table view">
+            <TableProperties className="h-3.5 w-3.5" />
           </button>
-          <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}>
-            <LayoutGrid className="h-4 w-4" />
+          <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`} aria-label="Kanban view">
+            <LayoutGrid className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
-      <Button className="gradient-primary text-white gap-2 text-sm rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all" onClick={() => navigate('/tickets/new')}>
-        <Plus className="h-4 w-4" />
+      <Button size="sm" className="bg-primary text-primary-foreground gap-1.5 text-xs rounded-md hover:bg-primary/90 transition-colors h-8" onClick={() => navigate('/tickets/new')}>
+        <Plus className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">{t.tickets.createNewTicket}</span>
       </Button>
     </>
