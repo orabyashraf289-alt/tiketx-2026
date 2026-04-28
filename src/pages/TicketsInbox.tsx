@@ -366,7 +366,7 @@ export default function TicketsInbox() {
                   </TabsList>
                 </motion.div>
 
-                <motion.div variants={fadeUp} className="rounded-2xl border border-border/50 bg-card m-4 md:m-6 flex-1 flex flex-col overflow-hidden shadow-card">
+                <motion.div variants={fadeUp} className="rounded-xl border border-border/50 bg-card mx-3 sm:mx-4 md:mx-6 my-3 sm:my-4 flex-1 flex flex-col overflow-hidden shadow-sm">
                   <FiltersBar />
 
                   {isAgentOrAdmin && (
