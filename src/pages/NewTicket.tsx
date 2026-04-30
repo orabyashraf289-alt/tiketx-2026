@@ -421,6 +421,34 @@ export default function NewTicket() {
                             </Alert>
                           )}
 
+                          {serviceId && stagePreview.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="rounded-xl border border-primary/30 bg-primary/5 p-4"
+                              data-testid="approval-stages-preview"
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                <ShieldAlert className="h-4 w-4 text-primary" />
+                                <p className="text-sm font-bold text-primary">
+                                  {isRTL ? 'مراحل الاعتماد التي ستمر بها التذكرة' : 'Approval stages this ticket will go through'}
+                                </p>
+                                <Badge variant="outline" className="text-[10px] ms-auto">{stagePreview.length}</Badge>
+                              </div>
+                              <div className="space-y-1.5">
+                                {stagePreview.map((s) => (
+                                  <div key={s.stage_id} className="flex items-center gap-2 text-xs bg-background/60 rounded-lg px-3 py-2">
+                                    <div className="w-6 h-6 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-[10px] shrink-0">
+                                      {s.stage_order}
+                                    </div>
+                                    <span className="font-semibold flex-1 truncate">{s.stage_name}</span>
+                                    {s.department_name && <Badge variant="secondary" className="text-[9px]">{s.department_name}</Badge>}
+                                  </div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+
                           {serviceFields.length > 0 && serviceId && (
                             <div className="space-y-4 p-4 rounded-xl border border-dashed bg-muted/20">
                               <p className="text-sm font-semibold text-muted-foreground">{t.newTicket.additionalFields}</p>

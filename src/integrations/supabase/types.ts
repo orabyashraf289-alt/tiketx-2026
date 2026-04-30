@@ -23,7 +23,10 @@ export type Database = {
           deadline_hours: number | null
           department_id: string
           escalation_to: string | null
+          fallback_to_manager: boolean
           id: string
+          min_approvers: number
+          require_all: boolean
           service_id: string | null
           stage_name: string
           stage_order: number
@@ -37,7 +40,10 @@ export type Database = {
           deadline_hours?: number | null
           department_id: string
           escalation_to?: string | null
+          fallback_to_manager?: boolean
           id?: string
+          min_approvers?: number
+          require_all?: boolean
           service_id?: string | null
           stage_name: string
           stage_order?: number
@@ -51,7 +57,10 @@ export type Database = {
           deadline_hours?: number | null
           department_id?: string
           escalation_to?: string | null
+          fallback_to_manager?: boolean
           id?: string
+          min_approvers?: number
+          require_all?: boolean
           service_id?: string | null
           stage_name?: string
           stage_order?: number
@@ -87,6 +96,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      approval_templates: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          stages: Json
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          stages?: Json
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          stages?: Json
+          updated_at?: string
+        }
+        Relationships: []
       }
       audit_logs: {
         Row: {
@@ -1613,6 +1658,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_approval_template: {
+        Args: {
+          _department_id: string
+          _service_id: string
+          _template_id: string
+        }
+        Returns: Json
+      }
+      approval_coverage_by_service: {
+        Args: never
+        Returns: {
+          active_tickets: number
+          has_default_group: boolean
+          service_id: string
+          service_name: string
+          stages_count: number
+          system_name: string
+        }[]
+      }
+      approval_health_overview: { Args: never; Returns: Json }
       approval_stage_should_skip: {
         Args: {
           _conditions: Json
@@ -1654,6 +1719,23 @@ export type Database = {
       }
       increment_helpful: { Args: { article_id: string }; Returns: undefined }
       increment_views: { Args: { article_id: string }; Returns: undefined }
+      preview_approval_stages_for_prospective_ticket: {
+        Args: {
+          _department_id?: string
+          _priority?: string
+          _service_id: string
+        }
+        Returns: {
+          deadline_hours: number
+          department_id: string
+          department_name: string
+          match_reason: string
+          stage_id: string
+          stage_name: string
+          stage_order: number
+          stage_type: string
+        }[]
+      }
       preview_approval_stages_for_service: {
         Args: { _service_id: string }
         Returns: {

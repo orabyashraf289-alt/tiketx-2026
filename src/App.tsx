@@ -30,6 +30,8 @@ const AdminServiceFields = lazy(() => import('./pages/AdminServiceFields'));
 const AdminApprovalStages = lazy(() => import('./pages/AdminApprovalStages'));
 const AdminApprovalReports = lazy(() => import('./pages/AdminApprovalReports'));
 const AdminApprovalKanban = lazy(() => import('./pages/AdminApprovalKanban'));
+const AdminApprovalHealth = lazy(() => import('./pages/AdminApprovalHealth'));
+const AdminApprovalTemplates = lazy(() => import('./pages/AdminApprovalTemplates'));
 const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const AgentPerformance = lazy(() => import('./pages/AgentPerformance'));
@@ -138,6 +140,8 @@ const App = () => (
                     <Route path="/admin/approval-stages" element={<ProtectedRoute><AdminApprovalStages /></ProtectedRoute>} />
                     <Route path="/admin/approval-reports" element={<ProtectedRoute><AdminApprovalReports /></ProtectedRoute>} />
                     <Route path="/admin/approval-kanban" element={<ProtectedRoute><AdminApprovalKanban /></ProtectedRoute>} />
+                    <Route path="/admin/approval-health" element={<ProtectedRoute><AdminApprovalHealth /></ProtectedRoute>} />
+                    <Route path="/admin/approval-templates" element={<ProtectedRoute><AdminApprovalTemplates /></ProtectedRoute>} />
                     <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                     <Route path="/admin/agent-performance" element={<ProtectedRoute><AgentPerformance /></ProtectedRoute>} />
