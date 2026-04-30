@@ -928,6 +928,98 @@ export async function fetchServicesWithoutAssignmentGroup(): Promise<ServiceMiss
   return (data || []) as ServiceMissingGroup[];
 }
 
+// === Approval Health Overview ===
+export interface ApprovalHealthOverview {
+  services_total: number;
+  services_no_assignment_group: number;
+  services_no_approval_coverage: number;
+  departments_total: number;
+  departments_no_stages: number;
+  tickets_pending_without_approvals: number;
+  stages_total: number;
+  avg_stages_per_department: number;
+  health_score: number;
+}
+
+export async function fetchApprovalHealthOverview(): Promise<ApprovalHealthOverview> {
+  const { data, error } = await supabase.rpc('approval_health_overview' as any);
+  if (error) throw error;
+  return data as unknown as ApprovalHealthOverview;
+}
+
+// === Approval Templates ===
+export interface ApprovalTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  stages: any;
+  is_system: boolean;
+  created_at: string;
+}
+
+export async function fetchApprovalTemplates(): Promise<ApprovalTemplate[]> {
+  const { data, error } = await supabase.from('approval_templates' as any).select('*').order('is_system', { ascending: false }).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as unknown as ApprovalTemplate[];
+}
+
+export async function applyApprovalTemplate(
+  templateId: string,
+  serviceId: string,
+  departmentId: string,
+): Promise<{ inserted_stages: number; service_id: string }> {
+  const { data, error } = await supabase.rpc('apply_approval_template' as any, {
+    _template_id: templateId,
+    _service_id: serviceId,
+    _department_id: departmentId,
+  });
+  if (error) throw error;
+  return data as unknown as { inserted_stages: number; service_id: string };
+}
+
+// === Preview prospective ticket stages ===
+export interface ProspectiveStagePreview {
+  stage_id: string;
+  stage_name: string;
+  stage_order: number;
+  stage_type: string;
+  deadline_hours: number | null;
+  department_id: string | null;
+  department_name: string | null;
+  match_reason: string;
+}
+
+export async function previewApprovalStagesForProspective(
+  serviceId: string,
+  departmentId?: string | null,
+  priority?: string,
+): Promise<ProspectiveStagePreview[]> {
+  const { data, error } = await supabase.rpc('preview_approval_stages_for_prospective_ticket' as any, {
+    _service_id: serviceId,
+    _department_id: departmentId ?? null,
+    _priority: priority ?? 'medium',
+  });
+  if (error) throw error;
+  return (data || []) as unknown as ProspectiveStagePreview[];
+}
+
+// === Coverage by service ===
+export interface ServiceCoverageRow {
+  service_id: string;
+  service_name: string;
+  system_name: string | null;
+  has_default_group: boolean;
+  stages_count: number;
+  active_tickets: number;
+}
+
+export async function fetchApprovalCoverageByService(): Promise<ServiceCoverageRow[]> {
+  const { data, error } = await supabase.rpc('approval_coverage_by_service' as any);
+  if (error) throw error;
+  return (data || []) as ServiceCoverageRow[];
+}
+
 // Ticket Ratings
 export interface TicketRating {
   id: string;
