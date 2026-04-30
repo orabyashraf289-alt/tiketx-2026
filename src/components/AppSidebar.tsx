@@ -79,6 +79,8 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: t.sidebar.serviceCatalog, url: '/admin/services', icon: BookOpen },
     { title: t.sidebar.serviceFields, url: '/admin/service-fields', icon: FormInput },
     { title: t.sidebar.approvalStages, url: '/admin/approval-stages', icon: ShieldCheck },
+    { title: lang === 'ar' ? 'صحة الاعتمادات' : 'Approval Health', url: '/admin/approval-health', icon: Activity },
+    { title: lang === 'ar' ? 'قوالب الاعتماد' : 'Approval Templates', url: '/admin/approval-templates', icon: Sparkles },
     { title: t.sidebar.approvalReports, url: '/admin/approval-reports', icon: BarChart3 },
     { title: t.sidebar.approvalBoard, url: '/admin/approval-kanban', icon: Columns },
     { title: t.sidebar.departments, url: '/admin/departments', icon: Building2 },
