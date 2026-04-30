@@ -65,9 +65,8 @@ export default function AdminApprovalHealth() {
     <PageLayout>
       <main className="flex-1 overflow-auto">
         <PageHeader
-          icon={ShieldCheck}
+          icon={<ShieldCheck className="w-4 h-4" />}
           title="لوحة صحة ربط الاعتمادات"
-          subtitle="نظرة فورية على كل ما يربط الخدمات والأقسام بمراحل الاعتماد"
           actions={
             <div className="flex gap-2">
               <Button variant="outline" size="sm" asChild>
@@ -79,6 +78,9 @@ export default function AdminApprovalHealth() {
             </div>
           }
         />
+        <p className="container mx-auto px-4 lg:px-6 pt-4 text-sm text-muted-foreground max-w-7xl">
+          نظرة فورية على كل ما يربط الخدمات والأقسام بمراحل الاعتماد
+        </p>
 
         <div className="container mx-auto px-4 lg:px-6 pb-10 space-y-6 max-w-7xl">
           {/* Health Score Hero */}

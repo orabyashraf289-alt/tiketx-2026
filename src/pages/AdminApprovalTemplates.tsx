@@ -14,7 +14,7 @@ import {
   fetchApprovalTemplates,
   applyApprovalTemplate,
   fetchSystems,
-  fetchServicesBySystem,
+  fetchServices,
   fetchDepartments,
   type ApprovalTemplate,
 } from '@/lib/api';
@@ -45,7 +45,7 @@ export default function AdminApprovalTemplates() {
   const { data: systems = [] } = useQuery({ queryKey: ['systems'], queryFn: fetchSystems });
   const { data: services = [] } = useQuery({
     queryKey: ['services-by-system', systemId],
-    queryFn: () => fetchServicesBySystem(systemId),
+    queryFn: () => fetchServices(systemId),
     enabled: !!systemId,
   });
   const { data: departments = [] } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments });
@@ -65,10 +65,12 @@ export default function AdminApprovalTemplates() {
     <PageLayout>
       <main className="flex-1 overflow-auto">
         <PageHeader
-          icon={Sparkles}
+          icon={<Sparkles className="w-4 h-4" />}
           title="قوالب الاعتماد الجاهزة"
-          subtitle="طبّق تدفقات اعتماد مُجهّزة على أي خدمة في ثوانٍ"
         />
+        <p className="container mx-auto px-4 lg:px-6 pt-4 text-sm text-muted-foreground max-w-6xl">
+          طبّق تدفقات اعتماد مُجهّزة على أي خدمة في ثوانٍ
+        </p>
 
         <div className="container mx-auto px-4 lg:px-6 pb-10 max-w-6xl">
           {isLoading ? (
