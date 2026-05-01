@@ -340,13 +340,57 @@ export default function NewTicket() {
                       {step === 0 && (
                         <div className="space-y-5">
                           <TicketTemplatesPicker onSelect={(tmpl) => { setTitle(tmpl.title); setDescription(tmpl.description); setPriority(tmpl.priority); }} />
-                          <div className="space-y-2">
-                            <Label htmlFor="title">{t.newTicket.titleRequired}</Label>
-                            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t.newTicket.titlePlaceholder} maxLength={200} />
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="title">{t.newTicket.titleRequired}</Label>
+                              <span className={cn('text-[10px] tabular-nums', titleTrim.length > TITLE_MAX * 0.9 ? 'text-warning' : 'text-muted-foreground')}>
+                                {titleTrim.length}/{TITLE_MAX}
+                              </span>
+                            </div>
+                            <Input
+                              id="title"
+                              value={title}
+                              onChange={e => setTitle(e.target.value)}
+                              onBlur={() => setTouched(s => ({ ...s, title: true }))}
+                              placeholder={t.newTicket.titlePlaceholder}
+                              maxLength={TITLE_MAX}
+                              aria-invalid={!!(touched.title && titleError)}
+                              className={cn(touched.title && titleError && 'border-destructive focus-visible:ring-destructive/30')}
+                            />
+                            <AnimatePresence>
+                              {touched.title && titleError && (
+                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                  className="text-[11px] text-destructive flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />{titleError}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="desc">{t.newTicket.descriptionRequired}</Label>
-                            <Textarea id="desc" value={description} onChange={e => setDescription(e.target.value)} placeholder={t.newTicket.descriptionPlaceholder} className="min-h-[140px]" maxLength={2000} />
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="desc">{t.newTicket.descriptionRequired}</Label>
+                              <span className={cn('text-[10px] tabular-nums', descTrim.length > DESC_MAX * 0.9 ? 'text-warning' : 'text-muted-foreground')}>
+                                {descTrim.length}/{DESC_MAX}
+                              </span>
+                            </div>
+                            <Textarea
+                              id="desc"
+                              value={description}
+                              onChange={e => setDescription(e.target.value)}
+                              onBlur={() => setTouched(s => ({ ...s, description: true }))}
+                              placeholder={t.newTicket.descriptionPlaceholder}
+                              className={cn('min-h-[140px]', touched.description && descError && 'border-destructive focus-visible:ring-destructive/30')}
+                              maxLength={DESC_MAX}
+                              aria-invalid={!!(touched.description && descError)}
+                            />
+                            <AnimatePresence>
+                              {touched.description && descError && (
+                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                  className="text-[11px] text-destructive flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />{descError}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
                           </div>
                           <div className="space-y-2">
                             <Label>{t.newTicket.priorityLabel}</Label>
