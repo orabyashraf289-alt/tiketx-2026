@@ -146,8 +146,8 @@ export const AppSidebar = memo(function AppSidebar() {
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <h2 className="text-[16px] font-extrabold text-sidebar-foreground tracking-tight truncate">{sysName}</h2>
-                <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-sidebar-foreground/50">
+                <h2 className="text-[16px] font-extrabold text-sidebar-foreground tracking-tight truncate leading-tight">{sysName}</h2>
+                <p className="text-[9px] font-bold tracking-[0.22em] uppercase text-sidebar-foreground/50 mt-0.5">
                   {sysSub}
                 </p>
               </div>
