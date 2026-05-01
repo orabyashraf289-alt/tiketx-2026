@@ -301,7 +301,7 @@ export async function fetchAttachments(ticketId: string) {
   return (data as unknown) as TicketAttachment[];
 }
 
-export async function addAttachment(attachment: { ticket_id: string; uploaded_by: string; file_name: string; file_url: string; file_size: number | null }) {
+export async function addAttachment(attachment: { ticket_id: string; uploaded_by: string; file_name: string; file_url: string; file_size: number | null; storage_key?: string | null }) {
   const { data, error } = await supabase.from('ticket_attachments').insert(attachment).select().single();
   if (error) throw error;
   return data;
