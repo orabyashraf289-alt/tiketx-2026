@@ -8,6 +8,7 @@ import { fetchTicketApprovals } from '@/lib/api';
 import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { openAttachment } from '@/lib/attachments';
 import { PageLayout, PageHeader } from '@/components/layout';
 import { StatusBadge, PriorityBadge } from '@/components/TicketBadges';
 import { Button } from '@/components/ui/button';
