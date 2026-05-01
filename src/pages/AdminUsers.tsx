@@ -558,12 +558,17 @@ export default function AdminUsers() {
 
           {/* Users Table */}
           {isLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            <AdminTableSkeleton rows={8} cols={6} showKpis={false} showToolbar={false} />
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : filteredUsers.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-muted-foreground">
-              <Users className="h-12 w-12 mb-3 opacity-30" />
-              <p>{search || activeFiltersCount > 0 ? t.common.noResults : t.admin.noUsers}</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title={search || activeFiltersCount > 0 ? t.common.noResults : t.admin.noUsers}
+              description={search || activeFiltersCount > 0
+                ? (isAr ? 'حاول تغيير البحث أو مسح الفلاتر.' : 'Try a different search or clear filters.')
+                : (isAr ? 'أنشئ أول مستخدم في النظام.' : 'Create your first user.')}
+            />
           ) : (
             <Card className="rounded-2xl border-border/50 overflow-hidden">
               <Table>
