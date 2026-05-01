@@ -161,19 +161,82 @@ export default function TicketsInbox() {
     setSearchQuery('');
   };
 
+  // Reset highlighted row when filters/search change
+  useEffect(() => { setActiveIndex(-1); }, [searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
+
+  // Global keyboard shortcuts: '/' focus search, 'j'/'k' navigate, 'Enter' open, 'Esc' clear
+  const visibleListRef = useRef<typeof tickets>([]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (e.key === '/' && !isTyping) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (isTyping && target !== searchInputRef.current) return;
+      const list = visibleListRef.current;
+      if (!list || list.length === 0) return;
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        if (isTyping && target !== searchInputRef.current) return;
+        e.preventDefault();
+        setActiveIndex((i) => Math.min((i < 0 ? -1 : i) + 1, list.length - 1));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        if (isTyping && target !== searchInputRef.current) return;
+        e.preventDefault();
+        setActiveIndex((i) => Math.max((i < 0 ? 0 : i) - 1, 0));
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        const tk = list[activeIndex];
+        if (tk) navigate(`/tickets/${tk.id}`);
+      } else if (e.key === 'Escape') {
+        if (searchQuery) { setSearchQuery(''); }
+        setActiveIndex(-1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeIndex, searchQuery, navigate]);
+
+  // Auto-scroll active row into view
+  useEffect(() => {
+    if (activeIndex < 0 || !listContainerRef.current) return;
+    const rows = listContainerRef.current.querySelectorAll('[data-ticket-row]');
+    const el = rows[activeIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeIndex]);
+
   const renderList = (list: typeof tickets) => {
+    visibleListRef.current = list;
     if (isLoading) {
       return <TicketListSkeleton count={6} />;
     }
     if (list.length === 0) {
       return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center justify-center py-20 text-muted-foreground"
         >
-          <Inbox className="h-12 w-12 mb-3 opacity-30" />
-          <p className="font-medium">{t.tickets.noTicketsFound}</p>
+          <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-4">
+            <Inbox className="h-8 w-8 opacity-40" />
+          </div>
+          <p className="font-semibold text-foreground mb-1">{t.tickets.noTicketsFound}</p>
+          <p className="text-xs mb-5 max-w-sm text-center opacity-80">
+            {activeFiltersCount > 0 || searchQuery
+              ? (isRTL ? 'جرّب تعديل عوامل التصفية أو مسحها للعرض الكامل.' : 'Try adjusting or clearing your filters to see more results.')
+              : (isRTL ? 'ابدأ بإنشاء أول تذكرة.' : 'Start by creating your first ticket.')}
+          </p>
+          <div className="flex items-center gap-2">
+            {(activeFiltersCount > 0 || searchQuery) && (
+              <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 h-8 text-xs">
+                <X className="h-3.5 w-3.5" />{t.tickets.clearCount} ({activeFiltersCount + (searchQuery ? 1 : 0)})
+              </Button>
+            )}
+            <Button size="sm" onClick={() => navigate('/tickets/new')} className="gap-1.5 h-8 text-xs">
+              <Plus className="h-3.5 w-3.5" />{t.tickets.createNewTicket}
+            </Button>
+          </div>
         </motion.div>
       );
     }
@@ -188,10 +251,10 @@ export default function TicketsInbox() {
       );
     }
     return (
-      <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
+      <motion.div ref={listContainerRef} variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
         {list.map((ticket, i) => (
           <motion.div key={ticket.id} variants={listItem}>
-            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} active={i === activeIndex} onClick={() => navigate(`/tickets/${ticket.id}`)} />
           </motion.div>
         ))}
       </motion.div>
