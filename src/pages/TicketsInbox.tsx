@@ -397,7 +397,7 @@ export default function TicketsInbox() {
                                 <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({deptTickets.length})</span>
                               </div>
                               {deptTickets.map((ticket, i) => (
-                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                               ))}
                             </motion.div>
                           ))}
@@ -424,7 +424,7 @@ export default function TicketsInbox() {
                                 <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({svcTickets.length})</span>
                               </div>
                               {svcTickets.map((ticket, i) => (
-                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                               ))}
                             </motion.div>
                           ))}
