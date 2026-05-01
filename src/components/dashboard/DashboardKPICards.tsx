@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 import { AnimatedNumber } from '@/components/common/AnimatedNumber';
-import { gridContainer, cardEnter, hoverLift } from '@/lib/motion';
+import { useMotionPrimitives } from '@/lib/motion';
 
 interface Props {
   stats: any;
@@ -18,6 +18,7 @@ interface Props {
 
 export const DashboardKPICards = memo(function DashboardKPICards({ stats, report, tickets, unresolvedCount, pendingCount }: Props) {
   const { t, lang } = useLanguage();
+  const m = useMotionPrimitives();
   const resolvedCount = stats?.resolved ?? 0;
   const resolutionRate = tickets.length > 0 ? Math.round((resolvedCount / tickets.length) * 100) : 0;
   const slaCompliance = report?.slaCompliancePercent ?? 0;
