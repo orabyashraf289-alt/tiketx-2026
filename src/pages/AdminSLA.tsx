@@ -17,7 +17,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
-import { LoadingSpinner } from '@/components/common';
+// LoadingSpinner replaced by AdminTableSkeleton
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 
