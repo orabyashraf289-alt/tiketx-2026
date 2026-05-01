@@ -63,6 +63,12 @@ export default function NewTicket() {
     { label: t.newTicket.previewStep, icon: <Eye className="h-4 w-4" /> },
   ];
 
+  const TITLE_MIN = 5;
+  const TITLE_MAX = 200;
+  const DESC_MIN = 15;
+  const DESC_MAX = 2000;
+  const DRAFT_KEY = 'new-ticket-draft-v1';
+
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [title, setTitle] = useState('');
@@ -75,6 +81,59 @@ export default function NewTicket() {
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [aiSuggestion, setAiSuggestion] = useState<{ system_id: string; service_id: string; reason: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [touched, setTouched] = useState<{ title?: boolean; description?: boolean }>({});
+  const [draftRestoredAt, setDraftRestoredAt] = useState<number | null>(null);
+  const [hasDraftPrompt, setHasDraftPrompt] = useState(false);
+  const draftCheckedRef = useRef(false);
+
+  // Restore draft on mount
+  useEffect(() => {
+    if (draftCheckedRef.current) return;
+    draftCheckedRef.current = true;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft && (draft.title || draft.description)) {
+        setHasDraftPrompt(true);
+      }
+    } catch {}
+  }, []);
+
+  const restoreDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      setTitle(d.title || '');
+      setDescription(d.description || '');
+      setPriority(d.priority || 'medium');
+      setSystemId(d.systemId || '');
+      setServiceId(d.serviceId || '');
+      setCategoryId(d.categoryId || '');
+      setCustomFieldValues(d.customFieldValues || {});
+      setHasDraftPrompt(false);
+      setDraftRestoredAt(Date.now());
+    } catch {}
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraftPrompt(false);
+  };
+
+  // Persist draft (debounced via raf)
+  useEffect(() => {
+    if (hasDraftPrompt) return; // don't overwrite while prompt is open
+    const id = setTimeout(() => {
+      const draft = { title, description, priority, systemId, serviceId, categoryId, customFieldValues };
+      const hasContent = title || description || systemId || serviceId;
+      if (hasContent) {
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {}
+      }
+    }, 600);
+    return () => clearTimeout(id);
+  }, [title, description, priority, systemId, serviceId, categoryId, customFieldValues, hasDraftPrompt]);
 
   const { data: systems = [] } = useQuery({ queryKey: ['systems'], queryFn: fetchSystems });
   const { data: services = [] } = useQuery({
