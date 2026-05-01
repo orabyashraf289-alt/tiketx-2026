@@ -156,29 +156,37 @@ export default function Dashboard() {
         actions={headerActions}
       />
 
-      <main className="flex-1 overflow-auto bg-muted/30" role="main">
+      <main className="flex-1 overflow-auto bg-muted/20 relative" role="main">
+        {/* Subtle mesh background */}
+        <div className="absolute inset-0 gradient-mesh pointer-events-none opacity-60" />
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="p-4 md:p-6 space-y-6"
+          transition={{ duration: 0.4 }}
+          className="relative p-4 md:p-6 lg:p-8 space-y-6"
         >
           {/* Welcome Banner */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
+            initial={{ opacity: 0, y: -12, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center justify-between gap-4"
           >
-            <div>
-              <h2 className="text-xl md:text-2xl font-bold text-foreground">
-                {greeting}، {profile?.full_name || ''}
+            <div className="min-w-0">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
+                {greeting}<span className="text-muted-foreground font-semibold">،</span> <span className="text-gradient">{profile?.full_name || ''}</span>
               </h2>
-              <p className="text-sm text-muted-foreground mt-0.5">{t.dashboard.title}</p>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">{t.dashboard.title}</p>
             </div>
             {isAdmin && (
-              <div className="hidden md:flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success/10 border border-success/20">
-                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span className="text-[11px] font-semibold text-success">{lang === 'ar' ? 'مباشر' : 'Live'}</span>
+              <div className="hidden md:flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-success/10 border border-success/20 backdrop-blur-sm">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                  </span>
+                  <span className="text-[11px] font-bold tracking-wide text-success">{lang === 'ar' ? 'مباشر' : 'LIVE'}</span>
                 </div>
               </div>
             )}
