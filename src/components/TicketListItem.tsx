@@ -8,10 +8,13 @@ import { User, Clock, ArrowLeft, ArrowRight, ShieldCheck, AlertTriangle } from '
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/i18n';
 
+import { Highlight } from '@/components/common/Highlight';
+
 interface Props {
   ticket: Ticket;
   index: number;
   onClick: () => void;
+  highlight?: string;
 }
 
 /**
@@ -55,7 +58,7 @@ function TicketApprovalIndicator({ ticketId }: { ticketId: string }) {
   );
 }
 
-export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, onClick }, ref) {
+export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, onClick, highlight = '' }, ref) {
   const { t, lang, isRTL } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
   const dateLocale = lang === 'ar' ? ar : enUS;
