@@ -1,8 +1,11 @@
 /**
  * Premium animation primitives — Framer Motion variants & easing.
+ * All variants honor prefers-reduced-motion via useReducedMotion hook.
  * Use across pages for consistent, polished motion.
  */
 import type { Variants, Transition } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
+import { useMemo } from 'react';
 
 // Curves
 export const ease = {
@@ -27,7 +30,8 @@ export const springSoft: Transition = {
   mass: 1,
 };
 
-// Page-level
+// ─── Static variants (default — full motion) ───────────────────────────────
+
 export const pageContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -37,7 +41,6 @@ export const pageContainer: Variants = {
   exit: { opacity: 0, transition: { duration: 0.2 } },
 };
 
-// Section: fade + slide up + blur
 export const fadeUp: Variants = {
   hidden: { opacity: 0, y: 18, filter: 'blur(4px)' },
   visible: {
@@ -53,13 +56,11 @@ export const fadeIn: Variants = {
   visible: { opacity: 1, transition: { duration: 0.4, ease: ease.smooth } },
 };
 
-// Card: scale + fade with spring
 export const cardEnter: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.96 },
   visible: { opacity: 1, y: 0, scale: 1, transition: spring },
 };
 
-// List stagger
 export const listContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -78,7 +79,20 @@ export const listItem: Variants = {
   },
 };
 
-// Hover micro-interactions
+export const counterPop: Variants = {
+  hidden: { opacity: 0, y: 8, scale: 0.9 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: spring },
+};
+
+export const gridContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
+  },
+};
+
+// Hover micro-interactions (disabled when reduced motion)
 export const hoverLift = {
   y: -3,
   transition: { duration: 0.25, ease: ease.smooth },
@@ -91,17 +105,58 @@ export const hoverScale = {
 
 export const tapShrink = { scale: 0.97 };
 
-// Number ticker variant
-export const counterPop: Variants = {
-  hidden: { opacity: 0, y: 8, scale: 0.9 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: spring },
+// ─── Reduced-motion variants (only opacity) ────────────────────────────────
+
+const reducedFade: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
 };
 
-// Stagger grid (KPIs)
-export const gridContainer: Variants = {
+const reducedContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.07, delayChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0, when: 'beforeChildren' } },
+  exit: { opacity: 0 },
 };
+
+/**
+ * Hook returning the right primitives based on user motion preference.
+ * Use this in components instead of importing variants directly when
+ * you want to honor prefers-reduced-motion.
+ */
+export function useMotionPrimitives() {
+  const reduce = useReducedMotion();
+
+  return useMemo(() => {
+    if (reduce) {
+      return {
+        pageContainer: reducedContainer,
+        fadeUp: reducedFade,
+        fadeIn: reducedFade,
+        cardEnter: reducedFade,
+        listContainer: reducedContainer,
+        listItem: reducedFade,
+        counterPop: reducedFade,
+        gridContainer: reducedContainer,
+        hoverLift: {},
+        hoverScale: {},
+        tapShrink: {},
+        reduce: true,
+      };
+    }
+    return {
+      pageContainer,
+      fadeUp,
+      fadeIn,
+      cardEnter,
+      listContainer,
+      listItem,
+      counterPop,
+      gridContainer,
+      hoverLift,
+      hoverScale,
+      tapShrink,
+      reduce: false,
+    };
+  }, [reduce]);
+}
