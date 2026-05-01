@@ -166,16 +166,41 @@ export default function NewTicket() {
   const goNext = () => { setDirection(1); setStep(s => Math.min(s + 1, 3)); };
   const goPrev = () => { setDirection(-1); setStep(s => Math.max(s - 1, 0)); };
 
+  // Live validation
+  const titleTrim = title.trim();
+  const descTrim = description.trim();
+  const titleError =
+    titleTrim.length === 0 ? (isRTL ? 'العنوان مطلوب' : 'Title is required')
+    : titleTrim.length < TITLE_MIN ? (isRTL ? `العنوان قصير جدًا (الحد الأدنى ${TITLE_MIN} أحرف)` : `Title is too short (min ${TITLE_MIN} chars)`)
+    : null;
+  const descError =
+    descTrim.length === 0 ? (isRTL ? 'الوصف مطلوب' : 'Description is required')
+    : descTrim.length < DESC_MIN ? (isRTL ? `الوصف قصير جدًا (الحد الأدنى ${DESC_MIN} حرفًا)` : `Description is too short (min ${DESC_MIN} chars)`)
+    : null;
+
+  const missingRequiredFields = serviceFields.filter(f => f.is_required && !customFieldValues[f.id]?.trim());
+
   const canProceed = useCallback(() => {
-    if (step === 0) return title.trim().length > 0 && description.trim().length > 0;
+    if (step === 0) return !titleError && !descError;
     if (step === 1) {
-      for (const field of serviceFields) {
-        if (field.is_required && !customFieldValues[field.id]?.trim()) return false;
-      }
-      return true;
+      if (!serviceId) return false;
+      return missingRequiredFields.length === 0;
     }
     return true;
-  }, [step, title, description, serviceFields, customFieldValues]);
+  }, [step, titleError, descError, serviceId, missingRequiredFields]);
+
+  const blockReason = (): string | null => {
+    if (step === 0) return titleError || descError;
+    if (step === 1) {
+      if (!serviceId) return isRTL ? 'يرجى اختيار الخدمة' : 'Please select a service';
+      if (missingRequiredFields.length > 0) {
+        return isRTL
+          ? `حقول مطلوبة ناقصة: ${missingRequiredFields.map(f => f.field_name).join(', ')}`
+          : `Missing required fields: ${missingRequiredFields.map(f => f.field_name).join(', ')}`;
+      }
+    }
+    return null;
+  };
 
   const requestAiSuggestion = async () => {
     if (!title.trim()) return;
