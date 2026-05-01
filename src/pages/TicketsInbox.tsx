@@ -328,6 +328,8 @@ export default function TicketsInbox() {
     </div>
   );
 
+  const isInitialLoad = isLoading && tickets.length === 0;
+
   return (
     <PageLayout>
       <PageHeader
@@ -338,6 +340,7 @@ export default function TicketsInbox() {
       />
 
           <main className="flex-1 overflow-auto">
+            {isInitialLoad ? <InboxSkeleton /> : (
             <motion.div
               variants={pageVariants}
               initial="hidden"
