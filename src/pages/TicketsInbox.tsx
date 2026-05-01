@@ -452,11 +452,13 @@ export default function TicketsInbox() {
                     {isAgentOrAdmin && (
                       <TabsTrigger value="department" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
                         {t.tickets.byDepartment}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium`}>{Object.keys(byDepartment).length}</span>
                       </TabsTrigger>
                     )}
                     {isAgentOrAdmin && (
                       <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
                         {t.tickets.byService}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium`}>{Object.keys(byService).length}</span>
                       </TabsTrigger>
                     )}
                     {role === 'admin' && (
