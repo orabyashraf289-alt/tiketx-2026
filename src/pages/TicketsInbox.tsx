@@ -187,7 +187,7 @@ export default function TicketsInbox() {
       <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
         {list.map((ticket, i) => (
           <motion.div key={ticket.id} variants={listItem}>
-            <TicketListItem ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
           </motion.div>
         ))}
       </motion.div>
