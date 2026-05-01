@@ -67,41 +67,44 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
       ref={ref}
       onClick={onClick}
       className={cn(
-        'group w-full text-start px-3 sm:px-4 py-2.5 sm:py-3 transition-colors duration-200',
-        'hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset',
+        'group w-full text-start px-3 sm:px-4 py-3 sm:py-3.5 transition-all duration-200',
+        'hover:bg-muted/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset',
         'relative',
         isOverdue && 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/[0.03]',
       )}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}
     >
+      {/* Hover accent bar */}
+      <span className="absolute ltr:left-0 rtl:right-0 top-1/2 -translate-y-1/2 w-[2px] h-0 bg-primary rounded-full transition-all duration-300 group-hover:h-8" />
+
       <div className="flex items-start gap-3">
-        {/* Status dot */}
-        <div className="pt-1.5 shrink-0">
+        {/* Status dot with pulse for active */}
+        <div className="pt-1.5 shrink-0 relative">
           <span className={cn(
-            'block w-1.5 h-1.5 rounded-full',
-            ticket.status === 'new' && 'bg-info',
-            ticket.status === 'open' && 'bg-primary',
-            ticket.status === 'in_progress' && 'bg-warning',
+            'block w-2 h-2 rounded-full ring-2 ring-transparent transition-all duration-300',
+            ticket.status === 'new' && 'bg-info ring-info/20',
+            ticket.status === 'open' && 'bg-primary ring-primary/20',
+            ticket.status === 'in_progress' && 'bg-warning ring-warning/20',
             ticket.status === 'waiting_on_customer' && 'bg-muted-foreground',
-            ticket.status === 'resolved' && 'bg-success',
+            ticket.status === 'resolved' && 'bg-success ring-success/20',
             ticket.status === 'closed' && 'bg-muted-foreground/60',
-            ticket.status === 'reopened' && 'bg-destructive',
+            ticket.status === 'reopened' && 'bg-destructive ring-destructive/20 animate-pulse',
           )} />
         </div>
 
         <div className="flex-1 min-w-0">
           {/* Top row: code + title */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] sm:text-[11px] font-mono font-medium text-muted-foreground shrink-0 tabular-nums">
+            <span className="text-[10px] sm:text-[11px] font-mono font-semibold text-muted-foreground shrink-0 tabular-nums tracking-tight">
               {ticket.code || `#${ticket.ticket_number}`}
             </span>
-            <h3 className="font-medium text-[13px] sm:text-sm truncate text-foreground group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-[13px] sm:text-sm truncate text-foreground group-hover:text-primary transition-colors duration-200 tracking-tight">
               {ticket.title}
             </h3>
           </div>
 
           {/* Meta row */}
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             <StatusBadge status={ticket.status} />
             <PriorityBadge priority={ticket.priority} />
             <span className="hidden sm:inline-flex">
@@ -109,7 +112,7 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
             </span>
             <TicketApprovalIndicator ticketId={ticket.id} />
             {ticket.services && (
-              <span className="hidden lg:inline-flex text-[10px] text-muted-foreground truncate max-w-[200px]">
+              <span className="hidden lg:inline-flex text-[10px] text-muted-foreground/80 truncate max-w-[200px] font-medium">
                 {ticket.services.systems?.name} · {ticket.services.name}
               </span>
             )}
@@ -118,17 +121,17 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
 
         {/* Right column: people + time */}
         <div className="hidden sm:flex flex-col items-end gap-1 shrink-0 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1 max-w-[150px] truncate">
-            <User className="h-3 w-3" />
+          <span className="flex items-center gap-1.5 max-w-[150px] truncate font-medium">
+            <User className="h-3 w-3 opacity-70" />
             <span className="truncate">{ticket.requester?.full_name || t.common.unknown}</span>
           </span>
           {ticket.agent?.full_name && (
-            <span className="flex items-center gap-1 text-primary/80 max-w-[150px] truncate">
+            <span className="flex items-center gap-1.5 text-primary/90 max-w-[150px] truncate font-medium">
               <AssignArrow className="h-3 w-3" />
               <span className="truncate">{ticket.agent.full_name}</span>
             </span>
           )}
-          <span className="flex items-center gap-1 tabular-nums">
+          <span className="flex items-center gap-1.5 tabular-nums opacity-80">
             <Clock className="h-3 w-3" />
             {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: dateLocale })}
           </span>

@@ -20,19 +20,24 @@ export const PageHeader = memo(function PageHeader({
 }: PageHeaderProps) {
   return (
     <motion.header
-      initial={{ y: -16, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="h-[56px] flex items-center justify-between border-b border-border/40 bg-card/90 backdrop-blur-xl px-4 gap-3 shrink-0 sticky top-0 z-30 no-print"
+      initial={{ y: -12, opacity: 0, filter: 'blur(4px)' }}
+      animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="h-[60px] flex items-center justify-between border-b border-border/50 glass px-4 md:px-5 gap-3 shrink-0 sticky top-0 z-30 no-print"
     >
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+      <div className="flex items-center gap-3 min-w-0">
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
         {icon && (
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            transition={{ duration: 0.5, delay: 0.05, ease: [0.34, 1.56, 0.64, 1] }}
+            className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shadow-xs"
+          >
             <span className="text-primary">{icon}</span>
-          </div>
+          </motion.div>
         )}
-        <h1 className="text-[15px] font-bold text-foreground">{title}</h1>
+        <h1 className="text-[15px] md:text-base font-bold text-foreground tracking-tight truncate">{title}</h1>
         {badge}
       </div>
       <div className="flex items-center gap-2">

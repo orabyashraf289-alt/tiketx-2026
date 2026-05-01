@@ -14,7 +14,24 @@ export default {
     },
     extend: {
       fontFamily: {
-        tajawal: ["Tajawal", "sans-serif"],
+        sans: ['Cairo', 'Inter', 'system-ui', 'sans-serif'],
+        cairo: ['Cairo', 'sans-serif'],
+        inter: ['Inter', 'system-ui', 'sans-serif'],
+        tajawal: ['Cairo', 'Inter', 'sans-serif'], // backwards compat
+        mono: ['Inter', 'ui-monospace', 'SF Mono', 'Consolas', 'monospace'],
+      },
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.005em' }],
+        'display': ['3.5rem', { lineHeight: '1.05', letterSpacing: '-0.03em', fontWeight: '800' }],
+      },
+      transitionTimingFunction: {
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'snap': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-mesh': 'var(--gradient-mesh)',
       },
       colors: {
         border: "hsl(var(--border))",
