@@ -79,7 +79,6 @@ export default function AdminUsers() {
     queryKey: ['all-users'],
     queryFn: fetchAllUsers,
   });
-  });
 
   const { data: departments = [] } = useQuery({
     queryKey: ['departments'],
