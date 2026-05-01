@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowRight, ArrowLeft, Loader2, Send, FileText, Layers, Paperclip, Eye, Sparkles, User, Mail, Building2, Monitor, ChevronRight, ShieldAlert } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Send, FileText, Layers, Paperclip, Eye, Sparkles, User, Mail, Building2, Monitor, ChevronRight, ShieldAlert, AlertCircle, Save, RotateCcw, X } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { WizardProgress } from '@/components/ticket-wizard/WizardProgress';
@@ -24,6 +24,8 @@ import { TicketPreview } from '@/components/ticket-wizard/TicketPreview';
 import { TicketTemplatesPicker } from '@/components/TicketTemplates';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const systemStyles: Record<string, { icon: string; gradient: string }> = {
   'ERP': { icon: '🏢', gradient: 'from-blue-500/10 to-blue-600/5 border-blue-500/20' },
@@ -61,6 +63,12 @@ export default function NewTicket() {
     { label: t.newTicket.previewStep, icon: <Eye className="h-4 w-4" /> },
   ];
 
+  const TITLE_MIN = 5;
+  const TITLE_MAX = 200;
+  const DESC_MIN = 15;
+  const DESC_MAX = 2000;
+  const DRAFT_KEY = 'new-ticket-draft-v1';
+
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [title, setTitle] = useState('');
@@ -73,6 +81,59 @@ export default function NewTicket() {
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [aiSuggestion, setAiSuggestion] = useState<{ system_id: string; service_id: string; reason: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [touched, setTouched] = useState<{ title?: boolean; description?: boolean }>({});
+  const [draftRestoredAt, setDraftRestoredAt] = useState<number | null>(null);
+  const [hasDraftPrompt, setHasDraftPrompt] = useState(false);
+  const draftCheckedRef = useRef(false);
+
+  // Restore draft on mount
+  useEffect(() => {
+    if (draftCheckedRef.current) return;
+    draftCheckedRef.current = true;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft && (draft.title || draft.description)) {
+        setHasDraftPrompt(true);
+      }
+    } catch {}
+  }, []);
+
+  const restoreDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      setTitle(d.title || '');
+      setDescription(d.description || '');
+      setPriority(d.priority || 'medium');
+      setSystemId(d.systemId || '');
+      setServiceId(d.serviceId || '');
+      setCategoryId(d.categoryId || '');
+      setCustomFieldValues(d.customFieldValues || {});
+      setHasDraftPrompt(false);
+      setDraftRestoredAt(Date.now());
+    } catch {}
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraftPrompt(false);
+  };
+
+  // Persist draft (debounced via raf)
+  useEffect(() => {
+    if (hasDraftPrompt) return; // don't overwrite while prompt is open
+    const id = setTimeout(() => {
+      const draft = { title, description, priority, systemId, serviceId, categoryId, customFieldValues };
+      const hasContent = title || description || systemId || serviceId;
+      if (hasContent) {
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch {}
+      }
+    }, 600);
+    return () => clearTimeout(id);
+  }, [title, description, priority, systemId, serviceId, categoryId, customFieldValues, hasDraftPrompt]);
 
   const { data: systems = [] } = useQuery({ queryKey: ['systems'], queryFn: fetchSystems });
   const { data: services = [] } = useQuery({
@@ -105,16 +166,41 @@ export default function NewTicket() {
   const goNext = () => { setDirection(1); setStep(s => Math.min(s + 1, 3)); };
   const goPrev = () => { setDirection(-1); setStep(s => Math.max(s - 1, 0)); };
 
+  // Live validation
+  const titleTrim = title.trim();
+  const descTrim = description.trim();
+  const titleError =
+    titleTrim.length === 0 ? (isRTL ? 'العنوان مطلوب' : 'Title is required')
+    : titleTrim.length < TITLE_MIN ? (isRTL ? `العنوان قصير جدًا (الحد الأدنى ${TITLE_MIN} أحرف)` : `Title is too short (min ${TITLE_MIN} chars)`)
+    : null;
+  const descError =
+    descTrim.length === 0 ? (isRTL ? 'الوصف مطلوب' : 'Description is required')
+    : descTrim.length < DESC_MIN ? (isRTL ? `الوصف قصير جدًا (الحد الأدنى ${DESC_MIN} حرفًا)` : `Description is too short (min ${DESC_MIN} chars)`)
+    : null;
+
+  const missingRequiredFields = serviceFields.filter(f => f.is_required && !customFieldValues[f.id]?.trim());
+
   const canProceed = useCallback(() => {
-    if (step === 0) return title.trim().length > 0 && description.trim().length > 0;
+    if (step === 0) return !titleError && !descError;
     if (step === 1) {
-      for (const field of serviceFields) {
-        if (field.is_required && !customFieldValues[field.id]?.trim()) return false;
-      }
-      return true;
+      if (!serviceId) return false;
+      return missingRequiredFields.length === 0;
     }
     return true;
-  }, [step, title, description, serviceFields, customFieldValues]);
+  }, [step, titleError, descError, serviceId, missingRequiredFields]);
+
+  const blockReason = (): string | null => {
+    if (step === 0) return titleError || descError;
+    if (step === 1) {
+      if (!serviceId) return isRTL ? 'يرجى اختيار الخدمة' : 'Please select a service';
+      if (missingRequiredFields.length > 0) {
+        return isRTL
+          ? `حقول مطلوبة ناقصة: ${missingRequiredFields.map(f => f.field_name).join(', ')}`
+          : `Missing required fields: ${missingRequiredFields.map(f => f.field_name).join(', ')}`;
+      }
+    }
+    return null;
+  };
 
   const requestAiSuggestion = async () => {
     if (!title.trim()) return;
@@ -176,6 +262,7 @@ export default function NewTicket() {
       return ticket;
     },
     onSuccess: () => {
+      try { localStorage.removeItem(DRAFT_KEY); } catch {}
       toast({ title: t.newTicket.ticketCreated });
       navigate('/tickets');
     },
@@ -193,6 +280,19 @@ export default function NewTicket() {
     }
     mutation.mutate();
   };
+
+  // Cmd/Ctrl + Enter advances or submits
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (step < 3 && canProceed()) goNext();
+        else if (step === 3 && !mutation.isPending) handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [step, canProceed, mutation.isPending]);
 
   const roleLabel = role ? roleLabels[role] : '';
 
@@ -231,6 +331,28 @@ export default function NewTicket() {
             </span>
           </motion.div>
 
+          <AnimatePresence>
+            {hasDraftPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="rounded-xl border border-primary/30 bg-primary/5 px-3.5 py-2.5 flex items-center gap-3"
+              >
+                <Save className="h-4 w-4 text-primary shrink-0" />
+                <p className="text-xs text-foreground flex-1">
+                  {isRTL ? 'لديك مسودة محفوظة لتذكرة لم تكتمل. هل تريد استعادتها؟' : 'You have a saved draft of an unfinished ticket. Restore it?'}
+                </p>
+                <Button size="sm" variant="default" className="h-7 text-xs gap-1.5" onClick={restoreDraft}>
+                  <RotateCcw className="h-3 w-3" />{isRTL ? 'استعادة' : 'Restore'}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={discardDraft}>
+                  <X className="h-3 w-3" />{isRTL ? 'تجاهل' : 'Discard'}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <WizardProgress steps={WIZARD_STEPS} currentStep={step} />
 
           <Card className="overflow-hidden border-border/60 shadow-sm">
@@ -240,13 +362,57 @@ export default function NewTicket() {
                       {step === 0 && (
                         <div className="space-y-5">
                           <TicketTemplatesPicker onSelect={(tmpl) => { setTitle(tmpl.title); setDescription(tmpl.description); setPriority(tmpl.priority); }} />
-                          <div className="space-y-2">
-                            <Label htmlFor="title">{t.newTicket.titleRequired}</Label>
-                            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t.newTicket.titlePlaceholder} maxLength={200} />
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="title">{t.newTicket.titleRequired}</Label>
+                              <span className={cn('text-[10px] tabular-nums', titleTrim.length > TITLE_MAX * 0.9 ? 'text-warning' : 'text-muted-foreground')}>
+                                {titleTrim.length}/{TITLE_MAX}
+                              </span>
+                            </div>
+                            <Input
+                              id="title"
+                              value={title}
+                              onChange={e => setTitle(e.target.value)}
+                              onBlur={() => setTouched(s => ({ ...s, title: true }))}
+                              placeholder={t.newTicket.titlePlaceholder}
+                              maxLength={TITLE_MAX}
+                              aria-invalid={!!(touched.title && titleError)}
+                              className={cn(touched.title && titleError && 'border-destructive focus-visible:ring-destructive/30')}
+                            />
+                            <AnimatePresence>
+                              {touched.title && titleError && (
+                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                  className="text-[11px] text-destructive flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />{titleError}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="desc">{t.newTicket.descriptionRequired}</Label>
-                            <Textarea id="desc" value={description} onChange={e => setDescription(e.target.value)} placeholder={t.newTicket.descriptionPlaceholder} className="min-h-[140px]" maxLength={2000} />
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="desc">{t.newTicket.descriptionRequired}</Label>
+                              <span className={cn('text-[10px] tabular-nums', descTrim.length > DESC_MAX * 0.9 ? 'text-warning' : 'text-muted-foreground')}>
+                                {descTrim.length}/{DESC_MAX}
+                              </span>
+                            </div>
+                            <Textarea
+                              id="desc"
+                              value={description}
+                              onChange={e => setDescription(e.target.value)}
+                              onBlur={() => setTouched(s => ({ ...s, description: true }))}
+                              placeholder={t.newTicket.descriptionPlaceholder}
+                              className={cn('min-h-[140px]', touched.description && descError && 'border-destructive focus-visible:ring-destructive/30')}
+                              maxLength={DESC_MAX}
+                              aria-invalid={!!(touched.description && descError)}
+                            />
+                            <AnimatePresence>
+                              {touched.description && descError && (
+                                <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                  className="text-[11px] text-destructive flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />{descError}
+                                </motion.p>
+                              )}
+                            </AnimatePresence>
                           </div>
                           <div className="space-y-2">
                             <Label>{t.newTicket.priorityLabel}</Label>
@@ -480,16 +646,40 @@ export default function NewTicket() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="flex items-center justify-between mt-8 pt-5 border-t border-border/60">
+              <div className="flex items-center justify-between gap-3 mt-8 pt-5 border-t border-border/60 sticky bottom-0 bg-card/95 backdrop-blur-sm -mx-5 md:-mx-6 px-5 md:px-6 -mb-5 md:-mb-6 pb-5 md:pb-6">
                 <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
                   <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
                   {t.common.previous}
                 </Button>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  {(title || description) && !hasDraftPrompt && (
+                    <span className="hidden sm:inline-flex items-center gap-1">
+                      <Save className="h-3 w-3 text-success" />
+                      {isRTL ? 'تم حفظ المسودة' : 'Draft saved'}
+                    </span>
+                  )}
+                  <kbd className="hidden md:inline-flex items-center text-[10px] font-mono font-medium text-muted-foreground/80 bg-muted border border-border/60 rounded px-1.5 py-0.5">
+                    {isRTL ? '⌘ + Enter' : '⌘/Ctrl + Enter'}
+                  </kbd>
+                </div>
                 {step < 3 ? (
-                  <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
-                    {t.common.next}
-                    <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                  </Button>
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={!canProceed() ? 0 : -1}>
+                          <Button type="button" onClick={() => { setTouched({ title: true, description: true }); if (canProceed()) goNext(); }} disabled={!canProceed()} className="gap-1.5">
+                            {t.common.next}
+                            <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!canProceed() && blockReason() && (
+                        <TooltipContent side="top" className="text-[11px] max-w-xs">
+                          {blockReason()}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
                   <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
                     {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

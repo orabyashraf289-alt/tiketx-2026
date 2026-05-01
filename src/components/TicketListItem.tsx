@@ -58,7 +58,11 @@ function TicketApprovalIndicator({ ticketId }: { ticketId: string }) {
   );
 }
 
-export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function TicketListItem({ ticket, onClick, highlight = '' }, ref) {
+interface PropsExt extends Props {
+  active?: boolean;
+}
+
+export const TicketListItem = memo(forwardRef<HTMLButtonElement, PropsExt>(function TicketListItem({ ticket, onClick, highlight = '', active = false }, ref) {
   const { t, lang, isRTL } = useLanguage();
   const isOverdue = ticket.sla_resolution_due_at && !ticket.resolved_at && new Date(ticket.sla_resolution_due_at) < new Date();
   const dateLocale = lang === 'ar' ? ar : enUS;
@@ -69,10 +73,12 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
     <button
       ref={ref}
       onClick={onClick}
+      data-ticket-row
       className={cn(
         'group w-full text-start px-3 sm:px-4 py-3 sm:py-3.5 transition-all duration-200',
         'hover:bg-muted/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-inset',
         'relative',
+        active && 'bg-primary/[0.06] ring-1 ring-primary/20',
         isOverdue && 'ltr:border-l-2 ltr:border-l-destructive rtl:border-r-2 rtl:border-r-destructive bg-destructive/[0.03]',
       )}
       aria-label={`${t.tickets.code} ${ticket.code || ticket.ticket_number}: ${ticket.title}`}

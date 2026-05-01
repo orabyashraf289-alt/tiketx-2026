@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTickets, fetchDepartments, fetchServices, TicketStatus, TicketPriority } from '@/lib/api';
@@ -7,7 +7,7 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
+import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties, Keyboard } from 'lucide-react';
 import { TicketListSkeleton, InboxSkeleton } from '@/components/SkeletonLoaders';
 import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -67,6 +68,9 @@ export default function TicketsInbox() {
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('ticket-saved-filters') || '[]');
@@ -157,19 +161,82 @@ export default function TicketsInbox() {
     setSearchQuery('');
   };
 
+  // Reset highlighted row when filters/search change
+  useEffect(() => { setActiveIndex(-1); }, [searchQuery, statusFilter, priorityFilter, dateFrom, dateTo]);
+
+  // Global keyboard shortcuts: '/' focus search, 'j'/'k' navigate, 'Enter' open, 'Esc' clear
+  const visibleListRef = useRef<typeof tickets>([]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (e.key === '/' && !isTyping) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (isTyping && target !== searchInputRef.current) return;
+      const list = visibleListRef.current;
+      if (!list || list.length === 0) return;
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        if (isTyping && target !== searchInputRef.current) return;
+        e.preventDefault();
+        setActiveIndex((i) => Math.min((i < 0 ? -1 : i) + 1, list.length - 1));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        if (isTyping && target !== searchInputRef.current) return;
+        e.preventDefault();
+        setActiveIndex((i) => Math.max((i < 0 ? 0 : i) - 1, 0));
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        const tk = list[activeIndex];
+        if (tk) navigate(`/tickets/${tk.id}`);
+      } else if (e.key === 'Escape') {
+        if (searchQuery) { setSearchQuery(''); }
+        setActiveIndex(-1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeIndex, searchQuery, navigate]);
+
+  // Auto-scroll active row into view
+  useEffect(() => {
+    if (activeIndex < 0 || !listContainerRef.current) return;
+    const rows = listContainerRef.current.querySelectorAll('[data-ticket-row]');
+    const el = rows[activeIndex] as HTMLElement | undefined;
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeIndex]);
+
   const renderList = (list: typeof tickets) => {
+    visibleListRef.current = list;
     if (isLoading) {
       return <TicketListSkeleton count={6} />;
     }
     if (list.length === 0) {
       return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center justify-center py-20 text-muted-foreground"
         >
-          <Inbox className="h-12 w-12 mb-3 opacity-30" />
-          <p className="font-medium">{t.tickets.noTicketsFound}</p>
+          <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-4">
+            <Inbox className="h-8 w-8 opacity-40" />
+          </div>
+          <p className="font-semibold text-foreground mb-1">{t.tickets.noTicketsFound}</p>
+          <p className="text-xs mb-5 max-w-sm text-center opacity-80">
+            {activeFiltersCount > 0 || searchQuery
+              ? (isRTL ? 'جرّب تعديل عوامل التصفية أو مسحها للعرض الكامل.' : 'Try adjusting or clearing your filters to see more results.')
+              : (isRTL ? 'ابدأ بإنشاء أول تذكرة.' : 'Start by creating your first ticket.')}
+          </p>
+          <div className="flex items-center gap-2">
+            {(activeFiltersCount > 0 || searchQuery) && (
+              <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 h-8 text-xs">
+                <X className="h-3.5 w-3.5" />{t.tickets.clearCount} ({activeFiltersCount + (searchQuery ? 1 : 0)})
+              </Button>
+            )}
+            <Button size="sm" onClick={() => navigate('/tickets/new')} className="gap-1.5 h-8 text-xs">
+              <Plus className="h-3.5 w-3.5" />{t.tickets.createNewTicket}
+            </Button>
+          </div>
         </motion.div>
       );
     }
@@ -184,10 +251,10 @@ export default function TicketsInbox() {
       );
     }
     return (
-      <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
+      <motion.div ref={listContainerRef} variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
         {list.map((ticket, i) => (
           <motion.div key={ticket.id} variants={listItem}>
-            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} active={i === activeIndex} onClick={() => navigate(`/tickets/${ticket.id}`)} />
           </motion.div>
         ))}
       </motion.div>
@@ -195,30 +262,48 @@ export default function TicketsInbox() {
   };
 
   const FiltersBar = () => (
-    <motion.div variants={fadeUp} className="px-3 sm:px-4 py-2.5 border-b border-border/40 space-y-2 bg-muted/20">
+    <motion.div variants={fadeUp} className="px-3 sm:px-4 py-2.5 border-b border-border/40 space-y-2 bg-muted/30 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className={`absolute ${isRTL ? 'right-2.5' : 'left-2.5'} top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors ${searchQuery ? 'text-primary' : ''}`} />
           <Input
+            ref={searchInputRef}
             placeholder={t.tickets.searchPlaceholder}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={`${isRTL ? 'pr-8 pl-16' : 'pl-8 pr-16'} h-8 rounded-md border-border/60 bg-background text-xs transition-all focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40`}
+            className={`${isRTL ? 'pr-8 pl-20' : 'pl-8 pr-20'} h-8 rounded-md border-border/60 bg-background text-xs transition-all focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40`}
           />
-          {searchQuery && (
-            <div className={`absolute ${isRTL ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
-              <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded tabular-nums">
-                {allFiltered.length}
-              </span>
-              <button
-                onClick={() => setSearchQuery('')}
-                className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          )}
+          <div className={`absolute ${isRTL ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
+            {searchQuery ? (
+              <>
+                <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded tabular-nums">
+                  {allFiltered.length}
+                </span>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </>
+            ) : (
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <kbd className="hidden md:inline-flex items-center text-[10px] font-mono font-medium text-muted-foreground/80 bg-muted border border-border/60 rounded px-1.5 py-0.5 cursor-help">/</kbd>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-[10px]">
+                    <div className="space-y-0.5">
+                      <div>{isRTL ? 'اضغط / للبحث' : 'Press / to search'}</div>
+                      <div>{isRTL ? 'J / K للتنقل' : 'J / K to navigate'}</div>
+                      <div>{isRTL ? 'Enter للفتح' : 'Enter to open'}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
@@ -367,11 +452,13 @@ export default function TicketsInbox() {
                     {isAgentOrAdmin && (
                       <TabsTrigger value="department" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
                         {t.tickets.byDepartment}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium`}>{Object.keys(byDepartment).length}</span>
                       </TabsTrigger>
                     )}
                     {isAgentOrAdmin && (
                       <TabsTrigger value="service" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm transition-all duration-200">
                         {t.tickets.byService}
+                        <span className={`${isRTL ? 'mr-1.5' : 'ml-1.5'} bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium`}>{Object.keys(byService).length}</span>
                       </TabsTrigger>
                     )}
                     {role === 'admin' && (
