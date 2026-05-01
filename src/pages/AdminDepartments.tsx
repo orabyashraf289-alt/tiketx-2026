@@ -284,7 +284,7 @@ export default function AdminDepartments() {
             </Card>
           )}
         </div>
-      </main>
+      </PageContainer>
 
       {/* Form Dialog */}
       <Dialog open={open} onOpenChange={v => { if (!v) resetForm(); setOpen(v); }}>
