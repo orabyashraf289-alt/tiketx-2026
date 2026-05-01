@@ -448,7 +448,7 @@ export default function AdminSLA() {
             </Tabs>
           </div>
         )}
-      </main>
+      </PageContainer>
     </PageLayout>
   );
 }
