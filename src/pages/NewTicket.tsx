@@ -281,6 +281,19 @@ export default function NewTicket() {
     mutation.mutate();
   };
 
+  // Cmd/Ctrl + Enter advances or submits
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (step < 3 && canProceed()) goNext();
+        else if (step === 3 && !mutation.isPending) handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [step, canProceed, mutation.isPending]);
+
   const roleLabel = role ? roleLabels[role] : '';
 
   return (
