@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties, Keyboard } from 'lucide-react';
 import { TicketListSkeleton, InboxSkeleton } from '@/components/SkeletonLoaders';
+import { EmptyState, ErrorState } from '@/components/common';
 import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export default function TicketsInbox() {
     } catch { return []; }
   });
 
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['tickets'],
     queryFn: fetchTickets,
   });
@@ -211,33 +212,33 @@ export default function TicketsInbox() {
     if (isLoading) {
       return <TicketListSkeleton count={6} />;
     }
+    if (isError) {
+      return <ErrorState onRetry={() => refetch()} className="py-16" />;
+    }
     if (list.length === 0) {
+      const hasFilters = activeFiltersCount > 0 || !!searchQuery;
       return (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-muted-foreground"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-4">
-            <Inbox className="h-8 w-8 opacity-40" />
-          </div>
-          <p className="font-semibold text-foreground mb-1">{t.tickets.noTicketsFound}</p>
-          <p className="text-xs mb-5 max-w-sm text-center opacity-80">
-            {activeFiltersCount > 0 || searchQuery
+        <EmptyState
+          icon={Inbox}
+          title={t.tickets.noTicketsFound}
+          description={
+            hasFilters
               ? (isRTL ? 'جرّب تعديل عوامل التصفية أو مسحها للعرض الكامل.' : 'Try adjusting or clearing your filters to see more results.')
-              : (isRTL ? 'ابدأ بإنشاء أول تذكرة.' : 'Start by creating your first ticket.')}
-          </p>
-          <div className="flex items-center gap-2">
-            {(activeFiltersCount > 0 || searchQuery) && (
-              <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 h-8 text-xs">
-                <X className="h-3.5 w-3.5" />{t.tickets.clearCount} ({activeFiltersCount + (searchQuery ? 1 : 0)})
+              : (isRTL ? 'ابدأ بإنشاء أول تذكرة.' : 'Start by creating your first ticket.')
+          }
+          action={
+            <div className="flex items-center gap-2">
+              {hasFilters && (
+                <Button variant="outline" size="sm" onClick={clearFilters} className="gap-1.5 h-8 text-xs">
+                  <X className="h-3.5 w-3.5" />{t.tickets.clearCount} ({activeFiltersCount + (searchQuery ? 1 : 0)})
+                </Button>
+              )}
+              <Button size="sm" onClick={() => navigate('/tickets/new')} className="gap-1.5 h-8 text-xs">
+                <Plus className="h-3.5 w-3.5" />{t.tickets.createNewTicket}
               </Button>
-            )}
-            <Button size="sm" onClick={() => navigate('/tickets/new')} className="gap-1.5 h-8 text-xs">
-              <Plus className="h-3.5 w-3.5" />{t.tickets.createNewTicket}
-            </Button>
-          </div>
-        </motion.div>
+            </div>
+          }
+        />
       );
     }
     if (viewMode === 'table') {
