@@ -1,7 +1,7 @@
 import { ReactNode, memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { fadeUpSpring } from '@/lib/motion';
+import { fadeUp } from '@/lib/motion';
 
 interface PageContainerProps {
   children: ReactNode;
@@ -34,7 +34,9 @@ export const PageContainer = memo(function PageContainer({
     <main className="flex-1 overflow-auto bg-muted/20 relative" role="main">
       {mesh && <div className="absolute inset-0 gradient-mesh pointer-events-none opacity-50" />}
       <motion.div
-        {...fadeUpSpring}
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
         className={cn(
           'relative mx-auto p-4 md:p-6 lg:p-8 space-y-6',
           widthMap[maxWidth],
