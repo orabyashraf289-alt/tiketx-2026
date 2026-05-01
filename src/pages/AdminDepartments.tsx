@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchDepartments, createDepartment, updateDepartment, deleteDepartment } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer } from '@/components/layout';
+import { EmptyState, ErrorState, AdminTableSkeleton } from '@/components/common';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +41,7 @@ export default function AdminDepartments() {
   const [sortAsc, setSortAsc] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
 
-  const { data: departments = [], isLoading } = useQuery({
+  const { data: departments = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['departments'],
     queryFn: fetchDepartments,
   });
@@ -203,12 +204,15 @@ export default function AdminDepartments() {
 
           {/* Table */}
           {isLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            <AdminTableSkeleton rows={6} cols={5} showKpis={false} showToolbar={false} />
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : filteredDepts.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-20 text-muted-foreground">
-              <Building2 className="h-12 w-12 mb-3 opacity-30" />
-              <p>{search ? (isAr ? 'لا توجد نتائج' : 'No results') : t.admin.noDepts}</p>
-            </motion.div>
+            <EmptyState
+              icon={Building2}
+              title={search ? (isAr ? 'لا توجد نتائج' : 'No results') : t.admin.noDepts}
+              description={search ? (isAr ? 'حاول البحث بكلمة مختلفة.' : 'Try a different search.') : (isAr ? 'ابدأ بإنشاء أول قسم.' : 'Create your first department.')}
+            />
           ) : (
             <Card className="rounded-2xl border-border/50 overflow-hidden">
               <Table>
