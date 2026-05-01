@@ -99,10 +99,10 @@ export const TicketListItem = memo(forwardRef<HTMLButtonElement, Props>(function
           {/* Top row: code + title */}
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-[10px] sm:text-[11px] font-mono font-semibold text-muted-foreground shrink-0 tabular-nums tracking-tight">
-              {ticket.code || `#${ticket.ticket_number}`}
+              <Highlight text={ticket.code || `#${ticket.ticket_number}`} query={highlight} />
             </span>
             <h3 className="font-semibold text-[13px] sm:text-sm truncate text-foreground group-hover:text-primary transition-colors duration-200 tracking-tight">
-              {ticket.title}
+              <Highlight text={ticket.title} query={highlight} />
             </h3>
           </div>
 
