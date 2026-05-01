@@ -176,7 +176,7 @@ export default function AdminSLA() {
         ) : (
           <div className="space-y-6">
             {/* Live KPI Strip */}
-            <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
                 { icon: ShieldCheck, label: lang === 'ar' ? 'نسبة الالتزام' : 'Compliance', value: `${complianceRate}%`, color: complianceRate >= 80 ? 'text-success' : 'text-destructive', bgColor: complianceRate >= 80 ? 'bg-success/10' : 'bg-destructive/10' },
                 { icon: AlertTriangle, label: lang === 'ar' ? 'تذاكر متجاوزة' : 'Breached', value: liveStats?.breached ?? 0, color: 'text-destructive', bgColor: 'bg-destructive/10' },
