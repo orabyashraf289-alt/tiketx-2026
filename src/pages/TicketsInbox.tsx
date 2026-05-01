@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
-import { TicketListSkeleton } from '@/components/SkeletonLoaders';
+import { TicketListSkeleton, InboxSkeleton } from '@/components/SkeletonLoaders';
 import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -187,7 +187,7 @@ export default function TicketsInbox() {
       <motion.div variants={staggerList} initial="hidden" animate="visible" className="divide-y divide-border/50">
         {list.map((ticket, i) => (
           <motion.div key={ticket.id} variants={listItem}>
-            <TicketListItem ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+            <TicketListItem ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
           </motion.div>
         ))}
       </motion.div>
@@ -197,14 +197,28 @@ export default function TicketsInbox() {
   const FiltersBar = () => (
     <motion.div variants={fadeUp} className="px-3 sm:px-4 py-2.5 border-b border-border/40 space-y-2 bg-muted/20">
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[180px] max-w-md">
-          <Search className={`absolute ${isRTL ? 'right-2.5' : 'left-2.5'} top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground`} />
+        <div className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className={`absolute ${isRTL ? 'right-2.5' : 'left-2.5'} top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors ${searchQuery ? 'text-primary' : ''}`} />
           <Input
             placeholder={t.tickets.searchPlaceholder}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={`${isRTL ? 'pr-8' : 'pl-8'} h-8 rounded-md border-border/60 bg-background text-xs`}
+            className={`${isRTL ? 'pr-8 pl-16' : 'pl-8 pr-16'} h-8 rounded-md border-border/60 bg-background text-xs transition-all focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40`}
           />
+          {searchQuery && (
+            <div className={`absolute ${isRTL ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
+              <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded tabular-nums">
+                {allFiltered.length}
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
@@ -314,6 +328,8 @@ export default function TicketsInbox() {
     </div>
   );
 
+  const isInitialLoad = isLoading && tickets.length === 0;
+
   return (
     <PageLayout>
       <PageHeader
@@ -324,6 +340,7 @@ export default function TicketsInbox() {
       />
 
           <main className="flex-1 overflow-auto">
+            {isInitialLoad ? <InboxSkeleton /> : (
             <motion.div
               variants={pageVariants}
               initial="hidden"
@@ -397,7 +414,7 @@ export default function TicketsInbox() {
                                 <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({deptTickets.length})</span>
                               </div>
                               {deptTickets.map((ticket, i) => (
-                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                               ))}
                             </motion.div>
                           ))}
@@ -424,7 +441,7 @@ export default function TicketsInbox() {
                                 <span className={`text-xs text-muted-foreground ${isRTL ? 'mr-2' : 'ml-2'} bg-primary/10 text-primary px-2 py-0.5 rounded-full`}>({svcTickets.length})</span>
                               </div>
                               {svcTickets.map((ticket, i) => (
-                                <TicketListItem key={ticket.id} ticket={ticket} index={i} onClick={() => navigate(`/tickets/${ticket.id}`)} />
+                                <TicketListItem key={ticket.id} ticket={ticket} index={i} highlight={searchQuery} onClick={() => navigate(`/tickets/${ticket.id}`)} />
                               ))}
                             </motion.div>
                           ))}
@@ -442,6 +459,7 @@ export default function TicketsInbox() {
               </Tabs>
               )}
             </motion.div>
+            )}
           </main>
     </PageLayout>
   );

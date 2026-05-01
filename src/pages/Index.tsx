@@ -147,6 +147,8 @@ export default function Dashboard() {
     </div>
   );
 
+  const isInitialLoad = ticketsLoading && !stats;
+
   return (
     <PageLayout>
       <PageHeader
@@ -155,6 +157,12 @@ export default function Dashboard() {
         badge={dateBadge}
         actions={headerActions}
       />
+
+      {isInitialLoad ? (
+        <main className="flex-1 overflow-auto bg-muted/20" role="main">
+          <DashboardSkeleton />
+        </main>
+      ) : (
 
       <main className="flex-1 overflow-auto bg-muted/20 relative" role="main">
         {/* Subtle mesh background */}
@@ -245,6 +253,7 @@ export default function Dashboard() {
           />
         </motion.div>
       </main>
+      )}
     </PageLayout>
   );
 }

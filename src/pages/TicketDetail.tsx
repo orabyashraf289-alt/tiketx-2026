@@ -24,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { TicketDetailSkeleton } from '@/components/SkeletonLoaders';
 import { AiChatPanel } from '@/components/AiChatPanel';
 import { AiSuggestions } from '@/components/AiSuggestions';
 import { AiReplySuggestions } from '@/components/AiReplySuggestions';
@@ -294,9 +295,10 @@ export default function TicketDetailPage() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PageHeader title={t.tickets.ticketLabel} />
+        <main className="flex-1 overflow-auto">
+          <TicketDetailSkeleton />
+        </main>
       </PageLayout>
     );
   }
