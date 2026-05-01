@@ -170,8 +170,8 @@ export default function AdminDepartments() {
           </div>
         }
       />
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="max-w-5xl mx-auto space-y-4">
+      <PageContainer maxWidth="lg">
+        <div className="space-y-4">
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {kpiCards.map((kpi, i) => (
