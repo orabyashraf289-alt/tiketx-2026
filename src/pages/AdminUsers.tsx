@@ -669,7 +669,7 @@ export default function AdminUsers() {
             </Card>
           )}
         </div>
-      </main>
+      </PageContainer>
 
       {/* Edit User Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
