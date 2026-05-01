@@ -331,6 +331,28 @@ export default function NewTicket() {
             </span>
           </motion.div>
 
+          <AnimatePresence>
+            {hasDraftPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="rounded-xl border border-primary/30 bg-primary/5 px-3.5 py-2.5 flex items-center gap-3"
+              >
+                <Save className="h-4 w-4 text-primary shrink-0" />
+                <p className="text-xs text-foreground flex-1">
+                  {isRTL ? 'لديك مسودة محفوظة لتذكرة لم تكتمل. هل تريد استعادتها؟' : 'You have a saved draft of an unfinished ticket. Restore it?'}
+                </p>
+                <Button size="sm" variant="default" className="h-7 text-xs gap-1.5" onClick={restoreDraft}>
+                  <RotateCcw className="h-3 w-3" />{isRTL ? 'استعادة' : 'Restore'}
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={discardDraft}>
+                  <X className="h-3 w-3" />{isRTL ? 'تجاهل' : 'Discard'}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <WizardProgress steps={WIZARD_STEPS} currentStep={step} />
 
           <Card className="overflow-hidden border-border/60 shadow-sm">
