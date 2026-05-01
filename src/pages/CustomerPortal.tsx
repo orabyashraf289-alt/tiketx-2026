@@ -882,10 +882,11 @@ function TicketDetailView({
       const filePath = `${ticket.id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
-      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
-      const fileUrl = signedData?.signedUrl || filePath;
-      
-      await addAttachment({ ticket_id: ticket.id, uploaded_by: user.id, file_name: file.name, file_url: fileUrl, file_size: file.size });
+      // Short-lived (1h) signed URL just for the inline chat preview
+      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60);
+      const fileUrl = signedData?.signedUrl || '';
+
+      await addAttachment({ ticket_id: ticket.id, uploaded_by: user.id, file_name: file.name, file_url: '', storage_key: filePath, file_size: file.size });
 
       const isImage = file.type.startsWith('image/');
       const content = isImage ? `📷 [${t.portal.imageAttachment}: ${file.name}](${fileUrl})` : `📎 [${t.portal.fileAttachment}: ${file.name}](${fileUrl})`;
