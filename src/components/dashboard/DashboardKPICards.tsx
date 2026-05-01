@@ -1,10 +1,12 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Inbox, Clock, CheckCircle2, AlertTriangle, Shield, Timer,
-  TrendingUp, TrendingDown, BarChart3, ArrowUpRight, ArrowDownRight,
+  Inbox, Clock, CheckCircle2, Shield, Timer, BarChart3,
+  ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import { useLanguage } from '@/i18n';
+import { AnimatedNumber } from '@/components/common/AnimatedNumber';
+import { gridContainer, cardEnter, hoverLift } from '@/lib/motion';
 
 interface Props {
   stats: any;
@@ -14,115 +16,117 @@ interface Props {
   pendingCount: number;
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
-};
-
 export const DashboardKPICards = memo(function DashboardKPICards({ stats, report, tickets, unresolvedCount, pendingCount }: Props) {
   const { t, lang } = useLanguage();
   const resolvedCount = stats?.resolved ?? 0;
   const resolutionRate = tickets.length > 0 ? Math.round((resolvedCount / tickets.length) * 100) : 0;
   const slaCompliance = report?.slaCompliancePercent ?? 0;
+  const avgResp = report?.avgFirstResponseHours ?? 0;
 
   const kpis = [
     {
       title: t.dashboard.unresolvedTickets,
       value: unresolvedCount,
       icon: Inbox,
-      color: 'destructive' as const,
+      tone: 'destructive',
       trend: unresolvedCount > 10 ? 'up' : 'down',
-      trendLabel: unresolvedCount > 10 ? (lang === 'ar' ? 'يحتاج متابعة' : 'Needs attention') : (lang === 'ar' ? 'جيد' : 'Good'),
+      trendLabel: unresolvedCount > 10 ? (lang === 'ar' ? 'يحتاج متابعة' : 'Needs attention') : (lang === 'ar' ? 'تحت السيطرة' : 'Under control'),
+      iconBg: 'bg-destructive/10 text-destructive',
+      ring: 'group-hover:ring-destructive/20',
     },
     {
       title: t.dashboard.pending,
       value: pendingCount,
       icon: Clock,
-      color: 'warning' as const,
+      tone: 'warning',
       trend: pendingCount > 5 ? 'up' : 'down',
       trendLabel: `${pendingCount} ${lang === 'ar' ? 'بانتظار' : 'waiting'}`,
+      iconBg: 'bg-warning/10 text-warning',
+      ring: 'group-hover:ring-warning/20',
     },
     {
       title: lang === 'ar' ? 'تم الحل' : 'Resolved',
       value: resolvedCount,
       icon: CheckCircle2,
-      color: 'success' as const,
-      trend: 'down' as const,
+      tone: 'success',
+      trend: 'down',
       trendLabel: `${resolutionRate}% ${lang === 'ar' ? 'معدل الحل' : 'rate'}`,
+      iconBg: 'bg-success/10 text-success',
+      ring: 'group-hover:ring-success/20',
     },
     {
       title: t.dashboard.slaCompliance,
-      value: `${slaCompliance}%`,
+      value: slaCompliance,
+      suffix: '%',
       icon: Shield,
-      color: slaCompliance >= 80 ? 'success' as const : 'destructive' as const,
+      tone: slaCompliance >= 80 ? 'success' : 'destructive',
       trend: slaCompliance >= 80 ? 'down' : 'up',
       trendLabel: slaCompliance >= 80 ? (lang === 'ar' ? 'ممتاز' : 'Excellent') : (lang === 'ar' ? 'يحتاج تحسين' : 'Needs improvement'),
+      iconBg: slaCompliance >= 80 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive',
+      ring: 'group-hover:ring-primary/20',
     },
     {
       title: t.dashboard.avgFirstResponse,
-      value: `${report?.avgFirstResponseHours ?? 0}h`,
+      value: avgResp,
+      suffix: 'h',
       icon: Timer,
-      color: 'info' as const,
-      trend: (report?.avgFirstResponseHours ?? 0) <= 4 ? 'down' : 'up',
-      trendLabel: (report?.avgFirstResponseHours ?? 0) <= 4 ? (lang === 'ar' ? 'سريع' : 'Fast') : (lang === 'ar' ? 'بطيء' : 'Slow'),
+      tone: 'info',
+      trend: avgResp <= 4 ? 'down' : 'up',
+      trendLabel: avgResp <= 4 ? (lang === 'ar' ? 'سريع' : 'Fast') : (lang === 'ar' ? 'بطيء' : 'Slow'),
+      iconBg: 'bg-info/10 text-info',
+      ring: 'group-hover:ring-info/20',
     },
     {
       title: lang === 'ar' ? 'إجمالي التذاكر' : 'Total Tickets',
       value: tickets.length,
       icon: BarChart3,
-      color: 'primary' as const,
-      trend: 'neutral' as const,
+      tone: 'primary',
+      trend: 'neutral',
       trendLabel: `${stats?.new ?? 0} ${lang === 'ar' ? 'جديدة' : 'new'}`,
+      iconBg: 'bg-primary/10 text-primary',
+      ring: 'group-hover:ring-primary/20',
     },
-  ];
+  ] as const;
 
   return (
     <motion.div
       className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-      variants={container}
+      variants={gridContainer}
       initial="hidden"
       animate="visible"
     >
-      {kpis.map((kpi, i) => (
+      {kpis.map((kpi) => (
         <motion.div
           key={kpi.title}
-          variants={item}
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
-          className="group relative rounded-2xl bg-card border border-border/50 p-4 cursor-default overflow-hidden hover:shadow-card-hover hover:border-primary/20 transition-all duration-300"
+          variants={cardEnter}
+          whileHover={hoverLift}
+          className={`group relative rounded-2xl bg-card border border-border/60 p-4 cursor-default overflow-hidden ring-1 ring-transparent transition-all duration-300 hover:shadow-card-hover hover:border-primary/30 ${kpi.ring}`}
         >
-          {/* Background accent */}
-          <div className={`absolute inset-0 bg-${kpi.color}/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+          {/* Subtle gradient mesh on hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-primary/[0.04] via-transparent to-accent/[0.03] pointer-events-none" />
 
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className={`w-9 h-9 rounded-xl bg-${kpi.color}/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                <kpi.icon className={`h-4.5 w-4.5 text-${kpi.color}`} />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 ease-spring group-hover:scale-110 group-hover:-rotate-3 ${kpi.iconBg}`}>
+                <kpi.icon className="h-[18px] w-[18px]" strokeWidth={2.2} />
               </div>
-              <div className={`flex items-center gap-0.5 text-[10px] font-semibold ${
-                kpi.trend === 'up' ? 'text-destructive' : kpi.trend === 'down' ? 'text-success' : 'text-muted-foreground'
-              }`}>
-                {kpi.trend === 'up' ? <ArrowUpRight className="h-3 w-3" /> : kpi.trend === 'down' ? <ArrowDownRight className="h-3 w-3" /> : null}
-              </div>
+              {kpi.trend !== 'neutral' && (
+                <div className={`flex items-center gap-0.5 text-[10px] font-bold tracking-wide ${
+                  kpi.trend === 'up' ? 'text-destructive' : 'text-success'
+                }`}>
+                  {kpi.trend === 'up' ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                </div>
+              )}
             </div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.05 }}
-              className="text-2xl font-bold text-foreground mb-0.5"
-            >
-              {kpi.value}
-            </motion.p>
+            <p className="text-2xl font-bold text-foreground mb-0.5 tracking-tight tabular-nums">
+              <AnimatedNumber value={typeof kpi.value === 'number' ? kpi.value : 0} suffix={(kpi as any).suffix || ''} />
+            </p>
 
-            <p className="text-[10px] text-muted-foreground font-medium leading-tight">{kpi.title}</p>
+            <p className="text-[11px] text-muted-foreground font-medium leading-tight">{kpi.title}</p>
 
-            <p className={`text-[9px] mt-1.5 font-medium ${
-              kpi.trend === 'up' ? 'text-destructive/70' : kpi.trend === 'down' ? 'text-success/70' : 'text-muted-foreground/70'
+            <p className={`text-[10px] mt-1.5 font-medium ${
+              kpi.trend === 'up' ? 'text-destructive/80' : kpi.trend === 'down' ? 'text-success/80' : 'text-muted-foreground/70'
             }`}>
               {kpi.trendLabel}
             </p>
