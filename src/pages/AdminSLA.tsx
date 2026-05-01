@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchSLAPolicies, updateSLAPolicy } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer } from '@/components/layout';
+import { ErrorState, AdminTableSkeleton } from '@/components/common';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,7 +55,7 @@ export default function AdminSLA() {
   const { t, lang, isRTL } = useLanguage();
   const { priorityLabels: localizedPriority } = useLocalizedLabels();
 
-  const { data: policies = [], isLoading } = useQuery({
+  const { data: policies = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['sla-policies'],
     queryFn: fetchSLAPolicies,
   });
