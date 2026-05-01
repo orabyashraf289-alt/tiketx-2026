@@ -262,30 +262,48 @@ export default function TicketsInbox() {
   };
 
   const FiltersBar = () => (
-    <motion.div variants={fadeUp} className="px-3 sm:px-4 py-2.5 border-b border-border/40 space-y-2 bg-muted/20">
+    <motion.div variants={fadeUp} className="px-3 sm:px-4 py-2.5 border-b border-border/40 space-y-2 bg-muted/30 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className={`absolute ${isRTL ? 'right-2.5' : 'left-2.5'} top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors ${searchQuery ? 'text-primary' : ''}`} />
           <Input
+            ref={searchInputRef}
             placeholder={t.tickets.searchPlaceholder}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className={`${isRTL ? 'pr-8 pl-16' : 'pl-8 pr-16'} h-8 rounded-md border-border/60 bg-background text-xs transition-all focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40`}
+            className={`${isRTL ? 'pr-8 pl-20' : 'pl-8 pr-20'} h-8 rounded-md border-border/60 bg-background text-xs transition-all focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40`}
           />
-          {searchQuery && (
-            <div className={`absolute ${isRTL ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
-              <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded tabular-nums">
-                {allFiltered.length}
-              </span>
-              <button
-                onClick={() => setSearchQuery('')}
-                className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          )}
+          <div className={`absolute ${isRTL ? 'left-1.5' : 'right-1.5'} top-1/2 -translate-y-1/2 flex items-center gap-1`}>
+            {searchQuery ? (
+              <>
+                <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded tabular-nums">
+                  {allFiltered.length}
+                </span>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </>
+            ) : (
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <kbd className="hidden md:inline-flex items-center text-[10px] font-mono font-medium text-muted-foreground/80 bg-muted border border-border/60 rounded px-1.5 py-0.5 cursor-help">/</kbd>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-[10px]">
+                    <div className="space-y-0.5">
+                      <div>{isRTL ? 'اضغط / للبحث' : 'Press / to search'}</div>
+                      <div>{isRTL ? 'J / K للتنقل' : 'J / K to navigate'}</div>
+                      <div>{isRTL ? 'Enter للفتح' : 'Enter to open'}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
 
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
