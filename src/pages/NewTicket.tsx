@@ -646,16 +646,40 @@ export default function NewTicket() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="flex items-center justify-between mt-8 pt-5 border-t border-border/60">
+              <div className="flex items-center justify-between gap-3 mt-8 pt-5 border-t border-border/60 sticky bottom-0 bg-card/95 backdrop-blur-sm -mx-5 md:-mx-6 px-5 md:px-6 -mb-5 md:-mb-6 pb-5 md:pb-6">
                 <Button type="button" variant="ghost" onClick={goPrev} disabled={step === 0} className="gap-1.5">
                   <ArrowLeft className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
                   {t.common.previous}
                 </Button>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  {(title || description) && !hasDraftPrompt && (
+                    <span className="hidden sm:inline-flex items-center gap-1">
+                      <Save className="h-3 w-3 text-success" />
+                      {isRTL ? 'تم حفظ المسودة' : 'Draft saved'}
+                    </span>
+                  )}
+                  <kbd className="hidden md:inline-flex items-center text-[10px] font-mono font-medium text-muted-foreground/80 bg-muted border border-border/60 rounded px-1.5 py-0.5">
+                    {isRTL ? '⌘ + Enter' : '⌘/Ctrl + Enter'}
+                  </kbd>
+                </div>
                 {step < 3 ? (
-                  <Button type="button" onClick={goNext} disabled={!canProceed()} className="gap-1.5">
-                    {t.common.next}
-                    <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
-                  </Button>
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={!canProceed() ? 0 : -1}>
+                          <Button type="button" onClick={() => { setTouched({ title: true, description: true }); if (canProceed()) goNext(); }} disabled={!canProceed()} className="gap-1.5">
+                            {t.common.next}
+                            <ArrowRight className={`h-4 w-4 ${isRTL ? '' : 'rotate-180'}`} />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!canProceed() && blockReason() && (
+                        <TooltipContent side="top" className="text-[11px] max-w-xs">
+                          {blockReason()}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : (
                   <Button onClick={handleSubmit} disabled={mutation.isPending} className="gap-1.5">
                     {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
