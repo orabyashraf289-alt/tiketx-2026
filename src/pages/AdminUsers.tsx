@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer, SectionHeader } from '@/components/layout';
+import { EmptyState, ErrorState, AdminTableSkeleton } from '@/components/common';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -75,7 +76,7 @@ export default function AdminUsers() {
   const [editEmployeeNumber, setEditEmployeeNumber] = useState('');
   const [editManagerId, setEditManagerId] = useState('');
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['all-users'],
     queryFn: fetchAllUsers,
   });
@@ -449,8 +450,8 @@ export default function AdminUsers() {
         }
       />
 
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="max-w-[1400px] mx-auto space-y-5">
+      <PageContainer maxWidth="xl">
+        <div className="space-y-5">
 
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -557,12 +558,17 @@ export default function AdminUsers() {
 
           {/* Users Table */}
           {isLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+            <AdminTableSkeleton rows={8} cols={6} showKpis={false} showToolbar={false} />
+          ) : isError ? (
+            <ErrorState onRetry={() => refetch()} />
           ) : filteredUsers.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-muted-foreground">
-              <Users className="h-12 w-12 mb-3 opacity-30" />
-              <p>{search || activeFiltersCount > 0 ? t.common.noResults : t.admin.noUsers}</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title={search || activeFiltersCount > 0 ? t.common.noResults : t.admin.noUsers}
+              description={search || activeFiltersCount > 0
+                ? (isAr ? 'حاول تغيير البحث أو مسح الفلاتر.' : 'Try a different search or clear filters.')
+                : (isAr ? 'أنشئ أول مستخدم في النظام.' : 'Create your first user.')}
+            />
           ) : (
             <Card className="rounded-2xl border-border/50 overflow-hidden">
               <Table>
@@ -668,7 +674,7 @@ export default function AdminUsers() {
             </Card>
           )}
         </div>
-      </main>
+      </PageContainer>
 
       {/* Edit User Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>

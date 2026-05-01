@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchSLAPolicies, updateSLAPolicy } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer } from '@/components/layout';
+import { ErrorState, AdminTableSkeleton } from '@/components/common';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +17,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
-import { LoadingSpinner } from '@/components/common';
+// LoadingSpinner replaced by AdminTableSkeleton
 import { formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 
@@ -54,7 +55,7 @@ export default function AdminSLA() {
   const { t, lang, isRTL } = useLanguage();
   const { priorityLabels: localizedPriority } = useLocalizedLabels();
 
-  const { data: policies = [], isLoading } = useQuery({
+  const { data: policies = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['sla-policies'],
     queryFn: fetchSLAPolicies,
   });
@@ -167,11 +168,13 @@ export default function AdminSLA() {
   return (
     <PageLayout>
       <PageHeader title={t.admin.slaTitle} icon={<Timer className="h-5 w-5" />} />
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
+      <PageContainer maxWidth="lg">
         {isLoading ? (
-          <LoadingSpinner size="lg" fullPage />
+          <AdminTableSkeleton rows={5} cols={4} kpiCount={4} showToolbar={false} />
+        ) : isError ? (
+          <ErrorState onRetry={() => refetch()} />
         ) : (
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="space-y-6">
             {/* Live KPI Strip */}
             <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
@@ -445,7 +448,7 @@ export default function AdminSLA() {
             </Tabs>
           </div>
         )}
-      </main>
+      </PageContainer>
     </PageLayout>
   );
 }

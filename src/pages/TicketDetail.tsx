@@ -38,6 +38,7 @@ import { TicketSummary } from '@/components/TicketSummary';
 import { TicketAICopilot } from '@/components/TicketAICopilot';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { EmptyState, ErrorState } from '@/components/common';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
@@ -74,7 +75,7 @@ export default function TicketDetailPage() {
   const [pendingStatus, setPendingStatus] = useState<TicketStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: ticket, isLoading } = useQuery({
+  const { data: ticket, isLoading, isError, refetch } = useQuery({
     queryKey: ['ticket', id],
     queryFn: () => fetchTicketById(id!),
     enabled: !!id,
@@ -305,7 +306,36 @@ export default function TicketDetailPage() {
     );
   }
 
-  if (!ticket) return null;
+  if (isError) {
+    return (
+      <PageLayout>
+        <PageHeader title={t.tickets.ticketLabel} />
+        <main className="flex-1 overflow-auto">
+          <ErrorState onRetry={() => refetch()} />
+        </main>
+      </PageLayout>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <PageLayout>
+        <PageHeader title={t.tickets.ticketLabel} />
+        <main className="flex-1 overflow-auto">
+          <EmptyState
+            icon={FileText}
+            title={lang === 'ar' ? 'التذكرة غير موجودة' : 'Ticket not found'}
+            description={lang === 'ar' ? 'قد تكون التذكرة محذوفة أو لا تملك صلاحية الوصول.' : 'It may have been deleted or you don’t have access.'}
+            action={
+              <Button onClick={() => navigate('/tickets')} variant="outline">
+                {lang === 'ar' ? 'العودة للتذاكر' : 'Back to inbox'}
+              </Button>
+            }
+          />
+        </main>
+      </PageLayout>
+    );
+  }
 
   const isAgentOrAdmin = role === 'agent' || role === 'admin' || role === 'developer';
 
