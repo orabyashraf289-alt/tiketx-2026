@@ -168,11 +168,13 @@ export default function AdminSLA() {
   return (
     <PageLayout>
       <PageHeader title={t.admin.slaTitle} icon={<Timer className="h-5 w-5" />} />
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
+      <PageContainer maxWidth="lg">
         {isLoading ? (
-          <LoadingSpinner size="lg" fullPage />
+          <AdminTableSkeleton rows={5} cols={4} kpiCount={4} showToolbar={false} />
+        ) : isError ? (
+          <ErrorState onRetry={() => refetch()} />
         ) : (
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="space-y-6">
             {/* Live KPI Strip */}
             <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
