@@ -24,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
+import { TicketDetailSkeleton } from '@/components/SkeletonLoaders';
 import { AiChatPanel } from '@/components/AiChatPanel';
 import { AiSuggestions } from '@/components/AiSuggestions';
 import { AiReplySuggestions } from '@/components/AiReplySuggestions';
