@@ -8,6 +8,7 @@ import { fetchTicketApprovals } from '@/lib/api';
 import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { openAttachment } from '@/lib/attachments';
 import { PageLayout, PageHeader } from '@/components/layout';
 import { StatusBadge, PriorityBadge } from '@/components/TicketBadges';
 import { Button } from '@/components/ui/button';
@@ -217,13 +218,14 @@ export default function TicketDetailPage() {
       const filePath = `${id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
-      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
-      const fileUrl = signedData?.signedUrl || filePath;
+      // We no longer persist a long-lived signed URL. Store only the storage key
+      // and generate a fresh short-lived signed URL on demand at view time.
       await addAttachment({
         ticket_id: id!,
         uploaded_by: user!.id,
         file_name: file.name,
-        file_url: fileUrl,
+        file_url: '',
+        storage_key: filePath,
         file_size: file.size,
       });
     },
@@ -375,18 +377,17 @@ export default function TicketDetailPage() {
                           <p className="text-xs font-semibold text-muted-foreground">{t.tickets.detail.attachments}</p>
                           <div className="flex flex-wrap gap-2">
                             {attachments.map(att => (
-                              <motion.a
+                              <motion.button
                                 key={att.id}
-                                href={att.file_url}
-                                target="_blank"
-                                rel="noreferrer"
+                                type="button"
+                                onClick={() => openAttachment(att)}
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
                                 className="flex items-center gap-1.5 text-xs bg-muted px-3 py-2 rounded-xl hover:bg-muted/80 transition-colors"
                               >
                                 <FileText className="h-3.5 w-3.5" />
                                 {att.file_name}
-                              </motion.a>
+                              </motion.button>
                             ))}
                           </div>
                         </div>
