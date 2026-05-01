@@ -75,9 +75,10 @@ export default function AdminUsers() {
   const [editEmployeeNumber, setEditEmployeeNumber] = useState('');
   const [editManagerId, setEditManagerId] = useState('');
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['all-users'],
     queryFn: fetchAllUsers,
+  });
   });
 
   const { data: departments = [] } = useQuery({
