@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTickets, fetchDepartments, fetchServices, TicketStatus, TicketPriority } from '@/lib/api';
@@ -7,7 +7,7 @@ import { TicketListItem } from '@/components/TicketListItem';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties } from 'lucide-react';
+import { Search, Inbox, Filter, CalendarDays, Plus, X, Bookmark, LayoutGrid, List, TableProperties, Keyboard } from 'lucide-react';
 import { TicketListSkeleton, InboxSkeleton } from '@/components/SkeletonLoaders';
 import { TicketTableView } from '@/components/TicketTableView';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import { useRealtimeTickets } from '@/hooks/useRealtimeTickets';
 import { KanbanBoard } from '@/components/KanbanBoard';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const allStatuses: TicketStatus[] = ['new', 'open', 'in_progress', 'waiting_on_customer', 'resolved', 'closed', 'reopened'];
 const allPriorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
