@@ -92,15 +92,15 @@ export const DashboardKPICards = memo(function DashboardKPICards({ stats, report
   return (
     <motion.div
       className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-      variants={gridContainer}
+      variants={m.gridContainer}
       initial="hidden"
       animate="visible"
     >
       {kpis.map((kpi) => (
         <motion.div
           key={kpi.title}
-          variants={cardEnter}
-          whileHover={hoverLift}
+          variants={m.cardEnter}
+          whileHover={m.hoverLift}
           className={`group relative rounded-2xl bg-card border border-border/60 p-4 cursor-default overflow-hidden ring-1 ring-transparent transition-all duration-300 hover:shadow-card-hover hover:border-primary/30 ${kpi.ring}`}
         >
           {/* Subtle gradient mesh on hover */}
