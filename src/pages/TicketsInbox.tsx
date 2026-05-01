@@ -68,6 +68,9 @@ export default function TicketsInbox() {
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'all'>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('ticket-saved-filters') || '[]');
