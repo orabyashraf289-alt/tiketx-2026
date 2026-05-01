@@ -217,13 +217,14 @@ export default function TicketDetailPage() {
       const filePath = `${id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('ticket-attachments').upload(filePath, file);
       if (uploadError) throw uploadError;
-      const { data: signedData } = await supabase.storage.from('ticket-attachments').createSignedUrl(filePath, 60 * 60 * 24 * 365);
-      const fileUrl = signedData?.signedUrl || filePath;
+      // We no longer persist a long-lived signed URL. Store only the storage key
+      // and generate a fresh short-lived signed URL on demand at view time.
       await addAttachment({
         ticket_id: id!,
         uploaded_by: user!.id,
         file_name: file.name,
-        file_url: fileUrl,
+        file_url: '',
+        storage_key: filePath,
         file_size: file.size,
       });
     },
