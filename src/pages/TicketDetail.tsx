@@ -352,7 +352,7 @@ export default function TicketDetailPage() {
                           />
                         )}
                       </div>
-                      <CardTitle className="text-xl">{ticket.title}</CardTitle>
+                      <CardTitle className="text-xl md:text-2xl font-extrabold tracking-tight leading-tight">{ticket.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{ticket.description}</p>
