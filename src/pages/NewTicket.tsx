@@ -262,6 +262,7 @@ export default function NewTicket() {
       return ticket;
     },
     onSuccess: () => {
+      try { localStorage.removeItem(DRAFT_KEY); } catch {}
       toast({ title: t.newTicket.ticketCreated });
       navigate('/tickets');
     },
