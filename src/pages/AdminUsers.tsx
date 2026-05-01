@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer, SectionHeader } from '@/components/layout';
+import { EmptyState, ErrorState, AdminTableSkeleton } from '@/components/common';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -449,8 +450,8 @@ export default function AdminUsers() {
         }
       />
 
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="max-w-[1400px] mx-auto space-y-5">
+      <PageContainer maxWidth="xl">
+        <div className="space-y-5">
 
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
