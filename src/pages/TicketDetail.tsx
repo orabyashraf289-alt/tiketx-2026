@@ -376,18 +376,17 @@ export default function TicketDetailPage() {
                           <p className="text-xs font-semibold text-muted-foreground">{t.tickets.detail.attachments}</p>
                           <div className="flex flex-wrap gap-2">
                             {attachments.map(att => (
-                              <motion.a
+                              <motion.button
                                 key={att.id}
-                                href={att.file_url}
-                                target="_blank"
-                                rel="noreferrer"
+                                type="button"
+                                onClick={() => openAttachment(att)}
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}
                                 className="flex items-center gap-1.5 text-xs bg-muted px-3 py-2 rounded-xl hover:bg-muted/80 transition-colors"
                               >
                                 <FileText className="h-3.5 w-3.5" />
                                 {att.file_name}
-                              </motion.a>
+                              </motion.button>
                             ))}
                           </div>
                         </div>
