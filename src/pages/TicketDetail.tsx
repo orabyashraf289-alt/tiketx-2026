@@ -294,9 +294,10 @@ export default function TicketDetailPage() {
   if (isLoading) {
     return (
       <PageLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PageHeader title={t.tickets.ticketLabel} />
+        <main className="flex-1 overflow-auto">
+          <TicketDetailSkeleton />
+        </main>
       </PageLayout>
     );
   }
