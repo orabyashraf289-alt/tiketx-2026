@@ -459,6 +459,7 @@ export default function TicketsInbox() {
               </Tabs>
               )}
             </motion.div>
+            )}
           </main>
     </PageLayout>
   );
