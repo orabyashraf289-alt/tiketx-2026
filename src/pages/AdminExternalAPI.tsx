@@ -33,11 +33,53 @@ const examplePayload = {
   external_payload: { invoice_id: "INV-001", module: "billing" }
 };
 
-const exampleCurl = `curl -X POST "${API_BASE}" \\
+const buildCurl = (url: string, payload: any, apiKey: string, externalKey: string) => `curl -X POST "${url}" \\
   -H "Content-Type: application/json" \\
-  -H "apikey: YOUR_ANON_KEY" \\
-  -H "x-api-key: YOUR_EXTERNAL_API_KEY" \\
-  -d '${JSON.stringify(examplePayload, null, 2)}'`;
+  -H "apikey: ${apiKey || 'YOUR_ANON_KEY'}"${externalKey ? ` \\\n  -H "x-api-key: ${externalKey}"` : ''} \\
+  -d '${JSON.stringify(payload, null, 2)}'`;
+
+const buildJs = (url: string, payload: any) => `// JavaScript / Node.js (fetch)
+const res = await fetch("${url}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "apikey": process.env.SUPABASE_ANON_KEY,
+    "x-api-key": process.env.EXTERNAL_API_KEY,
+  },
+  body: JSON.stringify(${JSON.stringify(payload, null, 2)}),
+});
+const data = await res.json();
+console.log(data);`;
+
+const buildPython = (url: string, payload: any) => `# Python (requests)
+import requests, os, json
+
+res = requests.post(
+    "${url}",
+    headers={
+        "Content-Type": "application/json",
+        "apikey": os.environ["SUPABASE_ANON_KEY"],
+        "x-api-key": os.environ["EXTERNAL_API_KEY"],
+    },
+    data=json.dumps(${JSON.stringify(payload, null, 2)}),
+)
+print(res.json())`;
+
+const buildPhp = (url: string, payload: any) => `<?php
+// PHP (cURL)
+$ch = curl_init("${url}");
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+        "apikey: " . getenv("SUPABASE_ANON_KEY"),
+        "x-api-key: " . getenv("EXTERNAL_API_KEY"),
+    ],
+    CURLOPT_POSTFIELDS => json_encode(${JSON.stringify(payload, null, 2)}),
+]);
+$response = curl_exec($ch);
+echo $response;`;
 
 const exampleResponse = {
   success: true,
