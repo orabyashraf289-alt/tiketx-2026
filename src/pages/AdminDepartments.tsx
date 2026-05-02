@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchDepartments, createDepartment, updateDepartment, deleteDepartment } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { PageLayout, PageHeader, PageContainer } from '@/components/layout';
-import { EmptyState, ErrorState, AdminTableSkeleton } from '@/components/common';
+import { EmptyState, ErrorState, AdminTableSkeleton, SortableHead } from '@/components/common';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -194,8 +194,8 @@ export default function AdminDepartments() {
           {/* Search */}
           <div className="flex items-center gap-3 flex-wrap">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={isAr ? 'بحث في الأقسام...' : 'Search departments...'} className="ps-9 h-9 rounded-xl text-xs" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={isAr ? 'بحث في الأقسام...' : 'Search departments...'} className="ps-9 h-10 md:h-9 rounded-xl text-sm" aria-label={isAr ? 'بحث' : 'Search'} />
             </div>
             <Badge variant="secondary" className="text-[10px] px-3 py-1 rounded-full">
               {filteredDepts.length} {isAr ? 'قسم' : 'depts'}
@@ -218,29 +218,20 @@ export default function AdminDepartments() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="cursor-pointer hover:text-foreground" onClick={() => toggleSort('name')}>
-                      <div className="flex items-center gap-1">
-                        {isAr ? 'القسم' : 'Department'}
-                        <ArrowUpDown className={cn("h-3 w-3", sortField === 'name' ? 'text-primary' : 'text-muted-foreground/30')} />
-                      </div>
-                    </TableHead>
+                    <SortableHead active={sortField === 'name'} direction={sortAsc ? 'asc' : 'desc'} onSort={() => toggleSort('name')}>
+                      {isAr ? 'القسم' : 'Department'}
+                    </SortableHead>
                     <TableHead>{isAr ? 'الوصف' : 'Description'}</TableHead>
-                    <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => toggleSort('members')}>
-                      <div className="flex items-center justify-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {isAr ? 'الأعضاء' : 'Members'}
-                        <ArrowUpDown className={cn("h-3 w-3", sortField === 'members' ? 'text-primary' : 'text-muted-foreground/30')} />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-center cursor-pointer hover:text-foreground" onClick={() => toggleSort('tickets')}>
-                      <div className="flex items-center justify-center gap-1">
-                        <Ticket className="h-3 w-3" />
-                        {isAr ? 'التذاكر' : 'Tickets'}
-                        <ArrowUpDown className={cn("h-3 w-3", sortField === 'tickets' ? 'text-primary' : 'text-muted-foreground/30')} />
-                      </div>
-                    </TableHead>
+                    <SortableHead active={sortField === 'members'} direction={sortAsc ? 'asc' : 'desc'} onSort={() => toggleSort('members')} align="center">
+                      <Users className="h-3 w-3" />
+                      {isAr ? 'الأعضاء' : 'Members'}
+                    </SortableHead>
+                    <SortableHead active={sortField === 'tickets'} direction={sortAsc ? 'asc' : 'desc'} onSort={() => toggleSort('tickets')} align="center">
+                      <Ticket className="h-3 w-3" />
+                      {isAr ? 'التذاكر' : 'Tickets'}
+                    </SortableHead>
                     <TableHead className="text-center">{isAr ? 'مفتوحة' : 'Open'}</TableHead>
-                    <TableHead className="w-24"></TableHead>
+                    <TableHead className="w-24 text-center">{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -267,12 +258,12 @@ export default function AdminDepartments() {
                           ) : <span className="text-muted-foreground text-xs">0</span>}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => startEdit(dept)}>
-                              <Pencil className="h-3.5 w-3.5" />
+                          <div className="flex justify-center gap-1 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" aria-label={isAr ? 'تعديل' : 'Edit'} className="h-9 w-9 rounded-lg" onClick={() => startEdit(dept)}>
+                              <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setDeleteTarget(dept)}>
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            <Button variant="ghost" size="icon" aria-label={isAr ? 'حذف' : 'Delete'} className="h-9 w-9 rounded-lg" onClick={() => setDeleteTarget(dept)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
                         </TableCell>

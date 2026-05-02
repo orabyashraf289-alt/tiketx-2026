@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAllUsers, updateUserRole, fetchSystems, fetchServices, fetchDepartments, AppRole } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
 import { PageLayout, PageHeader, PageContainer, SectionHeader } from '@/components/layout';
-import { EmptyState, ErrorState, AdminTableSkeleton } from '@/components/common';
+import { EmptyState, ErrorState, AdminTableSkeleton, SortableHead } from '@/components/common';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -475,10 +475,18 @@ export default function AdminUsers() {
           {/* Role Distribution Mini Badges */}
           <div className="flex flex-wrap gap-2">
             {roles.map(r => (
-              <Badge key={r} variant="outline" className="gap-1.5 py-1 px-2.5 text-xs cursor-pointer hover:bg-muted/50" onClick={() => { setFilterRole(filterRole === r ? 'all' : r); setShowFilters(true); }}>
+              <button
+                key={r}
+                type="button"
+                onClick={() => { setFilterRole(filterRole === r ? 'all' : r); setShowFilters(true); }}
+                aria-pressed={filterRole === r}
+                aria-label={`${roleLabels[r]}: ${stats.byRole[r] || 0}`}
+                className="inline-flex items-center gap-1.5 min-h-[32px] py-1 px-2.5 text-xs rounded-full border border-border bg-background hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 data-[active=true]:bg-primary/10 data-[active=true]:border-primary/30"
+                data-active={filterRole === r}
+              >
                 <ShieldCheck className="h-3 w-3" />
                 {roleLabels[r]}: {stats.byRole[r] || 0}
-              </Badge>
+              </button>
             ))}
           </div>
 
@@ -574,22 +582,22 @@ export default function AdminUsers() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('full_name')}>
-                      <div className="flex items-center gap-1">{isAr ? 'المستخدم' : 'User'} <SortIcon field="full_name" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none hidden md:table-cell" onClick={() => toggleSort('email')}>
-                      <div className="flex items-center gap-1">{isAr ? 'البريد' : 'Email'} <SortIcon field="email" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('role')}>
-                      <div className="flex items-center gap-1">{isAr ? 'الدور' : 'Role'} <SortIcon field="role" /></div>
-                    </TableHead>
+                    <SortableHead active={sortField === 'full_name'} direction={sortDir} onSort={() => toggleSort('full_name')}>
+                      {isAr ? 'المستخدم' : 'User'}
+                    </SortableHead>
+                    <SortableHead active={sortField === 'email'} direction={sortDir} onSort={() => toggleSort('email')} className="hidden md:table-cell">
+                      {isAr ? 'البريد' : 'Email'}
+                    </SortableHead>
+                    <SortableHead active={sortField === 'role'} direction={sortDir} onSort={() => toggleSort('role')}>
+                      {isAr ? 'الدور' : 'Role'}
+                    </SortableHead>
                     <TableHead className="hidden lg:table-cell">{isAr ? 'القسم' : 'Dept'}</TableHead>
-                    <TableHead className="cursor-pointer select-none hidden sm:table-cell" onClick={() => toggleSort('is_active')}>
-                      <div className="flex items-center gap-1">{isAr ? 'الحالة' : 'Status'} <SortIcon field="is_active" /></div>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none hidden lg:table-cell" onClick={() => toggleSort('created_at')}>
-                      <div className="flex items-center gap-1">{isAr ? 'تاريخ الإنشاء' : 'Created'} <SortIcon field="created_at" /></div>
-                    </TableHead>
+                    <SortableHead active={sortField === 'is_active'} direction={sortDir} onSort={() => toggleSort('is_active')} className="hidden sm:table-cell">
+                      {isAr ? 'الحالة' : 'Status'}
+                    </SortableHead>
+                    <SortableHead active={sortField === 'created_at'} direction={sortDir} onSort={() => toggleSort('created_at')} className="hidden lg:table-cell">
+                      {isAr ? 'تاريخ الإنشاء' : 'Created'}
+                    </SortableHead>
                     <TableHead className="text-center">{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -613,7 +621,7 @@ export default function AdminUsers() {
                       </TableCell>
                       <TableCell>
                         <Select value={u.role} onValueChange={v => roleMut.mutate({ userId: u.id, role: v as AppRole })}>
-                          <SelectTrigger className="w-24 h-7 text-[11px] rounded-lg border-border/50"><SelectValue /></SelectTrigger>
+                          <SelectTrigger aria-label={isAr ? 'دور المستخدم' : 'User role'} className="w-28 h-9 text-xs rounded-lg border-border/50"><SelectValue /></SelectTrigger>
                           <SelectContent>{roles.map(r => <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>)}</SelectContent>
                         </Select>
                       </TableCell>
@@ -639,17 +647,17 @@ export default function AdminUsers() {
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           {u.role === 'developer' && (
-                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openAccessDialog(u)} title={t.admin.devPermissions}>
-                              <Settings2 className="h-3.5 w-3.5" />
+                            <Button variant="ghost" size="icon" aria-label={t.admin.devPermissions} className="h-9 w-9 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" onClick={() => openAccessDialog(u)} title={t.admin.devPermissions}>
+                              <Settings2 className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => openEditDialog(u)} title={t.common.edit}>
-                            <Pencil className="h-3.5 w-3.5" />
+                          <Button variant="ghost" size="icon" aria-label={t.common.edit} className="h-9 w-9 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" onClick={() => openEditDialog(u)} title={t.common.edit}>
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title={t.common.delete}>
-                                <Trash2 className="h-3.5 w-3.5" />
+                              <Button variant="ghost" size="icon" aria-label={t.common.delete} className="h-9 w-9 rounded-lg text-destructive hover:text-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" title={t.common.delete}>
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
