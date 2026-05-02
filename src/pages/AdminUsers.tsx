@@ -451,10 +451,10 @@ export default function AdminUsers() {
       />
 
       <PageContainer maxWidth="xl">
-        <div className="space-y-5">
+        <div className="space-y-6">
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {kpiCards.map((kpi, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <Card className="rounded-2xl border-border/50">
