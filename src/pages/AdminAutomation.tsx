@@ -131,6 +131,76 @@ export default function AdminAutomation() {
     setActions([{ type: '' }]);
   };
 
+  // Workflow templates library
+  const TEMPLATES = [
+    {
+      id: 'urgent-escalate',
+      icon: '🚨',
+      name: isAr ? 'تصعيد التذاكر العاجلة' : 'Escalate Urgent Tickets',
+      desc: isAr ? 'عند إنشاء تذكرة بأولوية urgent، أرسل إشعار Slack وبريد للمدير.' : 'When an urgent ticket is created, notify Slack and email manager.',
+      payload: {
+        name: isAr ? 'تصعيد العاجل' : 'Escalate Urgent',
+        description: isAr ? 'إشعار فوري للتذاكر العاجلة' : 'Instant notification for urgent tickets',
+        trigger: 'ticket.created',
+        conditions: [{ field: 'priority', operator: 'equals', value: 'urgent' }],
+        actions: [
+          { type: 'send_slack', channel: '#urgent-tickets', message: '🚨 Urgent ticket created' },
+          { type: 'send_notification', title: isAr ? 'تذكرة عاجلة' : 'Urgent ticket', message: isAr ? 'تم إنشاء تذكرة عاجلة جديدة' : 'A new urgent ticket has been created' },
+        ],
+      },
+    },
+    {
+      id: 'auto-assign-billing',
+      icon: '💳',
+      name: isAr ? 'توجيه تذاكر الفوترة' : 'Route Billing Tickets',
+      desc: isAr ? 'عند إنشاء تذكرة بكلمة "فوترة"، حوّلها لقسم المالية.' : 'When a ticket title contains "billing", route to finance dept.',
+      payload: {
+        name: isAr ? 'توجيه الفوترة' : 'Route Billing',
+        description: '',
+        trigger: 'ticket.created',
+        conditions: [{ field: 'title', operator: 'contains', value: isAr ? 'فوترة' : 'billing' }],
+        actions: [{ type: 'assign_department', value: '<DEPARTMENT_ID>' }],
+      },
+    },
+    {
+      id: 'auto-close-resolved',
+      icon: '✅',
+      name: isAr ? 'إغلاق التذاكر المحلولة' : 'Auto-close Resolved',
+      desc: isAr ? 'عند تغيير الحالة إلى resolved، أرسل بريد شكر للعميل.' : 'When status changes to resolved, send thank-you email.',
+      payload: {
+        name: isAr ? 'شكر العميل بعد الحل' : 'Thank customer after resolve',
+        description: '',
+        trigger: 'ticket.status_changed',
+        conditions: [{ field: 'status', operator: 'equals', value: 'resolved' }],
+        actions: [{ type: 'send_email', title: isAr ? 'تم حل تذكرتك' : 'Your ticket is resolved', message: isAr ? 'شكراً لاستخدامك خدمتنا' : 'Thank you for using our service' }],
+      },
+    },
+    {
+      id: 'webhook-on-create',
+      icon: '🔗',
+      name: isAr ? 'Webhook عند الإنشاء' : 'Webhook on Create',
+      desc: isAr ? 'أرسل كل التذاكر الجديدة إلى نظام خارجي عبر Webhook.' : 'Push every new ticket to an external system via Webhook.',
+      payload: {
+        name: isAr ? 'مزامنة التذاكر الجديدة' : 'Sync new tickets',
+        description: '',
+        trigger: 'ticket.created',
+        conditions: [],
+        actions: [{ type: 'webhook' }],
+      },
+    },
+  ];
+
+  const applyTemplate = (tpl: any) => {
+    const p = tpl.payload;
+    setName(p.name);
+    setDescription(p.description || '');
+    setTrigger(p.trigger);
+    setConditions(p.conditions.length ? p.conditions : [{ field: '', operator: 'equals', value: '' }]);
+    setActions(p.actions);
+    setOpen(true);
+    toast({ title: isAr ? `تم تحميل القالب: ${tpl.name}` : `Template loaded: ${tpl.name}` });
+  };
+
   const updateCondition = (i: number, key: keyof Condition, val: string) => {
     setConditions(c => c.map((item, idx) => idx === i ? { ...item, [key]: val } : item));
   };
