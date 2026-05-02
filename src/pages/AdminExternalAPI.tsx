@@ -107,11 +107,15 @@ function CodeBlock({ code }: { code: string }) {
 export default function AdminExternalAPI() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const dateLocale = isAr ? ar : enUS;
   const [activeTab, setActiveTab] = useState('docs');
   const [testPayload, setTestPayload] = useState(JSON.stringify(examplePayload, null, 2));
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [testStatus, setTestStatus] = useState<number | null>(null);
+  const [testDuration, setTestDuration] = useState<number | null>(null);
   const [testing, setTesting] = useState(false);
   const [logSearch, setLogSearch] = useState('');
+  const [externalApiKey, setExternalApiKey] = useState('');
 
   // Fetch external tickets for logs
   const { data: externalTickets = [], isLoading: logsLoading } = useQuery({
