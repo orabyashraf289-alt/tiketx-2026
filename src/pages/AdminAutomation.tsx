@@ -334,58 +334,101 @@ export default function AdminAutomation() {
         icon={<Zap className="h-4 w-4" />}
         actions={dialogTrigger}
       />
-      <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="max-w-5xl mx-auto">
-              <Tabs defaultValue="rules" dir={isRTL ? 'rtl' : 'ltr'}>
-                <TabsList><TabsTrigger value="rules">{t.admin.rulesTab}</TabsTrigger><TabsTrigger value="logs">{t.admin.logsTab}</TabsTrigger></TabsList>
+      <PageContainer maxWidth="lg">
+        <Tabs defaultValue="rules" dir={isRTL ? 'rtl' : 'ltr'}>
+          <TabsList className="rounded-xl">
+            <TabsTrigger value="rules" className="rounded-lg text-xs">{t.admin.rulesTab}</TabsTrigger>
+            <TabsTrigger value="templates" className="rounded-lg text-xs gap-1.5"><Library className="h-3.5 w-3.5" />{isAr ? 'القوالب' : 'Templates'}</TabsTrigger>
+            <TabsTrigger value="logs" className="rounded-lg text-xs">{t.admin.logsTab}</TabsTrigger>
+          </TabsList>
 
-                <TabsContent value="rules" className="space-y-3 mt-4">
-                  {rules.map((rule: any) => (
-                    <Card key={rule.id} className="rounded-2xl">
-                      <CardContent className="pt-4 flex items-start justify-between gap-4">
+          <TabsContent value="rules" className="space-y-3 mt-4">
+            {isLoading ? (
+              <AdminTableSkeleton rows={4} />
+            ) : rules.length === 0 ? (
+              <EmptyState
+                icon={Zap}
+                title={t.admin.noRules}
+                description={isAr ? 'ابدأ من قالب جاهز أو أنشئ قاعدة جديدة من الصفر.' : 'Start from a ready template or create a new rule from scratch.'}
+                action={dialogTrigger}
+              />
+            ) : (
+              rules.map((rule: any) => (
+                <Card key={rule.id} className="rounded-2xl border-border/50 hover:border-primary/30 transition-colors">
+                  <CardContent className="pt-4 flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Zap className="h-4 w-4 text-primary shrink-0" />
+                        <h3 className="font-semibold text-sm">{rule.name}</h3>
+                        <Badge variant={rule.is_active ? "default" : "secondary"} className="text-[10px] rounded-lg">{rule.is_active ? t.admin.ruleActive : t.admin.ruleInactive}</Badge>
+                        <Badge variant="outline" className="text-[10px] rounded-lg">{TRIGGER_EVENTS.find(te => te.value === rule.trigger_event)?.label || rule.trigger_event}</Badge>
+                      </div>
+                      {rule.description && <p className="text-xs text-muted-foreground mb-1">{rule.description}</p>}
+                      <div className="flex items-center gap-4 text-[10px] text-muted-foreground flex-wrap">
+                        <span>{t.admin.conditions}: {(rule.conditions as any[])?.length || 0}</span>
+                        <span>{t.admin.ruleActions}: {(rule.actions as any[])?.length || 0}</span>
+                        <span>{t.admin.executionCount}: {rule.execution_count} {t.admin.executionTimes}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Switch checked={rule.is_active} onCheckedChange={v => toggleMutation.mutate({ id: rule.id, is_active: v })} />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => deleteMutation.mutate(rule.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="templates" className="mt-4">
+            <SectionHeader
+              title={isAr ? 'مكتبة القوالب الجاهزة' : 'Workflow Templates Library'}
+              description={isAr ? 'ابدأ من قالب مُجرَّب وعدّله حسب احتياجك.' : 'Start from a battle-tested template and tweak it.'}
+              icon={<Sparkles className="h-4 w-4" />}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {TEMPLATES.map((tpl, i) => (
+                <motion.div key={tpl.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                  <Card className="rounded-2xl border-border/50 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer group h-full" onClick={() => applyTemplate(tpl)}>
+                    <CardContent className="pt-4 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl">{tpl.icon}</div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <Zap className="h-4 w-4 text-primary shrink-0" />
-                            <h3 className="font-semibold text-sm">{rule.name}</h3>
-                            <Badge variant={rule.is_active ? "default" : "secondary"} className="text-[10px]">{rule.is_active ? t.admin.ruleActive : t.admin.ruleInactive}</Badge>
-                            <Badge variant="outline" className="text-[10px]">{TRIGGER_EVENTS.find(te => te.value === rule.trigger_event)?.label || rule.trigger_event}</Badge>
-                          </div>
-                          {rule.description && <p className="text-xs text-muted-foreground mb-1">{rule.description}</p>}
-                          <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-                            <span>{t.admin.conditions}: {(rule.conditions as any[])?.length || 0}</span>
-                            <span>{t.admin.ruleActions}: {(rule.actions as any[])?.length || 0}</span>
-                            <span>{t.admin.executionCount}: {rule.execution_count} {t.admin.executionTimes}</span>
-                          </div>
+                          <h4 className="font-semibold text-sm group-hover:text-primary transition-colors">{tpl.name}</h4>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{tpl.desc}</p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Switch checked={rule.is_active} onCheckedChange={v => toggleMutation.mutate({ id: rule.id, is_active: v })} />
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteMutation.mutate(rule.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  {!isLoading && rules.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Zap className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">{t.admin.noRules}</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="logs" className="space-y-2 mt-4">
-                  {logs.map((log: any) => (
-                    <div key={log.id} className="flex items-center gap-3 text-xs border rounded-xl px-3 py-2">
-                      {log.success ? <CheckCircle className="h-4 w-4 text-success shrink-0" /> : <XCircle className="h-4 w-4 text-destructive shrink-0" />}
-                      <Badge variant="outline" className="text-[10px]">{log.trigger_event}</Badge>
-                      <span className="text-muted-foreground flex-1 truncate">{format(new Date(log.created_at), 'dd/MM HH:mm:ss', { locale: dateLocale })}</span>
-                    </div>
-                  ))}
-                </TabsContent>
-              </Tabs>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                        <Badge variant="outline" className="text-[10px] rounded-lg">{tpl.payload.trigger}</Badge>
+                        <Badge variant="secondary" className="text-[10px] rounded-lg">{tpl.payload.actions.length} {isAr ? 'إجراء' : 'actions'}</Badge>
+                      </div>
+                      <Button size="sm" variant="ghost" className="w-full rounded-lg text-xs gap-1.5 mt-2 group-hover:bg-primary/10">
+                        <Plus className="h-3.5 w-3.5" />
+                        {isAr ? 'استخدام القالب' : 'Use template'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-      </main>
+          </TabsContent>
+
+          <TabsContent value="logs" className="space-y-2 mt-4">
+            {logs.length === 0 ? (
+              <EmptyState icon={CheckCircle} variant="compact" title={isAr ? 'لا توجد سجلات تنفيذ' : 'No execution logs yet'} />
+            ) : logs.map((log: any) => (
+              <div key={log.id} className="flex items-center gap-3 text-xs border border-border/50 rounded-xl px-3 py-2.5 bg-card hover:bg-muted/30 transition-colors">
+                {log.success ? <CheckCircle className="h-4 w-4 text-success shrink-0" /> : <XCircle className="h-4 w-4 text-destructive shrink-0" />}
+                <Badge variant="outline" className="text-[10px] rounded-lg">{log.trigger_event}</Badge>
+                <span className="text-muted-foreground flex-1 truncate font-mono">{format(new Date(log.created_at), 'dd/MM HH:mm:ss', { locale: dateLocale })}</span>
+                {log.error_message && <span className="text-destructive text-[10px] truncate max-w-[200px]">{log.error_message}</span>}
+              </div>
+            ))}
+          </TabsContent>
+        </Tabs>
+      </PageContainer>
     </PageLayout>
   );
 }
