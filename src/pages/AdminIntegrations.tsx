@@ -462,7 +462,6 @@ export default function AdminIntegrations() {
     <PageLayout>
       <PageHeader
         title="منصة التكامل الموحدة"
-        description="اربط نظامك بأي منصة خارجية بسهولة — Bi-directional Sync و OAuth و Webhooks"
         icon={<Plug className="w-5 h-5" />}
       />
       <PageContainer>
