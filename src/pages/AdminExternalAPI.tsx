@@ -200,198 +200,258 @@ export default function AdminExternalAPI() {
     ['external_payload', 'object', '❌', isAr ? 'بيانات إضافية' : 'Extra data'],
   ];
 
+  const livePayloadObj = useMemo(() => {
+    try { return JSON.parse(testPayload); } catch { return examplePayload; }
+  }, [testPayload]);
+
   return (
     <PageLayout>
       <PageHeader
         title={isAr ? 'واجهة API الخارجية' : 'External API'}
         icon={<Globe className="h-5 w-5" />}
       />
-      <main className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="max-w-5xl mx-auto space-y-5">
-          {/* KPIs */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: isAr ? 'تذاكر خارجية' : 'External Tickets', value: kpiStats.total, icon: Activity, color: 'text-primary bg-primary/10' },
-              { label: isAr ? 'أنظمة مصدر' : 'Source Systems', value: kpiStats.systems, icon: Globe, color: 'text-emerald-600 bg-emerald-500/10' },
-              { label: isAr ? 'اليوم' : 'Today', value: kpiStats.today, icon: Clock, color: 'text-blue-600 bg-blue-500/10' },
-            ].map((kpi, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="rounded-2xl border-border/50">
-                  <CardContent className="flex items-center gap-3 py-3 px-4">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${kpi.color} shrink-0`}>
-                      <kpi.icon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-foreground">{kpi.value}</p>
-                      <p className="text-[10px] text-muted-foreground">{kpi.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="rounded-xl">
-              <TabsTrigger value="docs" className="gap-1.5 rounded-lg text-xs"><Code className="h-3.5 w-3.5" />{isAr ? 'التوثيق' : 'Docs'}</TabsTrigger>
-              <TabsTrigger value="test" className="gap-1.5 rounded-lg text-xs"><Send className="h-3.5 w-3.5" />{isAr ? 'اختبار' : 'Test'}</TabsTrigger>
-              <TabsTrigger value="logs" className="gap-1.5 rounded-lg text-xs"><Activity className="h-3.5 w-3.5" />{isAr ? 'السجل' : 'Logs'}</TabsTrigger>
-            </TabsList>
-
-            {/* Documentation Tab */}
-            <TabsContent value="docs" className="space-y-4 mt-4">
-              <Card className="rounded-2xl border-primary/20 bg-primary/5">
-                <CardContent className="pt-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Globe className="h-5 w-5 text-primary" />
-                    <h2 className="font-bold text-foreground">{isAr ? 'استقبال التذاكر من الأنظمة الخارجية' : 'Receive Tickets from External Systems'}</h2>
+      <PageContainer maxWidth="lg">
+        {/* KPIs */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: isAr ? 'تذاكر خارجية' : 'External Tickets', value: kpiStats.total, icon: Activity, color: 'text-primary bg-primary/10' },
+            { label: isAr ? 'أنظمة مصدر' : 'Source Systems', value: kpiStats.systems, icon: Globe, color: 'text-emerald-600 bg-emerald-500/10' },
+            { label: isAr ? 'اليوم' : 'Today', value: kpiStats.today, icon: Clock, color: 'text-blue-600 bg-blue-500/10' },
+          ].map((kpi, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <Card className="rounded-2xl border-border/50">
+                <CardContent className="flex items-center gap-3 py-3 px-4">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${kpi.color} shrink-0`}>
+                    <kpi.icon className="h-4 w-4" />
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {isAr ? 'يمكنك إرسال تذاكر من أنظمة ERP, LMS, CPAY وغيرها عبر هذه الواجهة البرمجية.' : 'Send tickets from ERP, LMS, CPAY and other systems via this API.'}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl">
-                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Code className="h-4 w-4 text-primary" />Endpoint</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-success/20 text-success text-xs font-bold px-2 py-1 rounded">POST</span>
-                    <code className="text-xs bg-muted px-3 py-1.5 rounded-lg flex-1 overflow-x-auto" dir="ltr">{API_BASE}</code>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold text-foreground">{isAr ? 'الهيدرات المطلوبة:' : 'Required Headers:'}</p>
-                    <div className="text-xs space-y-1 text-muted-foreground" dir="ltr">
-                      <p><code className="bg-muted px-1.5 py-0.5 rounded">Content-Type: application/json</code></p>
-                      <p><code className="bg-muted px-1.5 py-0.5 rounded">apikey: YOUR_ANON_KEY</code></p>
-                      <p><code className="bg-muted px-1.5 py-0.5 rounded">x-api-key: YOUR_EXTERNAL_API_KEY</code> ({isAr ? 'اختياري' : 'optional'})</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl">
-                <CardHeader><CardTitle className="text-sm">{isAr ? 'أمثلة' : 'Examples'}</CardTitle></CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="payload" dir={isAr ? 'rtl' : 'ltr'}>
-                    <TabsList className="rounded-xl mb-4">
-                      <TabsTrigger value="payload" className="rounded-lg text-xs">{isAr ? 'محتوى الطلب' : 'Payload'}</TabsTrigger>
-                      <TabsTrigger value="curl" className="rounded-lg text-xs">cURL</TabsTrigger>
-                      <TabsTrigger value="response" className="rounded-lg text-xs">{isAr ? 'الاستجابة' : 'Response'}</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="payload"><CodeBlock code={JSON.stringify(examplePayload, null, 2)} /></TabsContent>
-                    <TabsContent value="curl"><CodeBlock code={exampleCurl} /></TabsContent>
-                    <TabsContent value="response"><CodeBlock code={JSON.stringify(exampleResponse, null, 2)} /></TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl">
-                <CardHeader><CardTitle className="text-sm">{isAr ? 'مرجع الحقول' : 'Field Reference'}</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="border-b bg-muted/50">
-                          <th className="text-start p-2 font-semibold">{isAr ? 'الحقل' : 'Field'}</th>
-                          <th className="text-start p-2 font-semibold">{isAr ? 'النوع' : 'Type'}</th>
-                          <th className="text-start p-2 font-semibold">{isAr ? 'مطلوب' : 'Required'}</th>
-                          <th className="text-start p-2 font-semibold">{isAr ? 'الوصف' : 'Description'}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {fields.map(([field, type, required, desc]) => (
-                          <tr key={field} className="border-b last:border-0 hover:bg-muted/30">
-                            <td className="p-2 font-mono" dir="ltr">{field}</td>
-                            <td className="p-2">{type}</td>
-                            <td className="p-2 text-center">{required}</td>
-                            <td className="p-2">{desc}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Test Tab */}
-            <TabsContent value="test" className="space-y-4 mt-4">
-              <Card className="rounded-2xl">
-                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Send className="h-4 w-4 text-primary" />{isAr ? 'اختبار الـ API' : 'API Tester'}</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
                   <div>
-                    <p className="text-xs font-semibold mb-2 text-foreground">{isAr ? 'محتوى الطلب (JSON):' : 'Request Body (JSON):'}</p>
-                    <Textarea
-                      value={testPayload}
-                      onChange={e => setTestPayload(e.target.value)}
-                      className="font-mono text-xs min-h-[200px] rounded-xl"
-                      dir="ltr"
-                    />
+                    <p className="text-lg font-bold text-foreground">{kpi.value}</p>
+                    <p className="text-[10px] text-muted-foreground">{kpi.label}</p>
                   </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="rounded-xl">
+            <TabsTrigger value="docs" className="gap-1.5 rounded-lg text-xs"><Code className="h-3.5 w-3.5" />{isAr ? 'التوثيق' : 'Docs'}</TabsTrigger>
+            <TabsTrigger value="test" className="gap-1.5 rounded-lg text-xs"><Send className="h-3.5 w-3.5" />{isAr ? 'اختبار' : 'Test'}</TabsTrigger>
+            <TabsTrigger value="logs" className="gap-1.5 rounded-lg text-xs"><Activity className="h-3.5 w-3.5" />{isAr ? 'السجل' : 'Logs'}</TabsTrigger>
+          </TabsList>
+
+          {/* Documentation Tab */}
+          <TabsContent value="docs" className="space-y-4 mt-4">
+            <Card className="rounded-2xl border-primary/20 bg-primary/5">
+              <CardContent className="pt-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <h2 className="font-bold text-foreground">{isAr ? 'استقبال التذاكر من الأنظمة الخارجية' : 'Receive Tickets from External Systems'}</h2>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {isAr ? 'يمكنك إرسال تذاكر من أي نظام خارجي (ERP, LMS, CPAY ...) عبر هذه الواجهة البرمجية الموحّدة.' : 'Send tickets from any external system (ERP, LMS, CPAY ...) via this unified API.'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl">
+              <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Code className="h-4 w-4 text-primary" />Endpoint</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="bg-success/20 text-success text-xs font-bold px-2 py-1 rounded">POST</span>
+                  <code className="text-xs bg-muted px-3 py-1.5 rounded-lg flex-1 overflow-x-auto" dir="ltr">{API_BASE}</code>
+                  <Button variant="outline" size="sm" className="h-8 rounded-lg gap-1.5" onClick={() => { navigator.clipboard.writeText(API_BASE); toast({ title: isAr ? 'تم النسخ ✅' : 'Copied ✅' }); }}>
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">{isAr ? 'الهيدرات المطلوبة:' : 'Required Headers:'}</p>
+                  <div className="text-xs space-y-1 text-muted-foreground" dir="ltr">
+                    <p><code className="bg-muted px-1.5 py-0.5 rounded">Content-Type: application/json</code></p>
+                    <p><code className="bg-muted px-1.5 py-0.5 rounded">apikey: YOUR_ANON_KEY</code></p>
+                    <p><code className="bg-muted px-1.5 py-0.5 rounded">x-api-key: YOUR_EXTERNAL_API_KEY</code> ({isAr ? 'اختياري' : 'optional'})</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-primary" />
+                  {isAr ? 'أمثلة كود (متعددة اللغات)' : 'Code Samples (Multi-language)'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="curl" dir={isAr ? 'rtl' : 'ltr'}>
+                  <TabsList className="rounded-xl mb-4 flex-wrap h-auto">
+                    <TabsTrigger value="curl" className="rounded-lg text-xs">cURL</TabsTrigger>
+                    <TabsTrigger value="js" className="rounded-lg text-xs">JavaScript</TabsTrigger>
+                    <TabsTrigger value="python" className="rounded-lg text-xs">Python</TabsTrigger>
+                    <TabsTrigger value="php" className="rounded-lg text-xs">PHP</TabsTrigger>
+                    <TabsTrigger value="payload" className="rounded-lg text-xs"><FileJson className="h-3 w-3 ltr:mr-1 rtl:ml-1" />{isAr ? 'محتوى' : 'Payload'}</TabsTrigger>
+                    <TabsTrigger value="response" className="rounded-lg text-xs">{isAr ? 'الاستجابة' : 'Response'}</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="curl"><CodeBlock code={buildCurl(API_BASE, examplePayload, '$SUPABASE_ANON_KEY', '$EXTERNAL_API_KEY')} /></TabsContent>
+                  <TabsContent value="js"><CodeBlock code={buildJs(API_BASE, examplePayload)} /></TabsContent>
+                  <TabsContent value="python"><CodeBlock code={buildPython(API_BASE, examplePayload)} /></TabsContent>
+                  <TabsContent value="php"><CodeBlock code={buildPhp(API_BASE, examplePayload)} /></TabsContent>
+                  <TabsContent value="payload"><CodeBlock code={JSON.stringify(examplePayload, null, 2)} /></TabsContent>
+                  <TabsContent value="response"><CodeBlock code={JSON.stringify(exampleResponse, null, 2)} /></TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl">
+              <CardHeader><CardTitle className="text-sm">{isAr ? 'مرجع الحقول' : 'Field Reference'}</CardTitle></CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-start p-2 font-semibold">{isAr ? 'الحقل' : 'Field'}</th>
+                        <th className="text-start p-2 font-semibold">{isAr ? 'النوع' : 'Type'}</th>
+                        <th className="text-start p-2 font-semibold">{isAr ? 'مطلوب' : 'Required'}</th>
+                        <th className="text-start p-2 font-semibold">{isAr ? 'الوصف' : 'Description'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fields.map(([field, type, required, desc]) => (
+                        <tr key={field} className="border-b last:border-0 hover:bg-muted/30">
+                          <td className="p-2 font-mono" dir="ltr">{field}</td>
+                          <td className="p-2">{type}</td>
+                          <td className="p-2 text-center">{required}</td>
+                          <td className="p-2">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Test Tab */}
+          <TabsContent value="test" className="space-y-4 mt-4">
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Send className="h-4 w-4 text-primary" />
+                  {isAr ? 'اختبار الـ API التفاعلي' : 'Interactive API Tester'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'مفتاح API الخارجي (اختياري)' : 'External API key (optional)'}</Label>
+                    <Input dir="ltr" value={externalApiKey} onChange={e => setExternalApiKey(e.target.value)} placeholder="x-api-key value" className="h-9 rounded-xl text-xs font-mono" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'الوجهة' : 'Endpoint'}</Label>
+                    <Input dir="ltr" value={API_BASE} readOnly className="h-9 rounded-xl text-xs font-mono bg-muted/40" />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-2 block">{isAr ? 'محتوى الطلب (JSON)' : 'Request Body (JSON)'}</Label>
+                  <Textarea
+                    value={testPayload}
+                    onChange={e => setTestPayload(e.target.value)}
+                    className="font-mono text-xs min-h-[220px] rounded-xl"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
                   <Button onClick={handleTest} disabled={testing} className="gap-2 rounded-xl">
                     {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     {isAr ? 'إرسال الطلب' : 'Send Request'}
                   </Button>
-                  {testResult && (
-                    <div>
-                      <p className="text-xs font-semibold mb-2 text-foreground">{isAr ? 'الاستجابة:' : 'Response:'}</p>
-                      <CodeBlock code={testResult} />
-                    </div>
+                  {testStatus !== null && (
+                    <Badge variant={testStatus < 400 ? 'default' : 'destructive'} className="rounded-lg">
+                      HTTP {testStatus}
+                    </Badge>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Logs Tab */}
-            <TabsContent value="logs" className="space-y-4 mt-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="relative flex-1 min-w-[200px] max-w-sm">
-                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={isAr ? 'بحث في السجل...' : 'Search logs...'} className="ps-9 h-9 rounded-xl text-xs" />
+                  {testDuration !== null && (
+                    <Badge variant="secondary" className="rounded-lg gap-1">
+                      <Clock className="h-3 w-3" /> {testDuration}ms
+                    </Badge>
+                  )}
                 </div>
-                <Badge variant="secondary" className="text-[10px] px-3 py-1 rounded-full">{filteredLogs.length} {isAr ? 'تذكرة' : 'tickets'}</Badge>
-              </div>
 
-              {logsLoading ? (
-                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-              ) : filteredLogs.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">{isAr ? 'لا توجد تذاكر خارجية' : 'No external tickets'}</CardContent></Card>
-              ) : (
-                <Card className="rounded-2xl border-border/50 overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{isAr ? 'الكود' : 'Code'}</TableHead>
-                        <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
-                        <TableHead className="text-center">{isAr ? 'النظام' : 'System'}</TableHead>
-                        <TableHead className="text-center">{isAr ? 'الحالة' : 'Status'}</TableHead>
-                        <TableHead className="text-center">{isAr ? 'المرجع' : 'Ref'}</TableHead>
-                        <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                {testResult && (
+                  <div>
+                    <Label className="text-xs font-semibold mb-2 block">{isAr ? 'الاستجابة' : 'Response'}</Label>
+                    <CodeBlock code={testResult} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Live cURL preview */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-primary" />
+                  {isAr ? 'معاينة cURL مباشرة' : 'Live cURL preview'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CodeBlock code={buildCurl(API_BASE, livePayloadObj, '$SUPABASE_ANON_KEY', externalApiKey || '$EXTERNAL_API_KEY')} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Logs Tab */}
+          <TabsContent value="logs" className="space-y-4 mt-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input value={logSearch} onChange={e => setLogSearch(e.target.value)} placeholder={isAr ? 'بحث في السجل...' : 'Search logs...'} className="ps-9 h-9 rounded-xl text-xs" />
+              </div>
+              <Badge variant="secondary" className="text-[10px] px-3 py-1 rounded-full">{filteredLogs.length} {isAr ? 'تذكرة' : 'tickets'}</Badge>
+            </div>
+
+            {logsLoading ? (
+              <AdminTableSkeleton rows={5} />
+            ) : filteredLogs.length === 0 ? (
+              <EmptyState icon={Activity} variant="compact" title={isAr ? 'لا توجد تذاكر خارجية' : 'No external tickets'} />
+            ) : (
+              <Card className="rounded-2xl border-border/50 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{isAr ? 'الكود' : 'Code'}</TableHead>
+                      <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
+                      <TableHead className="text-center">{isAr ? 'النظام' : 'System'}</TableHead>
+                      <TableHead className="text-center">{isAr ? 'الحالة' : 'Status'}</TableHead>
+                      <TableHead className="text-center">{isAr ? 'المرجع' : 'Ref'}</TableHead>
+                      <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredLogs.map(t => (
+                      <TableRow key={t.id} className="hover:bg-muted/30">
+                        <TableCell className="font-mono text-xs">{t.code || `#${t.ticket_number}`}</TableCell>
+                        <TableCell className="max-w-[200px] truncate text-sm">{t.title}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="outline" className="text-[10px] px-2 py-0.5">{t.source_system}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className={`text-[10px] px-2 py-0.5 border-0 ${statusColors[t.status] || 'bg-muted text-muted-foreground'}`}>{t.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center text-xs text-muted-foreground font-mono">{t.external_reference || '—'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(t.created_at), { addSuffix: true, locale: dateLocale })}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLogs.map(t => (
-                        <TableRow key={t.id} className="hover:bg-muted/30">
-                          <TableCell className="font-mono text-xs">{t.code || `#${t.ticket_number}`}</TableCell>
-                          <TableCell className="max-w-[200px] truncate text-sm">{t.title}</TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="text-[10px] px-2 py-0.5">{t.source_system}</Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge className={`text-[10px] px-2 py-0.5 border-0 ${statusColors[t.status] || 'bg-muted text-muted-foreground'}`}>{t.status}</Badge>
-                          </TableCell>
-                          <TableCell className="text-center text-xs text-muted-foreground font-mono">{t.external_reference || '—'}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(t.created_at), { addSuffix: true, locale: ar })}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Card>
-              )}
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            )}
             </TabsContent>
           </Tabs>
         </div>
