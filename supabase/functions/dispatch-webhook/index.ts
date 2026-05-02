@@ -16,7 +16,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { event_type, ticket } = await req.json();
+    const { event_type, ticket, target_webhook_id } = await req.json();
 
     if (!event_type || !ticket) {
       return new Response(JSON.stringify({ error: "Missing event_type or ticket" }), {
@@ -25,12 +25,22 @@ serve(async (req) => {
       });
     }
 
-    // Get active webhooks subscribed to this event
-    const { data: webhooks } = await supabase
-      .from("webhook_endpoints")
-      .select("*")
-      .eq("is_active", true)
-      .contains("events", [event_type]);
+    // Get webhooks: either a single targeted one (ping/retry) or all active subscribed
+    let webhooks: any[] | null = null;
+    if (target_webhook_id) {
+      const { data } = await supabase
+        .from("webhook_endpoints")
+        .select("*")
+        .eq("id", target_webhook_id);
+      webhooks = data;
+    } else {
+      const { data } = await supabase
+        .from("webhook_endpoints")
+        .select("*")
+        .eq("is_active", true)
+        .contains("events", [event_type]);
+      webhooks = data;
+    }
 
     if (!webhooks || webhooks.length === 0) {
       return new Response(JSON.stringify({ dispatched: 0 }), {
