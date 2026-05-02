@@ -264,7 +264,7 @@ export default function AdminChannels() {
         />
 
         {error ? (
-          <ErrorState message={error} onRetry={loadData} />
+          <ErrorState description={error} onRetry={loadData} />
         ) : loading ? (
           <AdminTableSkeleton rows={4} />
         ) : (
