@@ -59,6 +59,7 @@ const OnboardingWizard = lazy(() => import('./pages/OnboardingWizard'));
 const SystemHealthMonitoring = lazy(() => import('./pages/SystemHealthMonitoring'));
 const SystemGuide = lazy(() => import('./pages/SystemGuide'));
 const AdminRoadmap = lazy(() => import('./pages/AdminRoadmap'));
+const AdminIntegrations = lazy(() => import('./pages/AdminIntegrations'));
 
 const NotificationsInbox = lazy(() => import('./pages/NotificationsInbox'));
 const NotFound = lazy(() => import('./pages/NotFound'));
