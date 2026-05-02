@@ -469,6 +469,306 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_connections: {
+        Row: {
+          auth_type: string
+          config: Json
+          created_at: string
+          created_by: string
+          credentials: Json
+          description: string | null
+          enabled_actions: Json
+          id: string
+          is_active: boolean
+          last_error_at: string | null
+          last_error_message: string | null
+          last_sync_at: string | null
+          name: string
+          provider_id: string
+          retry_policy: Json
+          status: string
+          sync_direction: string
+          tenant_id: string | null
+          total_failed: number
+          total_synced: number
+          trigger_events: Json
+          updated_at: string
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          auth_type?: string
+          config?: Json
+          created_at?: string
+          created_by: string
+          credentials?: Json
+          description?: string | null
+          enabled_actions?: Json
+          id?: string
+          is_active?: boolean
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_sync_at?: string | null
+          name: string
+          provider_id: string
+          retry_policy?: Json
+          status?: string
+          sync_direction?: string
+          tenant_id?: string | null
+          total_failed?: number
+          total_synced?: number
+          trigger_events?: Json
+          updated_at?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          auth_type?: string
+          config?: Json
+          created_at?: string
+          created_by?: string
+          credentials?: Json
+          description?: string | null
+          enabled_actions?: Json
+          id?: string
+          is_active?: boolean
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_sync_at?: string | null
+          name?: string
+          provider_id?: string
+          retry_policy?: Json
+          status?: string
+          sync_direction?: string
+          tenant_id?: string | null
+          total_failed?: number
+          total_synced?: number
+          trigger_events?: Json
+          updated_at?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      integration_events_queue: {
+        Row: {
+          attempts: number
+          connection_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          next_retry_at: string | null
+          payload: Json
+          processed_at: string | null
+          scheduled_for: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          connection_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload?: Json
+          processed_at?: string | null
+          scheduled_for?: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          connection_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload?: Json
+          processed_at?: string | null
+          scheduled_for?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      integration_field_mappings: {
+        Row: {
+          connection_id: string
+          created_at: string
+          default_value: string | null
+          direction: string
+          entity_type: string
+          external_field: string
+          id: string
+          internal_field: string
+          is_required: boolean
+          transform_rule: Json | null
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          default_value?: string | null
+          direction?: string
+          entity_type?: string
+          external_field: string
+          id?: string
+          internal_field: string
+          is_required?: boolean
+          transform_rule?: Json | null
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          default_value?: string | null
+          direction?: string
+          entity_type?: string
+          external_field?: string
+          id?: string
+          internal_field?: string
+          is_required?: boolean
+          transform_rule?: Json | null
+        }
+        Relationships: []
+      }
+      integration_providers: {
+        Row: {
+          auth_type: string
+          available_actions: Json
+          available_events: Json
+          brand_color: string | null
+          category: string
+          code: string
+          created_at: string
+          default_config: Json
+          description: string | null
+          description_ar: string | null
+          display_name_ar: string | null
+          documentation_url: string | null
+          id: string
+          is_active: boolean
+          is_premium: boolean
+          logo_url: string | null
+          name: string
+          sort_order: number
+          supports_inbound: boolean
+          supports_outbound: boolean
+          supports_webhooks: boolean
+          updated_at: string
+        }
+        Insert: {
+          auth_type?: string
+          available_actions?: Json
+          available_events?: Json
+          brand_color?: string | null
+          category?: string
+          code: string
+          created_at?: string
+          default_config?: Json
+          description?: string | null
+          description_ar?: string | null
+          display_name_ar?: string | null
+          documentation_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          logo_url?: string | null
+          name: string
+          sort_order?: number
+          supports_inbound?: boolean
+          supports_outbound?: boolean
+          supports_webhooks?: boolean
+          updated_at?: string
+        }
+        Update: {
+          auth_type?: string
+          available_actions?: Json
+          available_events?: Json
+          brand_color?: string | null
+          category?: string
+          code?: string
+          created_at?: string
+          default_config?: Json
+          description?: string | null
+          description_ar?: string | null
+          display_name_ar?: string | null
+          documentation_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          supports_inbound?: boolean
+          supports_outbound?: boolean
+          supports_webhooks?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      integration_sync_logs: {
+        Row: {
+          connection_id: string
+          created_at: string
+          direction: string
+          duration_ms: number | null
+          entity_id: string | null
+          entity_type: string | null
+          error_message: string | null
+          event_type: string
+          external_id: string | null
+          http_status: number | null
+          id: string
+          request_payload: Json | null
+          response_payload: Json | null
+          retry_count: number
+          status: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          direction: string
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          event_type: string
+          external_id?: string | null
+          http_status?: number | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          retry_count?: number
+          status?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          direction?: string
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          event_type?: string
+          external_id?: string | null
+          http_status?: number | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          retry_count?: number
+          status?: string
+        }
+        Relationships: []
+      }
       internal_kb_articles: {
         Row: {
           author_id: string

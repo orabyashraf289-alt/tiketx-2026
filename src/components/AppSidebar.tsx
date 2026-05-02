@@ -99,6 +99,7 @@ export const AppSidebar = memo(function AppSidebar() {
     { title: lang === 'ar' ? 'إدارة المستأجرين' : 'Tenants', url: '/admin/tenants', icon: Building2 },
     { title: lang === 'ar' ? 'رسائل WhatsApp' : 'WhatsApp', url: '/admin/whatsapp', icon: MessageSquare },
     { title: lang === 'ar' ? 'تكامل كلاسيرا' : 'Classera Integration', url: '/admin/classera', icon: Plug },
+    { title: lang === 'ar' ? '🔌 منصة التكامل الموحدة' : '🔌 Integration Hub', url: '/admin/integrations', icon: Plug },
     { title: lang === 'ar' ? 'الفوترة والاشتراكات' : 'Billing', url: '/admin/billing', icon: Users },
     { title: lang === 'ar' ? 'معالج التفعيل' : 'Onboarding', url: '/admin/onboarding', icon: Rocket },
     { title: lang === 'ar' ? 'مراقبة النظام' : 'System Health', url: '/admin/system-health', icon: Activity },
