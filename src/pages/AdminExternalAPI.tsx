@@ -157,24 +157,27 @@ export default function AdminExternalAPI() {
   const handleTest = useCallback(async () => {
     setTesting(true);
     setTestResult(null);
+    setTestStatus(null);
+    setTestDuration(null);
+    const start = Date.now();
     try {
       const payload = JSON.parse(testPayload);
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
-        },
-        body: JSON.stringify(payload),
-      });
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+      };
+      if (externalApiKey) headers['x-api-key'] = externalApiKey;
+      const res = await fetch(API_BASE, { method: 'POST', headers, body: JSON.stringify(payload) });
+      setTestStatus(res.status);
       const data = await res.json();
       setTestResult(JSON.stringify(data, null, 2));
     } catch (err: any) {
       setTestResult(JSON.stringify({ error: err.message }, null, 2));
     } finally {
+      setTestDuration(Date.now() - start);
       setTesting(false);
     }
-  }, [testPayload]);
+  }, [testPayload, externalApiKey]);
 
   const statusColors: Record<string, string> = {
     new: 'bg-blue-500/10 text-blue-600',
