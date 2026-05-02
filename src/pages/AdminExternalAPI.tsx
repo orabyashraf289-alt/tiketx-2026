@@ -1,20 +1,22 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { PageLayout, PageHeader } from '@/components/layout';
+import { PageLayout, PageHeader, PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Globe, Copy, CheckCircle, Code, Loader2, Send, BarChart3, Activity, Key, Clock, AlertTriangle, Search } from 'lucide-react';
+import { Globe, Copy, CheckCircle, Code, Loader2, Send, Activity, Clock, Search, Terminal, FileJson } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { EmptyState, AdminTableSkeleton } from '@/components/common';
 import { useLanguage } from '@/i18n';
-import { format, formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { formatDistanceToNow } from 'date-fns';
+import { ar, enUS } from 'date-fns/locale';
 
 const API_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/receive-external-ticket`;
 
