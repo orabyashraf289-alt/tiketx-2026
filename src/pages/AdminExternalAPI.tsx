@@ -452,10 +452,10 @@ export default function AdminExternalAPI() {
                 </Table>
               </Card>
             )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+          </TabsContent>
+        </Tabs>
+      </PageContainer>
     </PageLayout>
   );
 }
+
