@@ -381,6 +381,69 @@ export default function AdminSLA() {
                 </Card>
               </TabsContent>
 
+              {/* Business Hours Card */}
+              <Card className="rounded-2xl border-border/50">
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    {lang === 'ar' ? 'ساعات العمل (تطبيق SLA)' : 'Business Hours (SLA Window)'}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {lang === 'ar'
+                      ? 'حدد ساعات العمل التي يُحسب خلالها التزام SLA. خارج هذه الساعات يتم إيقاف عداد المهلة.'
+                      : 'Define working hours for SLA tracking. Counters pause outside these hours.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">{lang === 'ar' ? 'بداية اليوم' : 'Day Start'}</Label>
+                      <Input
+                        type="time"
+                        defaultValue={localStorage.getItem('sla_business_hours_start') || '08:00'}
+                        onBlur={e => localStorage.setItem('sla_business_hours_start', e.target.value)}
+                        className="rounded-xl h-9 text-sm"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] text-muted-foreground">{lang === 'ar' ? 'نهاية اليوم' : 'Day End'}</Label>
+                      <Input
+                        type="time"
+                        defaultValue={localStorage.getItem('sla_business_hours_end') || '17:00'}
+                        onBlur={e => localStorage.setItem('sla_business_hours_end', e.target.value)}
+                        className="rounded-xl h-9 text-sm"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(lang === 'ar'
+                      ? ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+                      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                    ).map((day, idx) => {
+                      const stored = JSON.parse(localStorage.getItem('sla_working_days') || '[0,1,2,3,4]');
+                      const isActive = stored.includes(idx);
+                      return (
+                        <Badge
+                          key={idx}
+                          variant={isActive ? 'default' : 'outline'}
+                          className="cursor-pointer rounded-full text-[11px] py-1 px-3 select-none"
+                          onClick={() => {
+                            const current = JSON.parse(localStorage.getItem('sla_working_days') || '[0,1,2,3,4]');
+                            const next = current.includes(idx) ? current.filter((d: number) => d !== idx) : [...current, idx];
+                            localStorage.setItem('sla_working_days', JSON.stringify(next));
+                            window.location.reload();
+                          }}
+                        >
+                          {day}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Breaches Tab */}
               <TabsContent value="breaches" className="space-y-4 mt-4">
                 {overdueTickets.length === 0 ? (
