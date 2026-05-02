@@ -25,7 +25,8 @@ interface Action { type: string; value?: string; message?: string; channel?: str
 
 export default function AdminAutomation() {
   const { t, isRTL, lang } = useLanguage();
-  const dateLocale = lang === 'ar' ? ar : enUS;
+  const isAr = lang === 'ar';
+  const dateLocale = isAr ? ar : enUS;
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
