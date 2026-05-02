@@ -443,7 +443,6 @@ export default function AdminSLA() {
                   </div>
                 </CardContent>
               </Card>
-              </TabsContent>
 
               {/* Breaches Tab */}
               <TabsContent value="breaches" className="space-y-4 mt-4">
