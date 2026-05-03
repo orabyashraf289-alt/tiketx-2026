@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTicketById, fetchComments, addComment, updateTicket, fetchAuditLogs, addAuditLog, fetchAgents, fetchAttachments, addAttachment, fetchServices, fetchServiceCategories, fetchTicketFieldValues, fetchServiceFields, TicketStatus, TicketPriority, NoteType } from '@/lib/api';
-import { ApprovalTimeline } from '@/components/ApprovalTimeline';
-import { ApprovalStepper } from '@/components/approval-stages/ApprovalStepper';
+import { ApprovalPanel } from '@/components/ApprovalPanel';
 import { fetchTicketApprovals } from '@/lib/api';
 import { sanitizeError } from '@/lib/errorHandler';
 import { useAuth } from '@/hooks/useAuth';
@@ -359,10 +358,10 @@ export default function TicketDetailPage() {
               animate="visible"
               className="max-w-6xl mx-auto space-y-4"
             >
-              {/* Approval stepper - prominently at top */}
+              {/* Approval panel — unified stepper + actions */}
               {approvalsData.length > 0 && (
                 <motion.div variants={fadeUp}>
-                  <ApprovalStepper ticketId={ticket.id} />
+                  <ApprovalPanel ticketId={ticket.id} ticketStatus={ticket.status} />
                 </motion.div>
               )}
 
@@ -573,7 +572,7 @@ export default function TicketDetailPage() {
 
                         {approvalsData.length > 0 && (
                           <TabsContent value="approvals" className="mt-0">
-                            <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
+                            <ApprovalPanel ticketId={ticket.id} ticketStatus={ticket.status} />
                           </TabsContent>
                         )}
 
@@ -698,10 +697,7 @@ export default function TicketDetailPage() {
                   </Card>
                 </motion.div>
 
-                {/* Approval Timeline */}
-                <motion.div variants={fadeScale}>
-                  <ApprovalTimeline ticketId={ticket.id} ticketStatus={ticket.status} />
-                </motion.div>
+                {/* Approval panel is shown above the main content; no sidebar duplicate */}
 
                 {/* CSAT Rating */}
                 <CSATWidget ticketId={ticket.id} ticketStatus={ticket.status} requesterId={ticket.requester_id} />
