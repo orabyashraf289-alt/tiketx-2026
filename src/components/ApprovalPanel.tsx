@@ -646,7 +646,7 @@ function DeadlineRow({
 }: {
   iso: string;
   isPending: boolean;
-  locale: Locale;
+  locale: typeof ar;
   label: string;
 }) {
   const date = new Date(iso);
