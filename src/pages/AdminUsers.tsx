@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeError } from '@/lib/errorHandler';
-import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search, UserCheck, UserX, ShieldCheck, Download, Filter, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search, UserCheck, UserX, ShieldCheck, Download, Filter, ArrowUpDown, ChevronUp, ChevronDown, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
