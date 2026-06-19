@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeError } from '@/lib/errorHandler';
-import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search, UserCheck, UserX, ShieldCheck, Download, Filter, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { Loader2, Users, UserPlus, Settings2, X, Pencil, Trash2, Search, UserCheck, UserX, ShieldCheck, Download, Filter, ArrowUpDown, ChevronUp, ChevronDown, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 import { useLocalizedLabels } from '@/hooks/useLocalizedLabels';
@@ -327,6 +327,25 @@ export default function AdminUsers() {
 
       toast({ title: t.admin.userDeleted });
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
+    } catch (err: any) {
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
+    }
+  };
+
+  const handleSendResetLink = async (user: any) => {
+    if (!user?.email) {
+      toast({ title: t.common.error, description: 'No email', variant: 'destructive' });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: t.auth.sendResetLink,
+        description: `${t.auth.forgotPasswordDesc} → ${user.email}`,
+      });
     } catch (err: any) {
       toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
     }
@@ -654,6 +673,27 @@ export default function AdminUsers() {
                           <Button variant="ghost" size="icon" aria-label={t.common.edit} className="h-9 w-9 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" onClick={() => openEditDialog(u)} title={t.common.edit}>
                             <Pencil className="h-4 w-4" />
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label={t.auth.sendResetLink} className="h-9 w-9 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" title={t.auth.sendResetLink}>
+                                <KeyRound className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t.auth.sendResetLink}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t.auth.forgotPasswordDesc} <span dir="ltr" className="font-mono">{u.email}</span>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleSendResetLink(u)}>
+                                  {t.auth.sendResetLink}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="icon" aria-label={t.common.delete} className="h-9 w-9 rounded-lg text-destructive hover:text-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" title={t.common.delete}>
