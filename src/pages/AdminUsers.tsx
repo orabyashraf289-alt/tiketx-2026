@@ -675,6 +675,27 @@ export default function AdminUsers() {
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" aria-label={t.auth.sendResetLink} className="h-9 w-9 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" title={t.auth.sendResetLink}>
+                                <KeyRound className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent dir={isRTL ? 'rtl' : 'ltr'}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t.auth.sendResetLink}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {t.auth.forgotPasswordDesc} <span dir="ltr" className="font-mono">{u.email}</span>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="gap-2">
+                                <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleSendResetLink(u)}>
+                                  {t.auth.sendResetLink}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="icon" aria-label={t.common.delete} className="h-9 w-9 rounded-lg text-destructive hover:text-destructive md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity" title={t.common.delete}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
