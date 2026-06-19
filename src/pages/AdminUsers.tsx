@@ -332,6 +332,25 @@ export default function AdminUsers() {
     }
   };
 
+  const handleSendResetLink = async (user: any) => {
+    if (!user?.email) {
+      toast({ title: t.common.error, description: 'No email', variant: 'destructive' });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: t.auth.sendResetLink,
+        description: `${t.auth.forgotPasswordDesc} → ${user.email}`,
+      });
+    } catch (err: any) {
+      toast({ title: t.common.error, description: sanitizeError(err), variant: 'destructive' });
+    }
+  };
+
   const openAccessDialog = (user: any) => {
     setSelectedDev(user);
     setAccessOpen(true);
