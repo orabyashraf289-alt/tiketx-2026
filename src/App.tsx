@@ -101,6 +101,26 @@ function RequesterRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Restricts a route to specific roles; anything else gets the 403 page. */
+function RoleRoute({ children, allow }: { children: React.ReactNode; allow: Array<'admin' | 'agent' | 'requester' | 'developer'> }) {
+  const { user, loading, role } = useAuth();
+  useRealtimeNotificationSound();
+  useTenantBranding();
+  if (loading) return <PageLoader />;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!role) return <PageLoader />;
+  if (!allow.includes(role)) return <Forbidden />;
+  return <>{children}<CustomerChatbot /></>;
+}
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => (
+  <RoleRoute allow={['admin']}>{children}</RoleRoute>
+);
+
+const StaffRoute = ({ children }: { children: React.ReactNode }) => (
+  <RoleRoute allow={['admin', 'agent', 'developer']}>{children}</RoleRoute>
+);
+
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
