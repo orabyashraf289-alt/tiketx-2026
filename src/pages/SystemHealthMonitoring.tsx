@@ -14,6 +14,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { format, subHours } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { groupErrors, REPEAT_THRESHOLD } from '@/lib/errorGroups';
 
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
@@ -62,6 +63,16 @@ export default function SystemHealthMonitoring() {
     },
   });
 
+  const { data: errorRows = [] } = useQuery({
+    queryKey: ['health-client-errors'],
+    queryFn: async () => {
+      const since = subHours(new Date(), 24).toISOString();
+      const { data } = await supabase.from('client_error_logs').select('message, url, created_at').gte('created_at', since).order('created_at', { ascending: false }).limit(500);
+      return data || [];
+    },
+    refetchInterval: 60_000,
+  });
+
   // Generate mock uptime data for visualization
   const uptimeData = Array.from({ length: 24 }, (_, i) => ({
     hour: format(subHours(new Date(), 23 - i), 'HH:mm'),
@@ -81,6 +92,10 @@ export default function SystemHealthMonitoring() {
   const overallStatus = services.every(s => s.status === 'operational') ? 'operational' : services.some(s => s.status === 'down') ? 'down' : 'degraded';
   const activeIntegrations = integrations.filter(i => i.is_active).length;
   const webhookSuccessRate = webhookLogs.length > 0 ? Math.round((webhookLogs.filter(l => l.success).length / webhookLogs.length) * 100) : 100;
+  const errorGroups = groupErrors(errorRows);
+  const repeated = errorGroups.filter(g => g.count >= REPEAT_THRESHOLD);
+  const failedWebhooks = webhookLogs.filter(l => !l.success).length;
+  const failingIntegrations = integrations.filter(i => i.is_active && (i.error_message || i.sync_status === 'error'));
 
   return (
     <SidebarProvider>
@@ -140,6 +155,42 @@ export default function SystemHealthMonitoring() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Alerts */}
+            {(repeated.length > 0 || failedWebhooks > 0 || failingIntegrations.length > 0) && (
+              <Card className="border-2 border-destructive/30 bg-destructive/5">
+                <CardContent className="py-4 space-y-1.5">
+                  <p className="font-bold text-destructive flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> تنبيهات تحتاج تدخل المسؤول</p>
+                  {repeated.map(g => <p key={g.message} className="text-sm text-foreground">• خطأ متكرر ({g.count} مرة): <span className="text-muted-foreground">{g.message.slice(0, 120)}</span></p>)}
+                  {failingIntegrations.map(i => <p key={i.id} className="text-sm text-foreground">• فشل تكامل: {i.module_name}</p>)}
+                  {failedWebhooks > 0 && <p className="text-sm text-foreground">• {failedWebhooks} محاولة Webhook فاشلة مؤخرًا</p>}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Client errors */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" /> أخطاء المستخدمين (آخر 24 ساعة) <Badge variant="outline">{errorRows.length}</Badge></CardTitle>
+              </CardHeader>
+              <CardContent>
+                {errorGroups.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-6">لا توجد أخطاء مسجلة ✅</p>
+                ) : (
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {errorGroups.slice(0, 20).map(g => (
+                      <div key={g.message} className="flex items-start gap-3 p-3 rounded-xl border border-border/50 bg-muted/20">
+                        <Badge className={g.count >= REPEAT_THRESHOLD ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'}>{g.count}×</Badge>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground break-words">{g.message}</p>
+                          <p className="text-xs text-muted-foreground truncate">{g.urls.join('، ')} — آخر ظهور {format(new Date(g.lastAt), 'HH:mm dd/MM')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Services Status */}
             <Card>
