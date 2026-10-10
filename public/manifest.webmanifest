@@ -1,0 +1,13 @@
+{
+  "name": "Ticket-X — Smart Helpdesk",
+  "short_name": "Ticket-X",
+  "start_url": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
