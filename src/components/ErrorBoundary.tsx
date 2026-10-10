@@ -19,6 +19,10 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
     return { hasError: true, error, isChunkError };
   }
 
+  componentDidCatch(error: Error) {
+    import('@/lib/errorReporter').then((m) => m.reportClientError(error.message, error.stack));
+  }
+
   handleReload = () => {
     window.location.reload();
   };
