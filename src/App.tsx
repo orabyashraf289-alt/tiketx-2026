@@ -151,7 +151,7 @@ const App = () => (
                     <Route path="/portal/kb" element={<RequesterRoute><CustomerPortal /></RequesterRoute>} />
                     <Route path="/tickets" element={<ProtectedRoute redirectRequester><TicketsInbox /></ProtectedRoute>} />
                     <Route path="/tickets/new" element={<ProtectedRoute redirectRequester><NewTicket /></ProtectedRoute>} />
-                    <Route path="/developer" element={<ProtectedRoute><DeveloperDashboard /></ProtectedRoute>} />
+                    <Route path="/developer" element={<RoleRoute allow={['admin', 'developer']}><DeveloperDashboard /></RoleRoute>} />
                     <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
                     <Route path="/admin/departments" element={<AdminRoute><AdminDepartments /></AdminRoute>} />
                     <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
